@@ -1,8 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 7.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "video_squirrel", "video_squirrel.vcproj", "{F1C6DCC9-D0B5-489A-9A5D-9EF0F84CE3FC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libxml2", "..\libxml2-2.5.4\win32\dsp\libxml2.vcproj", "{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libebml", "..\libebml\make\vc6\lib\static\libebml.vcproj", "{20D48C6F-B036-4894-9796-039FF1DDEFD4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmatroska", "..\libmatroska\make\vc6\lib\static\libmatroska.vcproj", "{7C0936FC-16C0-4726-8C8F-8C1A06437E82}"
@@ -20,8 +18,7 @@ Global
 		ConfigName.8 = Test
 	EndGlobalSection
 	GlobalSection(ProjectDependencies) = postSolution
-		{F1C6DCC9-D0B5-489A-9A5D-9EF0F84CE3FC}.0 = {5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}
-		{F1C6DCC9-D0B5-489A-9A5D-9EF0F84CE3FC}.1 = {7C0936FC-16C0-4726-8C8F-8C1A06437E82}
+		{F1C6DCC9-D0B5-489A-9A5D-9EF0F84CE3FC}.0 = {7C0936FC-16C0-4726-8C8F-8C1A06437E82}
 		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.0 = {20D48C6F-B036-4894-9796-039FF1DDEFD4}
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
@@ -43,24 +40,6 @@ Global
 		{F1C6DCC9-D0B5-489A-9A5D-9EF0F84CE3FC}.Release Unicode DLL.Build.0 = Release|Win32
 		{F1C6DCC9-D0B5-489A-9A5D-9EF0F84CE3FC}.Test.ActiveCfg = Test|Win32
 		{F1C6DCC9-D0B5-489A-9A5D-9EF0F84CE3FC}.Test.Build.0 = Test|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Debug.ActiveCfg = Debug|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Debug.Build.0 = Debug|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Debug DLL.ActiveCfg = Debug|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Debug DLL.Build.0 = Debug|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Debug Unicode.ActiveCfg = Debug|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Debug Unicode.Build.0 = Debug|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Debug Unicode DLL.ActiveCfg = Debug|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Debug Unicode DLL.Build.0 = Debug|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Release.ActiveCfg = Release|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Release.Build.0 = Release|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Release DLL.ActiveCfg = Release|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Release DLL.Build.0 = Release|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Release Unicode.ActiveCfg = Release|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Release Unicode.Build.0 = Release|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Release Unicode DLL.ActiveCfg = Release|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Release Unicode DLL.Build.0 = Release|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Test.ActiveCfg = Release|Win32
-		{5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}.Test.Build.0 = Release|Win32
 		{20D48C6F-B036-4894-9796-039FF1DDEFD4}.Debug.ActiveCfg = Debug|Win32
 		{20D48C6F-B036-4894-9796-039FF1DDEFD4}.Debug.Build.0 = Debug|Win32
 		{20D48C6F-B036-4894-9796-039FF1DDEFD4}.Debug DLL.ActiveCfg = Debug|Win32

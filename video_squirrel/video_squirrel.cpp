@@ -29,10 +29,10 @@
 */
 
 // Here are the defines for each file format support
-//#define AVI_SUPPORT
+#define AVI_SUPPORT
 #define REALMEDIA_SUPPORT
 #define MPEG_SUPPORT
-//#define MATROSKA_SUPPORT
+#define MATROSKA_SUPPORT
 
 #include "video_squirrel.h"
 
@@ -347,7 +347,7 @@ void SearchFrame::OnSearchFrame_SearchButton(wxCommandEvent &event)
 	DEBUG(_T("Creating HTML search report list"));
 	if (found_items.GetCount() > 0)
 	{
-		for (int i = 0; i <= found_items.GetCount(); i++)
+		for (unsigned int i = 0; i <= found_items.GetCount(); i++)
 		{
 			DEBUG(_T("HTML search report list adding item"));
 			html_report += wxString::Format(_T("<li><a href=\"%i\">Title: "), found_items.Index(i));
@@ -674,7 +674,10 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 	{
 		#ifdef MATROSKA_SUPPORT
 		//This is where some code goes ;P
-
+		char *nice_filename = new char[filename.length()];
+		strcpy(nice_filename, filename.mb_str());
+		MatroskaInfoParser *new_file = new MatroskaInfoParser(nice_filename);
+		new_file->ParseFile();		
 		#else
 		SetStatusText(_T("Matroska support not compiled in"));
 		#endif																				//MATROSKA_SUPPORT
@@ -917,8 +920,6 @@ void AppFrame::CloseFrame(wxCommandEvent &event)
 	delete the_database;
 
 	this->Destroy();
-
-	wxDebugContext::PrintStatistics(true);
 }
 
 
@@ -1680,4 +1681,3 @@ VideoSquirrelConfiguration::~VideoSquirrelConfiguration()
 	DEBUG(_T("VideoSquirrelConfiguration::~VideoSquirrelConfiguration called"));
 	delete pConfig;
 };
- 	

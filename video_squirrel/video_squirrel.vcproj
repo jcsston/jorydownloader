@@ -86,7 +86,7 @@
 				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="../mpa2mka;../wav2mka;./;&quot;D:\Visual Studio Projects\matroska\libmatroska\src&quot;;&quot;D:\Visual Studio Projects\matroska\libebml\src&quot;;&quot;D:\Visual Studio Projects\matroska\id3lib-3.8.3\include&quot;"
+				AdditionalIncludeDirectories=".\;.\avilib;..\matroska_cdl;..\libmatroska\src;..\libebml\src;&quot;..\libxml2-2.5.4\include&quot;;..\..\..\WXWINDOWS\INCLUDE;..\..\..\wxWindows\LIB\MSW"
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,WINVER=0x400,_MT,wxUSE_GUI=1,ID3LIB_LINKOPTION=1"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="0"
@@ -106,7 +106,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib zlib.lib regex.lib png.lib jpeg.lib tiff.lib wxmsw.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib ..\..\..\wxwindows\LIB\wxmsw.lib ..\..\..\wxwindows\LIB\ZLIB.LIB ..\..\..\wxwindows\LIB\PNG.LIB ..\libxml2-2.5.4\win32\dsp\libxml2\libxml2_a.lib"
 				OutputFile=".\Release/video_squirrel.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -202,22 +202,16 @@
 			Name="avilib"
 			Filter="">
 			<File
-				RelativePath="avilib\avidump.c">
-			</File>
-			<File
 				RelativePath="avilib\avilib.c">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						CompileAs="0"/>
+						CompileAs="1"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="avilib\avilib.h">
-			</File>
-			<File
-				RelativePath="avilib\avimisc.c">
 			</File>
 		</Filter>
 		<Filter

@@ -88,7 +88,7 @@
 #include "MatroskaUtils.h" // Win32 GCC don't work with these
 #endif
 
-#define DEBUG(x); wxLogDebug(x);
+#define DEBUG(x) //wxLogDebug(x);
 #define Video_Squirrel_Version "v0.1"
 
 class audioData
@@ -345,5 +345,5 @@ END_EVENT_TABLE()
  *****************************************************************/
 
 IMPLEMENT_APP(MainApp)
-#endif _VIDEO_SQUIRREL_H_
+#endif //_VIDEO_SQUIRREL_H_
 
