@@ -92,20 +92,9 @@ extern "C" {
 #include "MatroskaUtils.h"
 #endif
 
-class wxXMLTextOutputStream : public wxTextOutputStream
-{
-public:
-	wxXMLTextOutputStream(wxFileOutputStream& output)
-	: wxTextOutputStream(output, wxEOL_DOS)
-	{
-
-	}
-	virtual void WriteString(const wxString& str)
-	{
-		wxTextOutputStream::WriteString(MakeXMLNiceString(str));
-	}
-	static wxString MakeXMLNiceString(const wxString &input);
-};
+wxString MakeXMLNiceString(const wxString &input);
+wxString Format_FileSize(int64 file_size);
+wxString Format_Duration(long length);
 
 class audioData
 {
@@ -165,6 +154,7 @@ class VideoSquirrelConfiguration
 	wxString html_item_view_template;
 	wxString html_item_view_template_audio;
 	wxString database_filename;
+	wxString last_added_folder;
 };
 
 class MainApp : public wxApp
@@ -299,6 +289,7 @@ class AppFrame : public wxFrame
    	//The configuration object
    	VideoSquirrelConfiguration *settings;
 				
+		bool m_DatabaseChanged;
 		std::vector<VideoItem> m_Database;
 	private:
 		// any class wishing to process wxWindows events must use this macro

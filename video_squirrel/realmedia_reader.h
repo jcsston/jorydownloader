@@ -126,7 +126,49 @@ struct RealMedia_VideoHeader
 	UINT8 h3;
 };
 
-struct RealMedia_AudioHeader {
+struct rainfo
+{
+	UINT32 fourcc1;             // '.', 'r', 'a', 0xfd
+	UINT16 version1;            // 4 or 5
+	UINT16 unknown1;            // 00 000
+	UINT32 fourcc2;             // .ra4 or .ra5
+	UINT32 unknown2;            // ???
+	UINT16 version2;            // 4 or 5
+	UINT32 header_size;         // == 0x4e
+	UINT16 flavor;              // codec flavor id
+	UINT32 coded_frame_size;    // coded frame size
+	UINT32 unknown3;            // big number
+	UINT32 unknown4;            // bigger number
+	UINT32 unknown5;            // yet another number
+	UINT16 sub_packet_h;
+	UINT16 frame_size;
+	UINT16 sub_packet_size;
+	UINT16 unknown6;            // 00 00
+	void bswap();
+};
+
+struct rainfo4 : rainfo
+{
+	UINT16 sample_rate;
+	UINT16 unknown8;            // 0
+	UINT16 sample_size;
+	UINT16 channels;
+	void bswap();
+};
+
+struct rainfo5 : rainfo
+{
+	UINT8 unknown7[6];          // 0, srate, 0
+	UINT16 sample_rate;
+	UINT16 unknown8;            // 0
+	UINT16 sample_size;
+	UINT16 channels;
+	UINT32 genr;                // "genr"
+	UINT32 fourcc3;             // fourcc
+	void bswap();
+};
+
+/*struct RealMedia_AudioHeader {
 	UINT32 unknown1; // No clue
 	UINT32 unknown2; // just need to skip 4, 6? bytes
 	UINT16 header_version;
@@ -167,7 +209,7 @@ struct RealMedia_AudioHeader {
 	UINT32 codecdata_length;
 	UINT8 *codecdata; //This is the size codecdata_length
 	//End if codec_name == "cook"
-};
+};*/
 #pragma pack()
 
 struct RealMedia_Media_Properties
@@ -198,7 +240,7 @@ struct RealMedia_Media_Properties
 	//This stuff goes in the RealMedia_Infomation_Field_List
 
 	//Audio Stream
-	RealMedia_AudioHeader *audio_header;
+	rainfo *audio_header;
 	WAVEFORMATEX_real *wav_data;
   //UINT32 frequency;
 	//UINT16 samplesize;

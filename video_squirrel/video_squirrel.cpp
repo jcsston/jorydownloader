@@ -58,8 +58,8 @@ bool MainApp::OnInit()
 	return TRUE;
 };
 
-
-/*TAG_HANDLER_BEGIN(CLOSEBUTTON, "CLOSEBUTTON")
+/*
+TAG_HANDLER_BEGIN(CLOSEBUTTON, "CLOSEBUTTON")
 
 TAG_HANDLER_PROC(tag)
 {
@@ -67,7 +67,7 @@ TAG_HANDLER_PROC(tag)
 	wxButton *wnd;
 	int fl = 0;
 
-	wnd = new wxButton(m_WParser->GetWindow(), HTMLTag_CloseButton, tag.GetParam(wxT("NAME")), wxPoint(0,0));
+	wnd = new wxButton(m_WParser->GetWindow(), HTMLTag_CloseButton, tag.GetParam(_T("NAME")), wxPoint(0,0));
 	wnd->Show(TRUE);
 
 	m_WParser->GetContainer()->InsertCell(new wxHtmlWidgetCell(wnd, fl));
@@ -92,6 +92,7 @@ TAG_HANDLER_PROC(tag)
 
 TAG_HANDLER_END(CLOSEBUTTON)
 
+
 TAG_HANDLER_BEGIN(VIEWBUTTON, "VIEWBUTTON")
 
 TAG_HANDLER_PROC(tag)
@@ -115,15 +116,15 @@ TAG_HANDLER_PROC(tag)
 
 
 TAG_HANDLER_END(VIEWBUTTON)
-
+	
 
 TAGS_MODULE_BEGIN(MyBind)
 
 	TAGS_MODULE_ADD(CLOSEBUTTON)
 	TAGS_MODULE_ADD(VIEWBUTTON)
-	
-TAGS_MODULE_END(MyBind)*/
 
+TAGS_MODULE_END(MyBind)
+*/
 
 MyHTMLDialog::MyHTMLDialog(wxWindow *parent_frame, const wxString &html_code, const wxString &title, const wxSize &size)
 : wxFrame ((wxWindow *) parent_frame, -1, title, wxDefaultPosition, size)
@@ -138,9 +139,9 @@ MyHTMLDialog::MyHTMLDialog(wxWindow *parent_frame, const wxString &html_code, co
 void MyHTMLDialog::OnHTMLClose(wxCommandEvent &event)
 {
 	DEBUG(_T("MyHTMLDialog::OnHTMLClose called"));
-	this->Hide();
-	this->Show(false);
-	//this->Close(TRUE);
+	//this->Hide();
+	//this->Show(false);
+	this->Close(TRUE);
 };
 
 // frame constructor
@@ -231,13 +232,13 @@ const wxSize& size)
   notebook_item_view_pane_html->SetSizer(sizer_html_view);
   sizer_html_view->Fit(notebook_item_view_pane_html);
   sizer_html_view->SetSizeHints(notebook_item_view_pane_html);
-  sizer_edit_view->Add(list_ctrl_item_edit, 1, wxEXPAND, 0);
-  notebook_item_view_pane_edit->SetAutoLayout(true);
-  notebook_item_view_pane_edit->SetSizer(sizer_edit_view);
-  sizer_edit_view->Fit(notebook_item_view_pane_edit);
-  sizer_edit_view->SetSizeHints(notebook_item_view_pane_edit);
-  notebook_item_views->AddPage(notebook_item_view_pane_html, _T("HTML View"));
-  notebook_item_views->AddPage(notebook_item_view_pane_edit, _T("Edit View (non-working)"));
+	notebook_item_views->AddPage(notebook_item_view_pane_html, _T("HTML View"));
+  //sizer_edit_view->Add(list_ctrl_item_edit, 1, wxEXPAND, 0);
+  //notebook_item_view_pane_edit->SetAutoLayout(true);
+  //notebook_item_view_pane_edit->SetSizer(sizer_edit_view);
+  //sizer_edit_view->Fit(notebook_item_view_pane_edit);
+  //sizer_edit_view->SetSizeHints(notebook_item_view_pane_edit);  
+  //notebook_item_views->AddPage(notebook_item_view_pane_edit, _T("Edit View (non-working)"));
   sizer_3->Add(new wxNotebookSizer(notebook_item_views), 1, wxEXPAND, 0);
 	panel_2->SetAutoLayout(true);
 	panel_2->SetSizer(sizer_3);
@@ -386,7 +387,7 @@ void SearchFrame::OnSearchFrame_SearchButton(wxCommandEvent &event)
 				html_report += _T("</td>");				
 
 				html_report += _T("<td>");
-				html_report += _T("Filesize: ") + wxString::Format(_T("%.1f MB"), (float)current_item->file_size/1024/1024);
+				html_report += _T("Filesize: ") + Format_FileSize(current_item->file_size);
 				html_report += _T("<br>Duration: ") + current_item->video.GetNiceDuration();
 				html_report += _T("</td>");
 
@@ -477,16 +478,32 @@ void AppFrame::OnAdd(wxCommandEvent &event)
 void AppFrame::OnAddFolder(wxCommandEvent &event)
 {
 	DEBUG(_T("AppFrame::OnAddFolder called"));
-	wxDirDialog dialog(this, _T("Locate folder or drive"), _T(""), wxOPEN);
+	wxDirDialog dialog(this, _T("Locate folder or drive"), settings->last_added_folder, wxOPEN);
 
 	if (dialog.ShowModal() == wxID_OK)
-	{
-		wxString input_folder;
-		input_folder = dialog.GetPath();
-		//wxTextEntryDialog *cd_title_dialog = new wxTextEntryDialog(NULL, _T("Enter the name of the Group you want this under."), _T("Enter Group name"), input_folder, wxOK | wxCENTRE);
-		//cd_title_dialog->ShowModal();
-		//wxMessageBox(_T("test"));
-		AddFolderToDatabase(input_folder); //, cd_title_dialog->GetValue());
+	{		
+		wxString input_folder = dialog.GetPath();	
+		settings->last_added_folder = input_folder;
+
+		wxString cd_label = input_folder;
+#ifdef WIN32
+		TCHAR volume_label[1025];
+		memset(volume_label, 0, 1024);
+		GetVolumeInformation(cd_label.c_str(), volume_label, 1024/sizeof(TCHAR), NULL, NULL, NULL, NULL, 0);
+		if (lstrlen(volume_label) > 0)
+			cd_label = volume_label;
+#elif USE_BORKED_WXWINDOWS_VOLUME
+		wxFileName input_filename = input_folder;
+		if (input_filename.GetVolume().length() > 0)
+			cd_label = input_filename.GetVolume();
+#endif
+
+		wxTextEntryDialog *cd_title_dialog = new wxTextEntryDialog(this, _T("Enter the name of the Group you want this under."), _T("Enter Group name"), cd_label, wxOK | wxCENTRE);
+
+		if (cd_title_dialog->ShowModal() == wxID_OK) 
+		{
+			AddFolderToDatabase(input_folder, cd_title_dialog->GetValue());
+		}
 	}
 }
 
@@ -495,7 +512,7 @@ void AppFrame::AddFolderToDatabase(wxString &folder, wxString group_under)
 {
 	DEBUG(_T("AppFrame::AddFolderToDatabase called"));
 	wxStringList list_of_files;
-	wxString *current_file = new wxString;
+	wxString current_file;
 	wxArrayString file_types;
 	int num_of_files = 0;
 
@@ -518,14 +535,14 @@ void AppFrame::AddFolderToDatabase(wxString &folder, wxString group_under)
 		wxDir level_0_folder(folder);
 		if (level_0_folder.IsOpened())
 		{
-			bool good_name = level_0_folder.GetFirst(current_file, file_types.Item(current_file_type));
+			bool good_name = level_0_folder.GetFirst(&current_file, file_types.Item(current_file_type));
 			while (good_name)
 			{
 				wxString curent_filename = folder;
-				curent_filename += *current_file;
+				curent_filename += current_file;
 				AddFileToDatabase(curent_filename, group_under);
 				//Go to next item
-				good_name = level_0_folder.GetNext(current_file);
+				good_name = level_0_folder.GetNext(&current_file);
 				//Let's give the user a chance to click
 				wxYield();
 				num_of_files++;
@@ -564,7 +581,8 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 			new_item.video.frame_rate = avi_infomation->fps;
 			new_item.video.duration = (long)(avi_infomation->video_frames / avi_infomation->fps);
 			new_item.video.compressor = wxString(avi_infomation->compressor, wxConvUTF8);
-			new_item.video.compressor += _T(" - ") + wxString(avi_infomation->compressor2, wxConvUTF8);
+			if (!!stricmp(avi_infomation->compressor, avi_infomation->compressor2))
+				new_item.video.compressor += _T(" - ") + wxString(avi_infomation->compressor2, wxConvUTF8);
 			new_item.video.x = avi_infomation->width;
 			new_item.video.y = avi_infomation->height;
 			//Audio info
@@ -610,7 +628,7 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 		SetStatusText(_T("AVI support not compiled in"));
 		#endif																				//AVI_SUPPORT
 	}
-	else if ((filename.Right(3).Lower() == _T(".rm")) || (filename.Right(4).Lower() == _T(".rmvb")))
+	else if ((filename.Right(3).Lower() == _T(".rm")) || (filename.Right(5).Lower() == _T(".rmvb")))
 	{
 		#ifdef REALMEDIA_SUPPORT
 		//A RealMedia file :D
@@ -629,15 +647,14 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 			if (current_stream != NULL) {
 				if (!strcmpi(current_stream->stream_name, "Video Stream"))
 				{
-					//Since RealMedia files don't have a framerate
 					new_item.video.frame_rate = current_stream->frame_rate;
 					new_item.video.duration = current_stream->duration / 1000;
 
 					char fourcc[10];
 					memset(fourcc, 0, 9);
-					memcpy(fourcc, &current_stream->video_header->fcc1, 4);
-					memcpy(fourcc+4, &current_stream->video_header->fcc2, 4);
+					memcpy(fourcc, &current_stream->video_header->fcc2, 4);
 					new_item.video.compressor = wxString(fourcc, wxConvUTF8);
+
 					new_item.video.avg_bitrate = current_stream->avg_bit_rate / 1024;
 					new_item.video.x = current_stream->video_header->w;
 					new_item.video.y = current_stream->video_header->h;
@@ -646,8 +663,23 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 				{
 					audioData audio;
 					
-					audio.compressor = wxString(rm_reader.media_properties_block[stream_no]->mime_type, wxConvUTF8);
-					audio.avg_bitrate = current_stream->avg_bit_rate / 1000;
+					char fourcc[10];
+					memset(fourcc, 0, 9);
+					memcpy(fourcc, &current_stream->audio_header->fourcc2, 4);
+
+					audio.compressor = wxString(fourcc, wxConvUTF8);
+					audio.avg_bitrate = current_stream->avg_bit_rate / 1024;
+
+					if (current_stream->audio_header->version1 == 4) {
+						rainfo4 *audio_header = (rainfo4 *)current_stream->audio_header;
+						audio.channels = audio_header->channels;
+						audio.sample_rate = audio_header->sample_rate;
+
+					} else if (current_stream->audio_header->version1 == 5) {
+						rainfo5 *audio_header = (rainfo5 *)current_stream->audio_header;
+						audio.channels = audio_header->channels;
+						audio.sample_rate = audio_header->sample_rate;
+					}
 
 					new_item.audio.push_back(audio);
 				}
@@ -701,6 +733,8 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 			new_item.file_size = 0;
 		}
 		
+		new_item.video.avg_bitrate = file_length / new_item.video.duration / 128;
+
 		//We are done so now add the item to the database
 		AddVideoItemToDatabase(new_item);
 		
@@ -802,6 +836,8 @@ int AppFrame::AddVideoItemToDatabase(VideoItem &new_item)
 {
 	DEBUG(_T("AppFrame::AddVideoItemToDatabase called"));
 
+	m_DatabaseChanged = true;
+
 	//Ok, we add this item to the database list in memory
 	m_Database.push_back(new_item);
 	//Now append this item to the Database ListView Control
@@ -868,7 +904,7 @@ void AppFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 	msg += _T("</font></b><hr>");
 	msg += _T("<p>A cross-platform video file cataloger.");
 	msg += _T("<br>Written by Jory Stone jcsston@toughguy.net");
-	msg += _T("<br>Uses wxWindows, libxml2, avilib, ,libebml and libmatroska.</p>");
+	msg += _T("<br>Uses wxWindows, TinyXml, avilib, CMPEGInfo,libebml and libmatroska.</p>");
 	msg += wxString().Format(_T("<p>Total Size of database in memory: %i bytes</p>"), real_total_size);
 	msg += _T("<p align=\"right\"><CLOSEBUTTON name=\"Close\"></p>");
 	msg += _T("</body>");
@@ -957,7 +993,7 @@ wxString AppFrame::CreateHTMLPage(VideoItem *item_to_display, bool fragment)
 		formated_html.Replace(_T("$title$"), item_to_display->title);
 		formated_html.Replace(_T("$cd$"), item_to_display->cd);
 		formated_html.Replace(_T("$filename$"), item_to_display->filename);
-		formated_html.Replace(_T("$filesize$"), wxString::Format(_T("%i KB"), item_to_display->file_size / 1024));
+		formated_html.Replace(_T("$filesize$"), Format_FileSize(item_to_display->file_size));
 		formated_html.Replace(_T("$videobitrate$"), wxString::Format(_T("%i kbit/s"), item_to_display->video.avg_bitrate));
 		formated_html.Replace(_T("$duration$"), item_to_display->video.GetNiceDuration());
 		formated_html.Replace(_T("$framerate$"), wxString::Format(_T("%.1f"), item_to_display->video.frame_rate));
@@ -1017,7 +1053,8 @@ void AppFrame::OnListViewItemSelected(wxCommandEvent &event)
 void AppFrame::CloseFrame(wxCommandEvent &event)
 {
 	DEBUG(_T("AppFrame::CloseFrame called"));
-	if (!SaveDatabase())
+	
+	if (m_DatabaseChanged && !SaveDatabase())
 	{
 		return;
 	}
@@ -1074,6 +1111,7 @@ void AppFrame::parseXMLFile(wxString filename)
 
 	// Clear the current database
 	m_Database.clear();
+	m_DatabaseChanged = false;
 
 	// Build an XML tree from a file;
 	TiXmlDocument xmlDatabase("");
@@ -1233,12 +1271,14 @@ void AppFrame::parseXMLFile(wxString filename)
 bool AppFrame::SaveDatabase()
 {
 	DEBUG(_T("AppFrame::SaveDatabase called"));
+
 	//Save the database to file
 	wxBusyInfo wait(_T("Please wait, saving..."));
+
 	//First open the xml output file for writing
 	wxFileOutputStream output_file_stream(settings->database_filename);
 	if (output_file_stream.Ok())
-	{
+	{		
 		//It opened ok, so now we bind it to a text output stream
 		wxTextOutputStream xml_output_stream(output_file_stream);
 		//A wxString buffer for composing larger lines
@@ -1270,17 +1310,17 @@ bool AppFrame::SaveDatabase()
 			xml_output_stream.WriteString(xml_buffer);
 
 			xml_buffer = _T("\t\t\t<CD>");
-			xml_buffer += wxXMLTextOutputStream::MakeXMLNiceString(current_item->cd);
+			xml_buffer += MakeXMLNiceString(current_item->cd);
 			xml_buffer += _T("</CD>\n");
 			xml_output_stream.WriteString(xml_buffer);
 
 			xml_buffer = _T("\t\t\t<Title>");
-			xml_buffer += wxXMLTextOutputStream::MakeXMLNiceString(current_item->title);
+			xml_buffer += MakeXMLNiceString(current_item->title);
 			xml_buffer += _T("</Title>\n");
 			xml_output_stream.WriteString(xml_buffer);
 
 			xml_buffer = _T("\t\t\t<Filename>");
-			xml_buffer += wxXMLTextOutputStream::MakeXMLNiceString(current_item->filename);
+			xml_buffer += MakeXMLNiceString(current_item->filename);
 			xml_buffer += _T("</Filename>\n");
 			xml_output_stream.WriteString(xml_buffer);
 
@@ -1318,7 +1358,7 @@ bool AppFrame::SaveDatabase()
 			xml_output_stream.WriteString(xml_buffer);
 
 			xml_buffer = _T("\t\t\t\t<VideoCompressor>");
-			xml_buffer += wxXMLTextOutputStream::MakeXMLNiceString(current_item->video.compressor);
+			xml_buffer += MakeXMLNiceString(current_item->video.compressor);
 			xml_buffer += _T("</VideoCompressor>\n");
 			xml_output_stream.WriteString(xml_buffer);
 
@@ -1331,7 +1371,7 @@ bool AppFrame::SaveDatabase()
 				xml_buffer = _T("\t\t\t<AudioTrack>\n");
 				xml_output_stream.WriteString(xml_buffer);
 				xml_buffer = _T("\t\t\t\t<AudioCompressor>");
-				xml_buffer += wxXMLTextOutputStream::MakeXMLNiceString(current_item->audio[audio_track_no].compressor);
+				xml_buffer += MakeXMLNiceString(current_item->audio[audio_track_no].compressor);
 				xml_buffer += _T("</AudioCompressor>\n");
 				xml_output_stream.WriteString(xml_buffer);
 
@@ -1355,7 +1395,7 @@ bool AppFrame::SaveDatabase()
 			}
 
 			xml_buffer = _T("\t\t\t<Comment>");
-			xml_buffer += wxXMLTextOutputStream::MakeXMLNiceString(current_item->comment_text);
+			xml_buffer += MakeXMLNiceString(current_item->comment_text);
 			xml_buffer += _T("</Comment>\n");
 			xml_output_stream.WriteString(xml_buffer);
 			
@@ -1366,6 +1406,8 @@ bool AppFrame::SaveDatabase()
 		xml_output_stream.WriteString(xml_buffer);
 		xml_buffer = _T("</VideoSquirrelDatabase>");
 		xml_output_stream.WriteString(xml_buffer);		
+
+		m_DatabaseChanged = false;
 	}
 	else
 	{		
@@ -1633,16 +1675,7 @@ videoData::videoData()
 
 wxString videoData::GetNiceDuration()
 {
-	//The duration should be stored in seconds
-	if (duration < 60)
-	{
-		return wxString::Format(_T("%i seconds"), duration);
-	}
-	else //if (duration < 3600)
-	{
-		return wxString::Format(_T("%i minutes %i seconds"), int((int)duration / (int)60), duration - int(duration / 60)*60);
-	}
-	return _T("");
+	return Format_Duration(duration);
 };
 
 OptionsFrame::OptionsFrame(wxWindow* parent, int id, const wxPoint& pos, const wxSize& size, long style):
@@ -1734,7 +1767,9 @@ VideoSquirrelConfiguration::VideoSquirrelConfiguration()
 	pConfig->SetRecordDefaults(true);
 	
 	//Read all the values
-	database_filename = pConfig->Read(_T("/DatabaseFilename"), wxGetHomeDir() + _T("/database.xml"));
+	last_added_folder = pConfig->Read(_T("/Last Added Folder"), _T(""));
+
+	database_filename = pConfig->Read(_T("/Database Filename"), wxGetHomeDir() + _T("/database.xml"));
 	html_item_view_template = pConfig->Read(_T("/HTML Item View Template"),
 		_T("<b><font size=+1>$title$</font></b><hr>")
 		_T("<p><b>CD:</b> $cd$<br>")
@@ -1761,14 +1796,15 @@ VideoSquirrelConfiguration::~VideoSquirrelConfiguration()
 {
 	DEBUG(_T("VideoSquirrelConfiguration::~VideoSquirrelConfiguration called"));
 
-	pConfig->Write(_T("/DatabaseFilename"), database_filename);		 
+	pConfig->Write(_T("/Last Added Folder"), last_added_folder);
+	pConfig->Write(_T("/Database Filename"), database_filename);		 
 	pConfig->Write(_T("/HTML Item View Template"), html_item_view_template);
   pConfig->Write(_T("/HTML Item View Audio Track Template"), html_item_view_template_audio);
 
 	delete pConfig;
 };
 
-wxString wxXMLTextOutputStream::MakeXMLNiceString(const wxString &input) {	
+wxString MakeXMLNiceString(const wxString &input) {	
 	wxString outString;
 	size_t i = 0;
 
@@ -1813,4 +1849,35 @@ wxString wxXMLTextOutputStream::MakeXMLNiceString(const wxString &input) {
 	}
 
 	return outString;
+};
+
+wxString Format_FileSize(int64 file_size)
+{
+	if (file_size < 1024) {
+		return wxString::Format(_T("%u bytes"), file_size);
+
+	}	else if (file_size < 1024 * 1024) {
+		return wxString::Format(_T("%.2f KB"), (float)file_size / 1024);
+
+	}	else if (file_size < 1024 * 1024 * 1024) {
+		return wxString::Format(_T("%.2f MB"), (float)file_size / 1024 / 1024);
+
+	}	else {
+		return wxString::Format(_T("%.2f GB"), (float)file_size / 1024 / 1024 / 1024);
+	}
+	return _T("N/A");
+};
+
+wxString Format_Duration(long length)
+{
+	//The duration should be stored in seconds
+	if (length < 60)
+	{
+		return wxString::Format(_T("%i seconds"), length);
+	}
+	else //if (length < 60 * 60)
+	{
+		return wxString::Format(_T("%i minutes %i seconds"), int(length / (int)60), length - int(length / 60)*60);
+	}
+	return _T("");
 };

@@ -32,6 +32,40 @@
 
 #include "realmedia_reader.h"
 
+template<typename T>
+static void bswap(T& var)
+{
+	BYTE* s = (BYTE*)&var;
+	for(BYTE* d = s + sizeof(var)-1; s < d; s++, d--)
+		*s ^= *d, *d ^= *s, *s ^= *d;
+}
+
+void rainfo::bswap()
+{
+	::bswap(version1);
+	::bswap(version2);
+	::bswap(header_size);
+	::bswap(flavor);
+	::bswap(coded_frame_size);
+	::bswap(sub_packet_h);
+	::bswap(frame_size);
+	::bswap(sub_packet_size);
+}
+
+void rainfo4::bswap()
+{	
+	::bswap(sample_rate);
+	::bswap(sample_size);
+	::bswap(channels);
+}
+
+void rainfo5::bswap()
+{
+	::bswap(sample_rate);
+	::bswap(sample_size);
+	::bswap(channels);
+}
+
 /// Consructor, Sets the default values
 RealMedia_Reader::RealMedia_Reader()
 {
@@ -321,9 +355,15 @@ int RealMedia_Reader::Read(const char *filename, bool bPreReadDataPackets)
 					}
 					else if (!stricmp(media_info->mime_type, "audio/x-pn-realaudio"))
 					{
-						media_info->audio_header = (RealMedia_AudioHeader *)media_info->type_specific_data;
-						UINT32 size = sizeof(RealMedia_AudioHeader);						
-						bswap((BYTE *)&media_info->audio_header->codecdata_length, 4);
+						media_info->audio_header = (rainfo *)media_info->type_specific_data;
+						UINT32 size = sizeof(rainfo);
+						media_info->audio_header->bswap();
+						if (media_info->audio_header->version1 == 4) {
+							((rainfo4 *)media_info->audio_header)->bswap();
+						} else if (media_info->audio_header->version1 == 5) {
+							((rainfo5 *)media_info->audio_header)->bswap();
+						}
+						/*bswap((BYTE *)&media_info->audio_header->codecdata_length, 4);
 						size = media_info->audio_header->codecdata_length;
 						bswap((BYTE *)&media_info->audio_header->channels, 2);
 						size = media_info->audio_header->channels;
@@ -336,7 +376,7 @@ int RealMedia_Reader::Read(const char *filename, bool bPreReadDataPackets)
 						bswap((BYTE *)&media_info->audio_header->format_version, 2);
 						bswap((BYTE *)&media_info->audio_header->frame_size, 2);
 						bswap((BYTE *)&media_info->audio_header->header_size, 4);
-						bswap((BYTE *)&media_info->audio_header->header_version, 2);
+						bswap((BYTE *)&media_info->audio_header->header_version, 2);*/
 						/*error = ftell(real_media);
 						UINT16 version = 0;
 						UINT16 flavor = 0;

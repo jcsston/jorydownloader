@@ -71,7 +71,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W4 /Gm /GX /Zi /Ox /I ".\\" /I ".\tinyxml" /I ".\avilib" /I "..\MatroskaUtils" /I "..\libmatroska\\" /I "..\libebml\\" /I "..\libebml\src\platform\win32" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "_UNICODE" /I /I /GF "" ..\wxWindows-2.4.1\INCLUDE"" "" ..\wxWindows-2.4.1\LIB\mswu"" PRECOMP_VC7_TOBEREMOVED /c
-# ADD CPP /nologo /MD /W2 /Gm /GX /Zi /Ox /Gf /I ".\\" /I ".\tinyxml" /I ".\avilib" /I "..\MatroskaUtils" /I "..\libmatroska\\" /I "..\libebml\\" /I "..\libebml\src\platform\win32" /I "..\wxWindows-2.4.2\INCLUDE" /I "..\wxWindows-2.4.2\LIB\mswu" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "_UNICODE" /D "UNICODE" /GF /c
+# ADD CPP /nologo /MD /W2 /Gm /GX /Zi /O2 /Oy- /I ".\\" /I ".\tinyxml" /I ".\avilib" /I "..\MatroskaUtils" /I "..\libmatroska\\" /I "..\libebml\\" /I "..\libebml\src\platform\win32" /I "..\wxWindows-2.4.2\INCLUDE" /I "..\wxWindows-2.4.2\LIB\mswu" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D WINVER=0x400 /D "_MT" /D wxUSE_GUI=1 /D "_UNICODE" /D "UNICODE" /GF /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -82,7 +82,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wxmswu.lib ZLIB.LIB PNG.LIB Shlwapi.lib Winmm.lib /nologo /subsystem:windows /map /debug /machine:I386 /nodefaultlib:"LIBCMT" /pdbtype:sept /libpath:"..\wxWindows-2.4.1\LIB" /mapinfo:exports
 # SUBTRACT BASE LINK32 /pdb:none
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wxmswu.lib ZLIB.LIB PNG.LIB Shlwapi.lib Winmm.lib /nologo /subsystem:windows /map /debug /machine:I386 /pdbtype:sept /libpath:"..\wxWindows-2.4.2\LIB" /mapinfo:exports
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wxmswu.lib ZLIB.LIB PNG.LIB Shlwapi.lib Winmm.lib Unicows.lib /nologo /subsystem:windows /map /debug /machine:I386 /pdbtype:sept /libpath:"..\wxWindows-2.4.2\LIB" /mapinfo:exports
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
@@ -517,6 +517,17 @@ DEP_CPP_TINYXML=\
 # End Group
 # Begin Source File
 
+SOURCE=.\images.cpp
+DEP_CPP_IMAGE=\
+	".\images.h"\
+	
+# End Source File
+# Begin Source File
+
+SOURCE=.\images.h
+# End Source File
+# Begin Source File
+
 SOURCE=MPEGInfo.cpp
 DEP_CPP_MPEGI=\
 	".\MPEGInfo.h"\
@@ -879,6 +890,7 @@ DEP_CPP_VIDEO=\
 	"..\wxWindows-2.4.2\INCLUDE\wx\wxprec.h"\
 	"..\wxWindows-2.4.2\LIB\mswu\wx\setup.h"\
 	".\avilib\avilib.h"\
+	".\images.h"\
 	".\MPEGInfo.h"\
 	".\realmedia_reader.h"\
 	".\tinyxml\tinystr.h"\
