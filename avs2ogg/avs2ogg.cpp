@@ -1,24 +1,36 @@
+#include <io.h>
+#include <fcntl.h>
 
 #include "avs2ogg.h"
 
 void usage()
 {
-	fprintf(stderr, "Usage: -n <input filename> <output filename> \n");
+	fprintf(stderr, "Usage: -n <input filename> -g <float> <output filename> \n");
 	fprintf(stderr, "\t -n         Normalize Audio \n");		
+	fprintf(stderr, "\t -g <float> Adjust the audio level, 1.0 is orignal level \n");
 	fprintf(stderr, "\t <input filename>  Input AVS Script \n");		
 	fprintf(stderr, "\t <output filename>  Output PCM WAV, can be - for stdout output \n");			
-	fprintf(stderr, "\nThe Deafult Output file is the input filename appended with .wav\n");
+	fprintf(stderr, "\nThe Default Output file is the input filename appended with .wav\n");
 }
 
 int main(int argc, const char **args)
 {
 	bool bNormalize = false;
+	double fGain = 1.0;
 	std::string inputFilename;
 	std::string outputFilename;
 	for (int c = 1; c < argc; c++) {
 		if (args[c][0] == '-' && args[c][1] == 'n') {
 			bNormalize = true;
 		
+		} else if (args[c][0] == '-' && args[c][1] == 'g') {
+      if (c+1 < argc) {
+			 fGain = atof(args[c+1]);
+			} else {
+        usage();
+        return -1;
+      }
+			
 		} else if (inputFilename.length() == 0) {
 				inputFilename = args[c];
 
@@ -31,7 +43,7 @@ int main(int argc, const char **args)
 		}
 	}	
 	
-	fprintf(stderr, AVS2OGG_NAME " by Jory Stone <jcsston@toughguy.net>\n");
+	fprintf(stderr, AVS2OGG_NAME " by Jory Stone <jcsston@toughguy.net>, stdout patch by kassandro\n");
 	if (inputFilename.length() == 0) {
 		usage();
 		return -1;
@@ -44,25 +56,44 @@ int main(int argc, const char **args)
 
 	Avs2Ogg objMain;
 	objMain.ReadHeaders(inputFilename, outputFilename);
-	
-	fprintf(stderr, "\nScanning...\n");
-	clock_t startTime = clock();
-	// Do scan pass
-	while (objMain.WriteWav() == 0);
-	float timeSpan = (((double)clock() / CLOCKS_PER_SEC) - ((double)startTime / CLOCKS_PER_SEC));
-	
-	fprintf(stderr, "\nTook %.2f seconds for the writing pass\n", timeSpan);
-	
-	if (bNormalize) {
-		float ratio = objMain.GetNomalizingFactor();
-		fprintf(stderr, "Normalizing with a factor of %.4f ...\n", ratio);
 		
+	clock_t startTime = 0;
+	float timeSpan = 0;
+	
+	if (fGain == 1.0) {
+    if (bNormalize) {
+      fprintf(stderr, "\nNormalizing conflicts with gain option. Ignoring Normalize.");
+    }
+    fprintf(stderr, "\nGaining with a factor of %.4f ...\n", fGain);
+    
 		startTime = clock();
 		//while (objMain.ReadFrame() == 0);
-		objMain.NomalizeWav();
+		objMain.WriteWavWithGain(fGain);
 		timeSpan = (((double)clock() / CLOCKS_PER_SEC) - ((double)startTime / CLOCKS_PER_SEC));
+
+		fprintf(stderr, "Took %.2f seconds for the writing pass\n", timeSpan);
+	} else {
+  	fprintf(stderr, "\nScanning...\n");
+  	startTime = clock();
+  	// Do scan pass
+  	while (objMain.WriteWav() == 0);
 		
-		fprintf(stderr, "Took %.2f seconds for the normalizing pass\n", timeSpan);
+  	timeSpan = (((double)clock() / CLOCKS_PER_SEC) - ((double)startTime / CLOCKS_PER_SEC));
+
+  	fprintf(stderr, "\nTook %.2f seconds for the writing pass\n", timeSpan);
+
+
+  	if (bNormalize) {
+  		float ratio = objMain.GetNomalizingFactor();
+  		fprintf(stderr, "Normalizing with a factor of %.4f ...\n", ratio);
+
+  		startTime = clock();
+  		//while (objMain.ReadFrame() == 0);
+  		objMain.NomalizeWav();
+  		timeSpan = (((double)clock() / CLOCKS_PER_SEC) - ((double)startTime / CLOCKS_PER_SEC));
+
+  		fprintf(stderr, "Took %.2f seconds for the normalizing pass\n", timeSpan);
+  	}
 	}
 	return 0;
 };
@@ -83,7 +114,7 @@ Avs2Ogg::Avs2Ogg()  {
 	m_WavHeader = NULL;
 	m_MaxSample = 0;
 	//m_bNormalize = false;
-	m_Ratio = 0;
+	m_Ratio = 1.0;
 	AVIFileInit();
 };
 
@@ -182,7 +213,7 @@ WORD Avs2Ogg::EncodeVorbis() {
 	}				
 
 	if (frameBufferSize > 0) {
-		if (m_Ratio != 0) {
+		if (m_Ratio != 1.0) {
 			if (m_WavHeader->wBitsPerSample == 16) {
 				DWORD sampleCount = frameBufferSize / 2;
 				for (DWORD s = 0; s < sampleCount; s++) {
@@ -202,6 +233,7 @@ WORD Avs2Ogg::EncodeVorbis() {
 	return 0;
 };
 #endif // HAVE_OGG
+
 WORD Avs2Ogg::WriteWav() {		
 	if (frameSample >= myAVIStreamInfo.dwLength)
 		return 2;
@@ -241,7 +273,46 @@ WORD Avs2Ogg::WriteWav() {
 	return 0;
 };
 
-WORD Avs2Ogg::ScanOnly() {		
+WORD Avs2Ogg::WriteWavWithGain(double fGain)
+{
+	if (frameSample >= myAVIStreamInfo.dwLength)
+		return 2;
+	LONG samplesRead;
+	LONG hr = AVIStreamRead(myAVIStream, frameSample, AVISTREAMREAD_CONVENIENT, frameBuffer, frameBufferTotalSize, &frameBufferSize, &samplesRead);
+	if (frameBufferTotalSize < frameBufferSize) {
+		//wxLogDebug(_T("\nFrame Buffer was too small for AVIStreamRead.\n"));
+		frameBufferTotalSize = frameBufferSize+1;
+		delete frameBuffer;
+		frameBuffer = new BYTE[frameBufferTotalSize+1];
+		hr = AVIStreamRead(myAVIStream, frameSample, AVISTREAMREAD_CONVENIENT, frameBuffer, frameBufferTotalSize, &frameBufferSize, &samplesRead);
+	}
+	if (hr != AVIERR_OK) {
+		fprintf(stderr, "AVIStreamRead returned error.");
+		return 1;
+	}
+
+	if (frameBufferSize > 0) {
+		//m_Encoder->EncodeFrame(frameBuffer, frameBufferSize);
+		m_Writer->WriteData(frameBuffer, frameBufferSize);
+		frameSample += samplesRead;
+		if (m_WavHeader->wBitsPerSample == 16) {
+			DWORD sampleCount = frameBufferSize / 2;
+			for (DWORD s = 0; s < sampleCount; s++) {
+				((short *)frameBuffer)[s] = ((short *)frameBuffer)[s] * fGain;
+			}
+		}	else if (m_WavHeader->wBitsPerSample == 8) {
+			DWORD sampleCount = frameBufferSize / 2;
+			for (DWORD s = 0; s < sampleCount; s++) {
+				((char *)frameBuffer)[s] = ((char *)frameBuffer)[s] * fGain;
+			}
+		}
+		//bufferedPacket->m_Timecode = AVIStreamSampleToTime(stream->myAVIStream, stream->frameSample);
+	}
+	return 0;
+}
+
+WORD Avs2Ogg::ScanOnly()
+{		
 	if (frameSample >= myAVIStreamInfo.dwLength)
 		return 2;
 	LONG samplesRead;
@@ -304,6 +375,7 @@ WavWriter::WavWriter(const std::string &filename) {
 	m_Outputfilename = filename;
 	if (m_Outputfilename == "-") {
 		m_OutputFile = stdout;
+		setmode(1, O_BINARY);
 		fprintf(stderr, "\tUsing stdout for WAV Output\n");
 	} else {
 		m_OutputFile = fopen(m_Outputfilename.c_str(), "wb");
@@ -323,9 +395,9 @@ WavWriter::~WavWriter() {
 WORD WavWriter::WriteHeaders(WAVEFORMATEX *wavhdr, LONG streamSampleLength) {
 	fprintf(stderr, "\nWriting WAV Headers...");
 
-	DWORD dwTemp;
-	WORD wTemp;
-	BYTE bTemp;
+	DWORD dwTemp = 0;
+	WORD wTemp = 0;
+	BYTE bTemp = 0;
 
 	if (m_bClosed)
 		return -1;
@@ -384,7 +456,7 @@ WORD WavWriter::WriteData(const BYTE *data, DWORD size) {
 	return 0;
 };
 
-WORD WavWriter::Nomalize(float ratio) {
+WORD WavWriter::Nomalize(double ratio) {
 	fseek(m_OutputFile, m_DataSizePos+4, SEEK_SET);
 
 	if (m_WavHeader.wBitsPerSample == 16) {

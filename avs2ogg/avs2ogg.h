@@ -2,7 +2,7 @@
 #ifndef _AVS2OGG_H_
 #define _AVS2OGG_H_
 
-#define AVS2OGG_NAME "avs2wav v1.0"
+#define AVS2OGG_NAME "avs2wav v1.1"
 
 #include <windows.h>
 #include <string.h>
@@ -24,7 +24,7 @@ public:
 
 	WORD WriteHeaders(WAVEFORMATEX *wavhdr, LONG streamSampleLength);
 	WORD WriteData(const BYTE *data, DWORD size);
-	WORD Nomalize(float ratio);
+	WORD Nomalize(double ratio);
 	WORD Close();
 
 protected:
@@ -74,6 +74,7 @@ public:
 
 	WORD ReadHeaders(const std::string &inputFilename, const std::string &outputFilename);	
 	WORD ScanOnly();
+	WORD WriteWavWithGain(double fGain);
 #ifdef HAVE_OGG
 	WORD EncodeVorbis();	
 #endif // HAVE_OGG
@@ -99,7 +100,7 @@ protected:
 	DWORD lastFrameTimecode;
 	long m_MaxSample;
 	//bool m_bNormalize;
-	float m_Ratio;
+	double m_Ratio;
 
 	PAVISTREAM myAVIStream;
 	AVISTREAMINFO myAVIStreamInfo;			
