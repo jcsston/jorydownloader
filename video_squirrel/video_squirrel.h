@@ -31,8 +31,7 @@
 #ifndef _VIDEO_SQUIRREL_H_
 #define _VIDEO_SQUIRREL_H_
 
-#define DEBUG(x) wxMessageBox(x)
-//wxLogDebug(x)
+#define DEBUG(x) wxLogDebug(x)
 #define Video_Squirrel_Version "v0.1"
 
 //wxWindows includes
@@ -65,9 +64,7 @@
 #include <wx/statbmp.h>
 #include <wx/memory.h>
 
-//libxml2 includes
-#include <libxml/xmlmemory.h>
-#include <libxml/parser.h>
+#include "tinyxml.h"
 
 #ifdef AVI_SUPPORT //< Avi Support compilied in
 //avilib includes

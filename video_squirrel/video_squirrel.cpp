@@ -673,6 +673,7 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 		char *nice_filename = new char[filename.length()];
 		strcpy(nice_filename, filename.mb_str());		
   	
+		using namespace MatroskaUtilsNamespace;
    	MatroskaInfoParser *new_file = new MatroskaInfoParser(nice_filename);
 		new_file->ParseFile();		
 		
@@ -995,20 +996,93 @@ void AppFrame::parseXMLFile(wxString filename)
 	//Tell the user that we are loading this, really big databases may take a while
 	wxBusyInfo wait(_T("Please wait, loading database..."));
 
-	xmlDocPtr doc;
-	xmlNsPtr ns;
-	xmlNodePtr level_0, level_1, level_2, level_3;
 
-	// Build an XML tree from a the file;
-	//DEBUG(_T("Trying to open Doc"));
-	doc = xmlParseFile(filename.mb_str());
-	//DEBUG(_T("Doc opened"));
+	// Build an XML tree from a file;
+	TiXmlDocument xmlDatabase("");
+	xmlDatabase.LoadFile(filename.mb_str());
 	//Check if the XML tree was built
-	if (doc == NULL)
+	if (xmlDatabase.Error())
 		return;
 
+	TiXmlElement *root_element = xmlDatabase.RootElement();
+	if (!strcmp(root_element->Value(), "VideoSquirrelDatabase"))
+	{
+		TiXmlNode *level_0 = root_element->IterateChildren(NULL);
+		while (level_0 != NULL)
+		{
+			if (!strcmp(root_element->Value(), "VideoList")) {
+				//Good this is our document
+				TiXmlNode *level_1 = level_0->IterateChildren(NULL);
+				while (level_1 != NULL)
+				{					
+					if (!stricmp(level_1->Value(), "VideoItem")) {				
+						// Create a new VideoItem
+						VideoItem *newItem = new VideoItem();
+
+						TiXmlNode *level_2 = level_1->IterateChildren(NULL);
+						while (level_2 != NULL)
+						{								
+							if (!stricmp(level_2->Value(), "UID")) {
+								TiXmlNode *level_2_data = level_2->FirstChild();
+								if (level_2_data != NULL) {
+									newItem->UID = atol(level_2_data->Value());
+								}
+							}else if (!stricmp(level_2->Value(), "Author")) {
+								TiXmlNode *level_2_data = level_2->FirstChild();
+								if (level_2_data != NULL) {
+									//this->author = wxString(level_2_data->Value(), wxConvUTF8);
+								}
+							}else if (!stricmp(level_2->Value(), "URL")) {
+								TiXmlNode *level_2_data = level_2->FirstChild();
+								if (level_2_data != NULL) {
+									//this->website = wxString(level_2_data->Value(), wxConvUTF8);
+								}
+							}else if (!stricmp(level_2->Value(), "Version")) {
+								TiXmlNode *level_2_data = level_2->FirstChild();
+								if (level_2_data != NULL) {
+									//this->version = wxString(level_2_data->Value(), wxConvUTF8);
+								}
+							}else if (!stricmp(level_2->Value(), "SupportedFileTypes")) {
+								TiXmlNode *level_3 = level_2->IterateChildren(NULL);
+								while (level_3 != NULL)
+								{
+									if (!stricmp(level_3->Value(), "FileType")) {
+										TiXmlNode *level_4 = level_3->IterateChildren(NULL);										
+										while (level_4 != NULL)
+										{												
+											if (!stricmp(level_4->Value(), "Name")) {
+												TiXmlNode *level_4_data = level_4->FirstChild();
+												if (level_4_data != NULL) {
+													//fileType_Name = wxString(level_4_data->Value(), wxConvUTF8);
+												}
+											}else if (!stricmp(level_4->Value(), "Ext")) {
+												TiXmlNode *level_4_data = level_4->FirstChild();
+												if (level_4_data != NULL) {
+													//fileType_Ext = wxString(level_4_data->Value(), wxConvUTF8);
+												}
+											}
+											level_4 = level_3->IterateChildren(level_4);
+										}
+										//this->supportedFileTypes.Add(fileType_Name + _T("| *.") + fileType_Ext.Trim(false));
+									}
+									level_3 = level_2->IterateChildren(level_3);
+								}	// while (level_3 != NULL)
+							}else if (!stricmp(level_2->Value(), "Option")) {
+
+							}
+							level_2 = level_1->IterateChildren(level_2);
+						} //while (level_2 != NULL)
+					}
+					level_1 = level_0->IterateChildren(level_1);
+				}
+			}
+			level_0 = root_element->IterateChildren(level_0);
+		}
+	}
+				
+
 	//DEBUG(_T("Checking doc type"));
-	level_0 = xmlDocGetRootElement(doc);
+	/*level_0 = xmlDocGetRootElement(doc);
 	// Now check if the
 	if (level_0 == NULL)
 	{
@@ -1283,7 +1357,7 @@ void AppFrame::parseXMLFile(wxString filename)
 		}
 		level_0 = level_0->next;
 	}
-	xmlFreeDoc(doc);
+	xmlFreeDoc(doc);*/
 	return;
 }
 

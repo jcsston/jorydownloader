@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;.\avilib;..\matroska_cdl;..\libmatroska\src;..\libebml\src;&quot;..\libxml2-2.5.4\include&quot;;&quot;..\wxWindows-2.4.1\INCLUDE&quot;;&quot;..\wxWindows-2.4.1\LIB\MSW&quot;"
+				AdditionalIncludeDirectories=".\;.\tinyxml;&quot;..\libxml2-2.5.4\include&quot;;.\avilib;..\MatroskaUtils;..\libmatroska\;..\libebml\;..\libebml\src\platform\win32;&quot;..\wxWindows-2.4.1\INCLUDE&quot;;&quot;..\wxWindows-2.4.1\LIB\MSW&quot;"
 				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;WINVER=0x400;_MT;wxUSE_GUI=1;__WXDEBUG__;WXDEBUG=1"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wxmswd.lib ZLIBD.LIB PNGD.LIB &quot;C:\Visual Studio Projects\matroska\libxml2-2.5.4\win32\dsp\libxml2\libxml2_a.lib&quot;"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wxmswd.lib ZLIBD.LIB PNGD.LIB"
 				OutputFile=".\Debug/video_squirrel.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -220,22 +220,56 @@
 			Name="MatroskaUtils"
 			Filter="">
 			<File
-				RelativePath="..\matroska_cdl\MatroskaTagData.cpp">
+				RelativePath="..\MatroskaUtils\JString.cpp">
 			</File>
 			<File
-				RelativePath="..\matroska_cdl\MatroskaTagData.h">
+				RelativePath="..\MatroskaUtils\JString.h">
 			</File>
 			<File
-				RelativePath="..\matroska_cdl\MatroskaTrackData.cpp">
+				RelativePath="..\MatroskaUtils\MatroskaTagData.cpp">
 			</File>
 			<File
-				RelativePath="..\matroska_cdl\MatroskaTrackData.h">
+				RelativePath="..\MatroskaUtils\MatroskaTagData.h">
 			</File>
 			<File
-				RelativePath="..\matroska_cdl\MatroskaUtils.cpp">
+				RelativePath="..\MatroskaUtils\MatroskaTrackData.cpp">
 			</File>
 			<File
-				RelativePath="..\matroska_cdl\MatroskaUtils.h">
+				RelativePath="..\MatroskaUtils\MatroskaTrackData.h">
+			</File>
+			<File
+				RelativePath="..\MatroskaUtils\MatroskaUtils.cpp">
+			</File>
+			<File
+				RelativePath="..\MatroskaUtils\MatroskaUtils.h">
+			</File>
+			<File
+				RelativePath="..\MatroskaUtils\MatroskaUtilsDebug.h">
+			</File>
+			<File
+				RelativePath="..\MatroskaUtils\MatroskaUtilsReader.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="tinyxml"
+			Filter="">
+			<File
+				RelativePath="tinyxml\tinystr.cpp">
+			</File>
+			<File
+				RelativePath="tinyxml\tinystr.h">
+			</File>
+			<File
+				RelativePath="tinyxml\tinyxml.cpp">
+			</File>
+			<File
+				RelativePath="tinyxml\tinyxml.h">
+			</File>
+			<File
+				RelativePath="tinyxml\tinyxmlerror.cpp">
+			</File>
+			<File
+				RelativePath="tinyxml\tinyxmlparser.cpp">
 			</File>
 		</Filter>
 		<File
