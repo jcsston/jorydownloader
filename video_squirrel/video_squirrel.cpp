@@ -35,8 +35,10 @@
 #define MATROSKA_SUPPORT
 
 #include "video_squirrel.h"
+#include "images.h"
 
 AppFrame *frame;
+
 // program execution "starts" here
 bool MainApp::OnInit()
 {
@@ -151,7 +153,7 @@ const wxSize& size)
 	/* "A" is the name of the application's main icon,
 	 * as set by Dev-C++
 	 */
-	//SetIcon(wxICON(A));
+	SetIcon(wxICON(A));
 
 	//We create the VideoSquirrelConfiguration before creating the controls so we know what settings to use ;)
  	settings = new VideoSquirrelConfiguration();
@@ -254,7 +256,7 @@ const wxSize& size)
 	parseXMLFile(settings->database_filename);
 	// Update the list. not needed as the list updated as items are added to the database
 	// I may add this later for sorting
-	//RefreshVideoList();
+	RefreshVideoList();
 
 	// Create a statusbar
 	CreateStatusBar(1);
@@ -271,10 +273,10 @@ SearchFrame::SearchFrame(wxWindow *parent, const wxString &title)
 	text_ctrl_search_string_backup = text_ctrl_search_string;
  	//DEBUG(this->text_ctrl_search_string->GetClassInfo()->GetClassName());
  	//DEBUG(this->text_ctrl_search_string->GetClassInfo()->GetBaseClassName1());
- 	DEBUG(wxString::Format(_T("Points to %i"), text_ctrl_search_string));
- 	DEBUG(wxString::Format(_T("Points to %i"), text_ctrl_search_string_backup));
- 	DEBUG(wxString::Format(_T("Location Pointer %i"), &text_ctrl_search_string));
- 	DEBUG(wxString::Format(_T("Location Pointer %i"), &text_ctrl_search_string_backup));
+ 	//DEBUG(wxString::Format(_T("Points to %i"), text_ctrl_search_string));
+ 	//DEBUG(wxString::Format(_T("Points to %i"), text_ctrl_search_string_backup));
+ 	//DEBUG(wxString::Format(_T("Location Pointer %i"), &text_ctrl_search_string));
+ 	//DEBUG(wxString::Format(_T("Location Pointer %i"), &text_ctrl_search_string_backup));
 
 	button_start_search = new wxButton(panel_1, SearchFrame_SearchButton, _T("&Search"));
 
@@ -314,16 +316,16 @@ void SearchFrame::OnSearchFrame_SearchButton(wxCommandEvent &event)
  	//DEBUG(frame->search_box->text_ctrl_search_string_backup->GetClassInfo()->GetBaseClassName1());
 
 
- 	DEBUG(wxString::Format(_T("Points to %i"), frame->search_box->text_ctrl_search_string));
- 	DEBUG(wxString::Format(_T("Points to %i"), frame->search_box->text_ctrl_search_string_backup));
- 	DEBUG(wxString::Format(_T("Location Pointer %i"), &frame->search_box->text_ctrl_search_string));
- 	DEBUG(wxString::Format(_T("Location Pointer %i"), &frame->search_box->text_ctrl_search_string_backup));
+ 	//DEBUG(wxString::Format(_T("Points to %i"), frame->search_box->text_ctrl_search_string));
+ 	//DEBUG(wxString::Format(_T("Points to %i"), frame->search_box->text_ctrl_search_string_backup));
+ 	//DEBUG(wxString::Format(_T("Location Pointer %i"), &frame->search_box->text_ctrl_search_string));
+ 	//DEBUG(wxString::Format(_T("Location Pointer %i"), &frame->search_box->text_ctrl_search_string_backup));
 	
  	wxString search_string = text_ctrl_search_string->GetLineText(0);
 	wxString html_report;
 	VideoItem *current_item = NULL;
 	
-	wxArrayLong found_items;
+	std::vector<long> found_items;
 	DEBUG(_T("Searching"));
 	for (size_t d = 0; d < frame->m_Database.size(); d++)
 	{
@@ -334,7 +336,7 @@ void SearchFrame::OnSearchFrame_SearchButton(wxCommandEvent &event)
 		{
 			//We found it :)
 			DEBUG(_T("Found matching item"));
-			found_items.Add(current_item->UID);
+			found_items.push_back(current_item->UID);
 		}
 	}	
 	//We are done searching, so now we generate a search results page
@@ -343,15 +345,15 @@ void SearchFrame::OnSearchFrame_SearchButton(wxCommandEvent &event)
 	html_report += _T("<h2><img src=\"squirrel_search.png\">Video Squirrel Search Results</h2>");
 	html_report += _T("<p><ul>");
 	DEBUG(_T("Creating HTML search report list"));
-	if (found_items.GetCount() > 0)
+	if (found_items.size() > 0)
 	{
 		int i = 0;
-		for (i = 0; i <= found_items.GetCount(); i++)
+		for (i = 0; i < found_items.size(); i++)
 		{
 			DEBUG(_T("HTML search report list adding item"));
-			html_report += wxString::Format(_T("<li><a href=\"%i\">Title: "), found_items.Index(i));
+			html_report += wxString::Format(_T("<li><a href=\"#%i\">Title: "), found_items.at(i));
 			
-			current_item = frame->FindVideoItemByUID(found_items.Index(i));
+			current_item = frame->FindVideoItemByUID(found_items.at(i));
 			if (current_item != NULL)
 			{
 				html_report += current_item->title;
@@ -366,27 +368,53 @@ void SearchFrame::OnSearchFrame_SearchButton(wxCommandEvent &event)
 		html_report += _T("</ul></p><hr>");
 
 		DEBUG(_T("Creating HTML search report item tables"));
-		for (i = 0; i <= found_items.GetCount(); i++)
+		for (i = 0; i < found_items.size(); i++)
 		{
 			DEBUG(_T("HTML search report list adding item table"));
-			html_report += wxString::Format(_T("<a name=\"%i\"><br>"), found_items.Index(i));
+			html_report += wxString::Format(_T("<a name=\"%i\"><br>"), found_items.at(i));
 			html_report += _T("<table width=\"100%\" border=\"1\" bgcolor=\"#FFFFCC\">");
 
-			current_item = frame->FindVideoItemByUID(found_items.Index(i));
+			current_item = frame->FindVideoItemByUID(found_items.at(i));
 			if (current_item != NULL)
 			{
 				html_report += _T("<tr><td>Title: ");
 				html_report += current_item->title;
 				html_report += _T("</td><td>CD: ");
-				//on CD named
-				html_report += _T("</td><td>Filename: ");
+				html_report += current_item->cd;
+				html_report += _T("</td></tr><tr><td>Filename: ");
 				html_report += current_item->filename;
-				html_report += _T("</td></tr><tr><td> Video Info:");
-				//compression, framesize, bitrate
-				html_report += _T("</td><td>First Audio Track:");
-				//compression, bitrate
-				html_report += _T("</td><td ALIGN=\"center\" VALIGN=\"bottom\">");
-				html_report += wxString::Format(_T("<viewbutton name=\"View\" index=\"%i\">"), found_items.Index(i));
+				html_report += _T("</td>");				
+
+				html_report += _T("<td>");
+				html_report += _T("Filesize: ") + wxString::Format(_T("%.1f MB"), (float)current_item->file_size/1024/1024);
+				html_report += _T("<br>Duration: ") + current_item->video.GetNiceDuration();
+				html_report += _T("</td>");
+
+				html_report += _T("</tr><tr>");
+
+				html_report += _T("<td>Video Info:<br>");				
+				
+
+				html_report += current_item->video.compressor
+					+ wxString::Format(_T(" %i x %i"), current_item->video.x, current_item->video.y)
+					+ _T(" ")
+					+ wxString::Format(_T("%.1f fps"), current_item->video.frame_rate)
+					+ _T(" ")
+					+ wxString::Format(_T("%i kbit/s"), current_item->video.avg_bitrate);
+
+				html_report += _T("</td><td>");
+				if (current_item->audio.size() > 0) {
+					html_report += _T("First Audio Track:<br>");
+					html_report += current_item->audio[0].compressor 
+						+ _T(" ")
+						+ wxString::Format(_T("%i channels"), current_item->audio[0].channels)
+						+ _T(" ")
+						+ wxString::Format(_T("%.2f Hz"), (float)current_item->audio[0].sample_rate/1000)
+						+ _T(" ")
+						+ wxString::Format(_T("%i kbit/s"), current_item->audio[0].avg_bitrate);
+				}
+				//html_report += _T("</td><td ALIGN=\"center\" VALIGN=\"bottom\">");
+				//html_report += wxString::Format(_T("<viewbutton name=\"View\" index=\"%i\">"), found_items.at(i));
 				html_report += _T("</td></tr>");
 				DEBUG(_T("HTML search report list item table added"));
 			}
@@ -394,7 +422,7 @@ void SearchFrame::OnSearchFrame_SearchButton(wxCommandEvent &event)
 			{
 				html_report += _T("<tr><td>Unable to get Record!</td></tr>");
 			}
-			html_report += _T("</table>");
+			html_report += _T("</table><br>");
 		}
 	}
 	else
@@ -410,7 +438,7 @@ void SearchFrame::OnSearchFrame_SearchButton(wxCommandEvent &event)
 	
 	DEBUG(html_report);	
 	
-	MyHTMLDialog *search_results = new MyHTMLDialog(NULL, html_report, _T("Search Results"), wxSize(425,375));
+	MyHTMLDialog *search_results = new MyHTMLDialog(NULL, html_report, _T("Search Results"), wxSize(525,400));
 	search_results->Show();	
 	
 	DEBUG(_T("SearchFrame::OnSearchFrame_SearchButton exiting"));
@@ -432,7 +460,7 @@ void AppFrame::OnOpen(wxCommandEvent &WXUNUSED(event))
 }
 
 
-void AppFrame::OnAdd(wxCommandEvent &WXUNUSED(event))
+void AppFrame::OnAdd(wxCommandEvent &event)
 {
 	DEBUG(_T("AppFrame::OnAdd called"));
 	wxFileDialog dialog (this, _T("Locate input files"), _T(""), _T(""), _T("All Files (*.*)|*.*"), wxOPEN);
@@ -446,7 +474,7 @@ void AppFrame::OnAdd(wxCommandEvent &WXUNUSED(event))
 }
 
 
-void AppFrame::OnAddFolder(wxCommandEvent &WXUNUSED(event))
+void AppFrame::OnAddFolder(wxCommandEvent &event)
 {
 	DEBUG(_T("AppFrame::OnAddFolder called"));
 	wxDirDialog dialog(this, _T("Locate folder or drive"), _T(""), wxOPEN);
@@ -472,9 +500,11 @@ void AppFrame::AddFolderToDatabase(wxString &folder, wxString group_under)
 	int num_of_files = 0;
 
 	//Setup the file types to scan for
-	file_types.Alloc(5);														//< This should improve the speed a tiny bit
 	file_types.Add(_T("*.avi"));
 	file_types.Add(_T("*.mpg"));
+	file_types.Add(_T("*.mpeg"));
+	file_types.Add(_T("*.m1v"));
+	file_types.Add(_T("*.m2v"));
 	file_types.Add(_T("*.rm"));
 	file_types.Add(_T("*.rmvb"));
 	file_types.Add(_T("*.mkv"));
@@ -603,8 +633,14 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 					new_item.video.frame_rate = current_stream->frame_rate;
 					new_item.video.duration = current_stream->duration / 1000;
 
-					new_item.video.compressor = wxString((char *)((char *)current_stream->video_header->fcc1)[0], wxConvUTF8) + wxString((char *)((char *)current_stream->video_header->fcc1)[1], wxConvUTF8) + wxString((char *)((char *)current_stream->video_header->fcc2)[0], wxConvUTF8) + wxString((char *)((char *)current_stream->video_header->fcc2)[1], wxConvUTF8);
-					new_item.video.avg_bitrate = current_stream->avg_bit_rate / 1000;
+					char fourcc[10];
+					memset(fourcc, 0, 9);
+					memcpy(fourcc, &current_stream->video_header->fcc1, 4);
+					memcpy(fourcc+4, &current_stream->video_header->fcc2, 4);
+					new_item.video.compressor = wxString(fourcc, wxConvUTF8);
+					new_item.video.avg_bitrate = current_stream->avg_bit_rate / 1024;
+					new_item.video.x = current_stream->video_header->w;
+					new_item.video.y = current_stream->video_header->h;
 				}
 				else if (!strcmpi(current_stream->stream_name, "Audio Stream"))
 				{
@@ -685,6 +721,7 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 			return;
 		}
 		
+		new_item.UID = CreateUID();
 		new_item.title = wxString(new_file.GetTitle().GetUTF8().c_str(), wxConvUTF8);
 		if (new_item.title.length() == 0)
 			new_item.title = wxFileNameFromPath(filename).BeforeLast('.');
@@ -722,6 +759,7 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 			}
 		}
 
+		new_item.video.duration = new_file.GetGlobalTrackInfo()->GetDuration();
 		new_item.file_size = new_file.file_size;
 		new_item.video.avg_bitrate = (int64)new_file.file_size / 1024 / new_file.GetGlobalTrackInfo()->GetDuration() * 8;
 		
@@ -747,9 +785,9 @@ void AppFrame::OnMenuSearchDatabase(wxCommandEvent &event)
 {
 	DEBUG(_T("AppFrame::OnMenuSearchDatabase called"));
 	//Time to SEARCH :D
-	wxString search_text = wxGetTextFromUser(_T("Enter the text to search for"));
-	//search_box = new SearchFrame(this, _T("Search Database"));
-	//search_box->Show(TRUE);
+	//wxString search_text = wxGetTextFromUser(_T("Enter the text to search for"));
+	SearchFrame *search_box = new SearchFrame(this, _T("Search Database"));
+	search_box->Show(TRUE);
 };
 
 int AppFrame::AddVideoItemToDatabase(VideoItem *new_item)
@@ -1041,16 +1079,22 @@ void AppFrame::parseXMLFile(wxString filename)
 	TiXmlDocument xmlDatabase("");
 	xmlDatabase.LoadFile(filename.mb_str());
 	//Check if the XML tree was built
-	if (xmlDatabase.Error())
+	if (xmlDatabase.Error()) {
+		wxLogError(_T("TinyXML returned error code %i, \"%S\""), xmlDatabase.ErrorId(), xmlDatabase.ErrorDesc());
 		return;
+	}
 
 	TiXmlElement *root_element = xmlDatabase.RootElement();
-	if (!strcmp(root_element->Value(), "VideoSquirrelDatabase"))
+	if (root_element == NULL) {
+		wxLogError(_T("TinyXML, failed to get root element, bad xml file?"));
+		return;
+		}
+	if (!stricmp(root_element->Value(), "VideoSquirrelDatabase"))
 	{
 		TiXmlNode *level_0 = root_element->IterateChildren(NULL);
 		while (level_0 != NULL)
 		{
-			if (!strcmp(root_element->Value(), "VideoList")) {
+			if (!stricmp(level_0->Value(), "VideoList")) {
 				//Good this is our document
 				TiXmlNode *level_1 = level_0->IterateChildren(NULL);
 				while (level_1 != NULL)
@@ -1135,7 +1179,7 @@ void AppFrame::parseXMLFile(wxString filename)
 									level_3 = level_2->IterateChildren(level_3);
 								}	// while (level_3 != NULL)
 
-							}else if (!stricmp(level_2->Value(), "AudioData")) {
+							}else if (!stricmp(level_2->Value(), "AudioTrack")) {
 								audioData newAudioData;
 								TiXmlNode *level_3 = level_2->IterateChildren(NULL);
 								while (level_3 != NULL)
@@ -1173,6 +1217,7 @@ void AppFrame::parseXMLFile(wxString filename)
 							}
 							level_2 = level_1->IterateChildren(level_2);
 						} //while (level_2 != NULL)
+						m_Database.push_back(newItem);
 					}
 					level_1 = level_0->IterateChildren(level_1);
 				}
@@ -1195,7 +1240,7 @@ bool AppFrame::SaveDatabase()
 	if (output_file_stream.Ok())
 	{
 		//It opened ok, so now we bind it to a text output stream
-		wxTextOutputStream xml_output_stream(output_file_stream, wxEOL_DOS);
+		wxTextOutputStream xml_output_stream(output_file_stream);
 		//A wxString buffer for composing larger lines
 		wxString xml_buffer;
 		xml_buffer = _T("<?xml version=\"1.0\"?>\n");
@@ -1204,7 +1249,7 @@ bool AppFrame::SaveDatabase()
 		xml_output_stream.WriteString(xml_buffer);
 		xml_buffer = _T("<!--Written on ");
 		xml_buffer += wxDateTime::Now().Format(_T("%x at %X"));
-		xml_buffer += _T("running on ") + wxGetOsDescription() + _T("-->\n");
+		xml_buffer += _T(" running on ") + wxGetOsDescription() + _T("-->\n");
 		xml_output_stream.WriteString(xml_buffer);
 
 		xml_buffer = _T("<VideoSquirrelDatabase>\n");
@@ -1225,17 +1270,17 @@ bool AppFrame::SaveDatabase()
 			xml_output_stream.WriteString(xml_buffer);
 
 			xml_buffer = _T("\t\t\t<CD>");
-			xml_buffer += current_item->cd;
+			xml_buffer += wxXMLTextOutputStream::MakeXMLNiceString(current_item->cd);
 			xml_buffer += _T("</CD>\n");
 			xml_output_stream.WriteString(xml_buffer);
 
 			xml_buffer = _T("\t\t\t<Title>");
-			xml_buffer += current_item->title;
+			xml_buffer += wxXMLTextOutputStream::MakeXMLNiceString(current_item->title);
 			xml_buffer += _T("</Title>\n");
 			xml_output_stream.WriteString(xml_buffer);
 
 			xml_buffer = _T("\t\t\t<Filename>");
-			xml_buffer += current_item->filename;
+			xml_buffer += wxXMLTextOutputStream::MakeXMLNiceString(current_item->filename);
 			xml_buffer += _T("</Filename>\n");
 			xml_output_stream.WriteString(xml_buffer);
 
@@ -1249,7 +1294,7 @@ bool AppFrame::SaveDatabase()
 
 			xml_buffer = _T("\t\t\t\t<VideoBitrate>");
 			xml_buffer += wxString().Format(_T("%i"), current_item->video.avg_bitrate);
-			xml_buffer += _T("</Bitrate>\n");
+			xml_buffer += _T("</VideoBitrate>\n");
 			xml_output_stream.WriteString(xml_buffer);
 
 			xml_buffer = _T("\t\t\t\t<PixelWidth>");
@@ -1273,7 +1318,7 @@ bool AppFrame::SaveDatabase()
 			xml_output_stream.WriteString(xml_buffer);
 
 			xml_buffer = _T("\t\t\t\t<VideoCompressor>");
-			xml_buffer += current_item->video.compressor;
+			xml_buffer += wxXMLTextOutputStream::MakeXMLNiceString(current_item->video.compressor);
 			xml_buffer += _T("</VideoCompressor>\n");
 			xml_output_stream.WriteString(xml_buffer);
 
@@ -1286,7 +1331,7 @@ bool AppFrame::SaveDatabase()
 				xml_buffer = _T("\t\t\t<AudioTrack>\n");
 				xml_output_stream.WriteString(xml_buffer);
 				xml_buffer = _T("\t\t\t\t<AudioCompressor>");
-				xml_buffer += current_item->audio[audio_track_no].compressor;
+				xml_buffer += wxXMLTextOutputStream::MakeXMLNiceString(current_item->audio[audio_track_no].compressor);
 				xml_buffer += _T("</AudioCompressor>\n");
 				xml_output_stream.WriteString(xml_buffer);
 
@@ -1301,14 +1346,16 @@ bool AppFrame::SaveDatabase()
 				xml_output_stream.WriteString(xml_buffer);
 
 				xml_buffer = _T("\t\t\t\t<AudioSampleRate>");
-				xml_buffer += wxString().Format(_T("%f"), current_item->audio[audio_track_no].sample_rate);
+				xml_buffer += wxString().Format(_T("%i"), current_item->audio[audio_track_no].sample_rate);
 				xml_buffer += _T("</AudioSampleRate>\n");
 				xml_output_stream.WriteString(xml_buffer);
+				
+				xml_buffer = _T("\t\t\t</AudioTrack>\n");
+				xml_output_stream.WriteString(xml_buffer);
 			}
-			xml_output_stream.WriteString(xml_buffer);
 
 			xml_buffer = _T("\t\t\t<Comment>");
-			xml_buffer += current_item->comment_text;
+			xml_buffer += wxXMLTextOutputStream::MakeXMLNiceString(current_item->comment_text);
 			xml_buffer += _T("</Comment>\n");
 			xml_output_stream.WriteString(xml_buffer);
 			
@@ -1321,8 +1368,8 @@ bool AppFrame::SaveDatabase()
 		xml_output_stream.WriteString(xml_buffer);		
 	}
 	else
-	{
-		wxMessageDialog not_saved((wxWindow *)this, _T("Unable to write database file\nExit with database unsaved?"), _T("Database not saved"), wxYES_NO);
+	{		
+		wxMessageDialog not_saved((wxWindow *)this, _T("Unable to write database file\nContinue?"), _T("Database not saved"), wxYES_NO);
 		SetStatusText(_T("Unable to write database file"));
 		if (not_saved.ShowModal() == wxID_NO)
 		{
@@ -1713,5 +1760,57 @@ VideoSquirrelConfiguration::VideoSquirrelConfiguration()
 VideoSquirrelConfiguration::~VideoSquirrelConfiguration()
 {
 	DEBUG(_T("VideoSquirrelConfiguration::~VideoSquirrelConfiguration called"));
+
+	pConfig->Write(_T("/DatabaseFilename"), database_filename);		 
+	pConfig->Write(_T("/HTML Item View Template"), html_item_view_template);
+  pConfig->Write(_T("/HTML Item View Audio Track Template"), html_item_view_template_audio);
+
 	delete pConfig;
+};
+
+wxString wxXMLTextOutputStream::MakeXMLNiceString(const wxString &input) {	
+	wxString outString;
+	size_t i = 0;
+
+	while(i < input.length())
+	{
+		wxChar c = input[i];
+
+		if (c == _T('&') 
+			&& i < (input.length() - 2 )
+			&& input[i+1] == _T('#')
+			&& input[i+2] == _T('x'))
+		{
+			// Hexadecimal character reference.
+			// Pass through unchanged.
+			// &#xA9;	-- copyright symbol, for example.
+			while (i < input.length()) {
+				outString.append(input.c_str() + i, 1);
+				++i;
+				if (input[i] == _T(';'))
+					break;
+			}
+		}	else if ( c == _T('&') ) {
+			outString.append(_T("&amp;"));
+			++i;
+		}	else if ( c == _T('<') ) {
+			outString.append(_T("&lt;"));
+			++i;
+		}	else if ( c == _T('>') ) {
+			outString.append(_T("&gt;"));
+			++i;
+		}	else if ( c == _T('\"') )	{
+			outString.append(_T("&quot;"));
+			++i;
+		}	else if ( c == _T('\'') )	{
+			outString.append(_T("&apos;"));
+			++i;
+		} else {
+			wxChar realc = c;
+			outString.append(1, realc);
+			++i;
+		}
+	}
+
+	return outString;
 };

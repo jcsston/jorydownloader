@@ -92,6 +92,21 @@ extern "C" {
 #include "MatroskaUtils.h"
 #endif
 
+class wxXMLTextOutputStream : public wxTextOutputStream
+{
+public:
+	wxXMLTextOutputStream(wxFileOutputStream& output)
+	: wxTextOutputStream(output, wxEOL_DOS)
+	{
+
+	}
+	virtual void WriteString(const wxString& str)
+	{
+		wxTextOutputStream::WriteString(MakeXMLNiceString(str));
+	}
+	static wxString MakeXMLNiceString(const wxString &input);
+};
+
 class audioData
 {
 	public:
@@ -160,56 +175,66 @@ class MainApp : public wxApp
 
 class DnDFile : public wxFileDropTarget
 {
-  public:
-    DnDFile(wxListCtrl *pOwner) { m_pOwner = pOwner; }
+public:
+  DnDFile(wxListCtrl *pOwner) { m_pOwner = pOwner; }
 
-    virtual bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames);
+  virtual bool OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames);
 
-  private:
-    wxListCtrl *m_pOwner;
+private:
+  wxListCtrl *m_pOwner;
 };
 
 class MyHTMLDialog : public wxFrame
 {
-	public:
-		MyHTMLDialog(wxWindow *parent_frame, const wxString &html_code, const wxString &title = _T("HTML Dialog"), const wxSize &size = wxSize(300, 300));
+public:
+	MyHTMLDialog(wxWindow *parent_frame, const wxString &html_code, const wxString &title = _T("HTML Dialog"), const wxSize &size = wxSize(300, 300));
 
-		//HTML Tag functions
-		void OnHTMLClose(wxCommandEvent &event);
+	//HTML Tag functions
+	void OnHTMLClose(wxCommandEvent &event);
 
+private:
+	// any class wishing to process wxWindows events must use this macro
+	DECLARE_EVENT_TABLE()
 };
 
 class SearchFrame : public wxFrame
 {
-	public:
-		SearchFrame(wxWindow *parent, const wxString &title);
+public:
+	SearchFrame(wxWindow *parent, const wxString &title);
 
-		void OnSearchFrame_SearchButton(wxCommandEvent &event);  
+	void OnSearchFrame_SearchButton(wxCommandEvent &event);  
 
-		private:
-  	wxTextCtrl *text_ctrl_search_string;
-  	wxTextCtrl *text_ctrl_search_string_backup;
-    wxButton *button_start_search;
+protected:
+	wxTextCtrl *text_ctrl_search_string;
+	wxTextCtrl *text_ctrl_search_string_backup;
+	wxButton *button_start_search;
+
+private:
+	// any class wishing to process wxWindows events must use this macro
+	DECLARE_EVENT_TABLE()
 };
 
 class OptionsFrame: public wxFrame {
 public:
-    // begin wxGlade: OptionsFrame::ids
-    // end wxGlade
+  // begin wxGlade: OptionsFrame::ids
+  // end wxGlade
 
-    OptionsFrame(wxWindow* parent, int id = -1, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_FRAME_STYLE);
-		void OnTreeSelectionChange(wxCommandEvent &event);
-		
+  OptionsFrame(wxWindow* parent, int id = -1, const wxPoint& pos=wxDefaultPosition, const wxSize& size=wxDefaultSize, long style=wxDEFAULT_FRAME_STYLE);
+	void OnTreeSelectionChange(wxCommandEvent &event);
+	
 protected:
-    // begin wxGlade: OptionsFrame::attributes
-    wxTreeCtrl* tree_ctrl_options;
-    wxPanel* window_2_pane_1;
-    wxStaticText* label_option_name;
-    wxObject* current_option_object;
-    wxStaticText* label_option_info;
-    wxPanel* window_2_pane_2;
-    wxSplitterWindow* window_2;
-    // end wxGlade
+  // begin wxGlade: OptionsFrame::attributes
+  wxTreeCtrl* tree_ctrl_options;
+  wxPanel* window_2_pane_1;
+  wxStaticText* label_option_name;
+  wxObject* current_option_object;
+  wxStaticText* label_option_info;
+  wxPanel* window_2_pane_2;
+  wxSplitterWindow* window_2;
+  // end wxGlade
+private:
+	// any class wishing to process wxWindows events must use this macro
+	DECLARE_EVENT_TABLE()
 };
 
 class AppFrame : public wxFrame
@@ -329,13 +354,22 @@ BEGIN_EVENT_TABLE(AppFrame, wxFrame)
 	EVT_MENU(MainApp_AboutHelp, AppFrame::OnAboutHelp)
 	EVT_LIST_ITEM_SELECTED(MainApp_DatabaseListView, AppFrame::OnListViewItemSelected)
 	EVT_CLOSE(AppFrame::CloseFrame)
-
-	EVT_BUTTON(HTMLTag_CloseButton, MyHTMLDialog::OnHTMLClose)
-	EVT_BUTTON(HTMLTag_ViewButton, AppFrame::OnHTMLViewItem)	
-	EVT_BUTTON(SearchFrame_SearchButton, SearchFrame::OnSearchFrame_SearchButton)		
 	
+	EVT_BUTTON(HTMLTag_ViewButton, AppFrame::OnHTMLViewItem)		
+END_EVENT_TABLE()
+
+BEGIN_EVENT_TABLE(MyHTMLDialog, wxFrame)
+	EVT_BUTTON(HTMLTag_CloseButton, MyHTMLDialog::OnHTMLClose)
+END_EVENT_TABLE()
+
+BEGIN_EVENT_TABLE(SearchFrame, wxFrame)
+	EVT_BUTTON(SearchFrame_SearchButton, SearchFrame::OnSearchFrame_SearchButton)		
+END_EVENT_TABLE()
+
+BEGIN_EVENT_TABLE(OptionsFrame, wxFrame)
 	EVT_TREE_SEL_CHANGED(OptionsFrame_Tree, OptionsFrame::OnTreeSelectionChange)
 END_EVENT_TABLE()
+
 
 /*****************************************************************
  * Create a new application object: this macro will allow
