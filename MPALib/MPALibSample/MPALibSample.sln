@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MPALibSample", "MPALibSample.csproj", "{3A70C2D8-52D6-45F9-B1F8-A86FF794613D}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MPALib", "..\MPALib.csproj", "{F224ECC9-EFFF-4DAE-BB20-C189912688FD}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{3A70C2D8-52D6-45F9-B1F8-A86FF794613D}.Debug.ActiveCfg = Debug|.NET
+		{3A70C2D8-52D6-45F9-B1F8-A86FF794613D}.Debug.Build.0 = Debug|.NET
+		{3A70C2D8-52D6-45F9-B1F8-A86FF794613D}.Release.ActiveCfg = Release|.NET
+		{3A70C2D8-52D6-45F9-B1F8-A86FF794613D}.Release.Build.0 = Release|.NET
+		{F224ECC9-EFFF-4DAE-BB20-C189912688FD}.Debug.ActiveCfg = Debug|.NET
+		{F224ECC9-EFFF-4DAE-BB20-C189912688FD}.Debug.Build.0 = Debug|.NET
+		{F224ECC9-EFFF-4DAE-BB20-C189912688FD}.Release.ActiveCfg = Release|.NET
+		{F224ECC9-EFFF-4DAE-BB20-C189912688FD}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
