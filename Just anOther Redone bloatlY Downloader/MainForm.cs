@@ -860,7 +860,7 @@ public class theDownloadList
 			this.master_file_list.Add(another_file_to_download);
 			this.changed = true;
 		} catch(Exception exp) {
-			//
+			
 		}		
 	}
 
@@ -882,21 +882,27 @@ public class theDownloadList
 	public void DownloadQueueMonitor() {
 		while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Background) {
 			if ((this.OpenDownloadOptions.download_queue_limit > this.downloads_in_progress) && (download_queue.Count > 0)) {
-				//Get the UID
-				Int32 UID_to_download = (Int32)download_queue[0];
-				
-				//Create a new download window
-				WindowsApplication1.Progress file_download = new WindowsApplication1.Progress();										
-				file_download.Show();
-				int download_master_index = this.FindUID((Int32)UID_to_download);
-				file_download.DownloadFile(this.GetDownloadListItem(download_master_index));
-
+				Thread real_download_file = new Thread(new ThreadStart(this.DownloadFile));
+				real_download_file.Start();
+				Thread.Sleep(1000);
 				//Remove the UID from the queue
 				download_queue.RemoveAt(0);
 			}
-			Thread.Sleep(800);
+			Thread.Sleep(500);
 		}
 	}
+
+	public void DownloadFile() {
+		//Get the UID
+		Int32 UID_to_download = (Int32)download_queue[0];
+				
+		//Create a new download window
+		WindowsApplication1.Progress file_download = new WindowsApplication1.Progress();										
+		file_download.Show();
+		int download_master_index = this.FindUID((Int32)UID_to_download);
+		file_download.DownloadFile(this.GetDownloadListItem(download_master_index));
+	}
+
 	public Int32 CreateUID() {
 		Random uid_creator = new Random();		
 		Int32 FileUID = uid_creator.Next(Int32.MaxValue); 

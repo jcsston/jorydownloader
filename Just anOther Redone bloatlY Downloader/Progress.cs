@@ -225,6 +225,7 @@ namespace WindowsApplication1
 		}
 
 		public void DownloadThread(){
+			try {
 			aDownloadItem download_item = (aDownloadItem)this.Tag;
 			labelURL.Text = download_item.RemoteURL;
 			labelFile.Text = download_item.LocalFilename;
@@ -302,6 +303,9 @@ namespace WindowsApplication1
 			ResponseStream.Close();         
 			FileWriter.Close();
 			this.Close();
+			} catch(Exception exp) {
+			
+			}
 		}
 
 		private void FadeInProgressWindow() {
