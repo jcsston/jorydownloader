@@ -89,7 +89,7 @@ int RealMedia_Reader::Read(const char *filename, bool bPreReadDataPackets)
 		while (keep_looping)
 		{
 			//First we store the current file position
-			unsigned int file_pos = ftell(real_media);
+			long file_pos = ftell(real_media);
 			//Read the header
 			//First we read the block id
 			char block_id[5];
@@ -560,7 +560,7 @@ int RealMedia_Reader::Read(const char *filename, bool bPreReadDataPackets)
 				{
 					this->packet_array = new RealMedia_Packet[data_chunk.num_packets];
 					//Now we read all the packets
-					for (int current_packet_no = 0; current_packet_no < data_chunk.num_packets; current_packet_no++)
+					for (unsigned int current_packet_no = 0; current_packet_no < data_chunk.num_packets; current_packet_no++)
 					{
 						RealMedia_Media_Packet_Header *new_packet = new RealMedia_Media_Packet_Header();
 						memset(new_packet, 0, sizeof(*new_packet));

@@ -68,11 +68,11 @@
 
 #ifdef AVI_SUPPORT //< Avi Support compilied in
 //avilib includes
-#ifdef _MSC_VER
+#ifdef __cplusplus
 extern "C" {
 #endif
 #include "avilib/avilib.h"
-#ifdef _MSC_VER
+#ifdef __cplusplus
 };
 #endif
 #endif
@@ -97,12 +97,12 @@ class audioData
 	public:
 		audioData();
 		void SetNiceCompression(int format_tag);
+		const char *GetWaveFormatName(WORD formatTag);
 		
-		wxString compression;
-		unsigned int channels;
-		unsigned short bit_depth;
-		float sample_rate;
-		unsigned int avg_bitrate;
+		wxString compressor;
+		int channels;
+		long sample_rate;
+		int avg_bitrate;
 };
 
 class videoData
@@ -112,15 +112,13 @@ class videoData
 		wxString GetNiceDuration();
 		
 		wxString compressor;
-		wxString compressor2;
-		unsigned int x;
-		unsigned int y;
-		unsigned int display_x;
-		unsigned int display_y;
+		int x;
+		int y;
+		int display_x;
+		int display_y;
 		float frame_rate;
-		unsigned long duration;
-		unsigned int color_depth;
-		unsigned int avg_bitrate;
+		long duration;
+		int avg_bitrate;
 };
 
 class VideoItem
@@ -134,15 +132,11 @@ class VideoItem
   	wxString title;
 		wxString filename;
 		wxString cd;
-		unsigned long file_size;
-		audioData *audio[255];
+		long file_size;
+		std::vector<audioData> audio;
 		videoData video;
 		wxString comment_text;
-		VideoItem *next_item;
 };
-
-WX_DECLARE_LIST(VideoItem, VideoItemList);
-WX_DEFINE_LIST(VideoItemList);
 
 class VideoSquirrelConfiguration
 {
@@ -227,6 +221,8 @@ class AppFrame : public wxFrame
 		void OnOpen(wxCommandEvent &event);
 		void OnAdd(wxCommandEvent &event);
 		void OnAddFolder(wxCommandEvent &event);
+		void OnMenuOpenDatabase(wxCommandEvent &event);
+		void OnMenuSaveDatabase(wxCommandEvent &event);
 		void OnMenuGenerateHTMLListing(wxCommandEvent &event);
   	void OnMenuSearchDatabase(wxCommandEvent &event);
 		void OnQuit(wxCommandEvent &event);
@@ -247,9 +243,11 @@ class AppFrame : public wxFrame
 		void AddFolderToDatabase(wxString &folder, wxString group_under = wxEmptyString);
 		void AddFileToDatabase(wxString &filename, wxString group_under = wxEmptyString);
 		int AddVideoItemToDatabase(VideoItem *new_item);
+		int AddVideoItemToDatabase(VideoItem &new_item);
 		long CreateUID();
 		void parseXMLFile(wxString filename);
 		bool SaveDatabase();
+		VideoItem *FindVideoItemByUID(long uid);
 		
 		SearchFrame *search_box;
 		OptionsFrame *new_options;
@@ -276,7 +274,7 @@ class AppFrame : public wxFrame
    	//The configuration object
    	VideoSquirrelConfiguration *settings;
 				
-		VideoItemList *the_database;
+		std::vector<VideoItem> m_Database;
 	private:
 		// any class wishing to process wxWindows events must use this macro
 		DECLARE_EVENT_TABLE()
@@ -288,6 +286,8 @@ enum
 	MainApp_Quit = 1,
 	MainApp_Open,
 	MainApp_AddItem,
+	MainApp_MenuOpenDatabase,
+	MainApp_MenuSaveDatabase,
 	MainApp_MenuGenerateHTMLListing,
 	MainApp_MenuSearchDatabase,
 	MainApp_AddFolder,
@@ -319,6 +319,8 @@ BEGIN_EVENT_TABLE(AppFrame, wxFrame)
 	EVT_MENU(MainApp_Open,  AppFrame::OnOpen)
 	EVT_MENU(MainApp_AddItem,  AppFrame::OnAdd)
 	EVT_MENU(MainApp_AddFolder, AppFrame::OnAddFolder)
+	EVT_MENU(MainApp_MenuOpenDatabase, AppFrame::OnMenuOpenDatabase)
+	EVT_MENU(MainApp_MenuSaveDatabase, AppFrame::OnMenuSaveDatabase)
 	EVT_MENU(MainApp_MenuGenerateHTMLListing, AppFrame::OnMenuGenerateHTMLListing)
 	EVT_MENU(MainApp_MenuSearchDatabase, AppFrame::OnMenuSearchDatabase)	
 	EVT_MENU(MainApp_Quit, AppFrame::OnQuit)

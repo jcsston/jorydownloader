@@ -269,9 +269,9 @@ struct RealMedia_Media_Packet_Header
 struct RealMedia_Packet
 {
 	/// The start of the raw packet data in the file
-	UINT16 packet_start_pos;
+	UINT32 packet_start_pos;
 	/// The length of the raw packet data in bytes
-	UINT16 packet_data_length;
+	UINT32 packet_data_length;
 	
 	/// The 16-bit alias used to associate data packets with their associated Media Properties Header
   UINT16 stream_number;
