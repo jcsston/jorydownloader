@@ -82,6 +82,11 @@
                     AssemblyName = "System.Xml"
                     HintPath = "E:\WINDOWS\Microsoft.NET\Framework\v1.0.3705\System.XML.dll"
                 />
+                <Reference
+                    Name = "System.Design"
+                    AssemblyName = "System.Design"
+                    HintPath = "E:\WINDOWS\Microsoft.NET\Framework\v1.0.3705\System.Design.dll"
+                />
             </References>
         </Build>
         <Files>
@@ -144,10 +149,6 @@
                     RelPath = "NeatProgressBar.resx"
                     DependentUpon = "NeatProgressBar.cs"
                     BuildAction = "EmbeddedResource"
-                />
-                <File
-                    RelPath = "OpenDownload.xml"
-                    BuildAction = "Content"
                 />
                 <File
                     RelPath = "Options.cs"

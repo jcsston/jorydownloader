@@ -6,12 +6,12 @@ using System.Runtime.CompilerServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 //
-[assembly: AssemblyTitle("")]
+[assembly: AssemblyTitle("Just anOther Redone bloatlY Downloader")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("")]
+[assembly: AssemblyProduct("Just anOther Redone bloatlY Downloader")]
+[assembly: AssemblyCopyright("(c) 2003 Jory Stone <mpeg2tovirtualdub@toughguy.net>\nReleased under the GNU GPL")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]		
 

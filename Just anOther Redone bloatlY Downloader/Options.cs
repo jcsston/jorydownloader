@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
+using System.Windows.Forms.Design;
 
 namespace WindowsApplication1
 {
@@ -21,6 +22,11 @@ namespace WindowsApplication1
 		private System.Windows.Forms.ComboBox comboBoxBufferSize;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.NumericUpDown numericUpDownBufferSize;
+		private System.Windows.Forms.Label label3;
+		private System.Windows.Forms.NumericUpDown numericUpDownQueue;
+		private System.Windows.Forms.TextBox textBoxDownloadFolder;
+		private System.Windows.Forms.Label label4;
+		private System.Windows.Forms.Button buttonBrowse;
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -61,18 +67,26 @@ namespace WindowsApplication1
 		private void InitializeComponent()
 		{
 			this.tabControl1 = new System.Windows.Forms.TabControl();
-			this.tabPageQueue = new System.Windows.Forms.TabPage();
-			this.tabPageDownloadFolder = new System.Windows.Forms.TabPage();
 			this.tabPageSpeed = new System.Windows.Forms.TabPage();
 			this.label2 = new System.Windows.Forms.Label();
 			this.numericUpDownBufferSize = new System.Windows.Forms.NumericUpDown();
 			this.comboBoxBufferSize = new System.Windows.Forms.ComboBox();
 			this.label1 = new System.Windows.Forms.Label();
+			this.tabPageQueue = new System.Windows.Forms.TabPage();
+			this.tabPageDownloadFolder = new System.Windows.Forms.TabPage();
 			this.buttonOK = new System.Windows.Forms.Button();
 			this.buttonCancel = new System.Windows.Forms.Button();
+			this.label3 = new System.Windows.Forms.Label();
+			this.numericUpDownQueue = new System.Windows.Forms.NumericUpDown();
+			this.textBoxDownloadFolder = new System.Windows.Forms.TextBox();
+			this.label4 = new System.Windows.Forms.Label();
+			this.buttonBrowse = new System.Windows.Forms.Button();
 			this.tabControl1.SuspendLayout();
 			this.tabPageSpeed.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownBufferSize)).BeginInit();
+			this.tabPageQueue.SuspendLayout();
+			this.tabPageDownloadFolder.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownQueue)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// tabControl1
@@ -86,22 +100,6 @@ namespace WindowsApplication1
 			this.tabControl1.SelectedIndex = 0;
 			this.tabControl1.Size = new System.Drawing.Size(284, 216);
 			this.tabControl1.TabIndex = 0;
-			// 
-			// tabPageQueue
-			// 
-			this.tabPageQueue.Location = new System.Drawing.Point(4, 22);
-			this.tabPageQueue.Name = "tabPageQueue";
-			this.tabPageQueue.Size = new System.Drawing.Size(276, 190);
-			this.tabPageQueue.TabIndex = 1;
-			this.tabPageQueue.Text = "Queue";
-			// 
-			// tabPageDownloadFolder
-			// 
-			this.tabPageDownloadFolder.Location = new System.Drawing.Point(4, 22);
-			this.tabPageDownloadFolder.Name = "tabPageDownloadFolder";
-			this.tabPageDownloadFolder.Size = new System.Drawing.Size(276, 190);
-			this.tabPageDownloadFolder.TabIndex = 0;
-			this.tabPageDownloadFolder.Text = "Download Folder";
 			// 
 			// tabPageSpeed
 			// 
@@ -175,6 +173,29 @@ namespace WindowsApplication1
 			this.label1.TabIndex = 0;
 			this.label1.Text = "Download Buffer Size";
 			// 
+			// tabPageQueue
+			// 
+			this.tabPageQueue.Controls.AddRange(new System.Windows.Forms.Control[] {
+																																							 this.numericUpDownQueue,
+																																							 this.label3});
+			this.tabPageQueue.Location = new System.Drawing.Point(4, 22);
+			this.tabPageQueue.Name = "tabPageQueue";
+			this.tabPageQueue.Size = new System.Drawing.Size(276, 190);
+			this.tabPageQueue.TabIndex = 1;
+			this.tabPageQueue.Text = "Queue";
+			// 
+			// tabPageDownloadFolder
+			// 
+			this.tabPageDownloadFolder.Controls.AddRange(new System.Windows.Forms.Control[] {
+																																												this.buttonBrowse,
+																																												this.textBoxDownloadFolder,
+																																												this.label4});
+			this.tabPageDownloadFolder.Location = new System.Drawing.Point(4, 22);
+			this.tabPageDownloadFolder.Name = "tabPageDownloadFolder";
+			this.tabPageDownloadFolder.Size = new System.Drawing.Size(276, 190);
+			this.tabPageDownloadFolder.TabIndex = 0;
+			this.tabPageDownloadFolder.Text = "Download Folder";
+			// 
 			// buttonOK
 			// 
 			this.buttonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
@@ -193,6 +214,58 @@ namespace WindowsApplication1
 			this.buttonCancel.TabIndex = 2;
 			this.buttonCancel.Text = "&Cancel";
 			// 
+			// label3
+			// 
+			this.label3.Location = new System.Drawing.Point(4, 12);
+			this.label3.Name = "label3";
+			this.label3.Size = new System.Drawing.Size(88, 20);
+			this.label3.TabIndex = 0;
+			this.label3.Text = "Download Limit:";
+			// 
+			// numericUpDownQueue
+			// 
+			this.numericUpDownQueue.Location = new System.Drawing.Point(92, 12);
+			this.numericUpDownQueue.Minimum = new System.Decimal(new int[] {
+																																			 1,
+																																			 0,
+																																			 0,
+																																			 0});
+			this.numericUpDownQueue.Name = "numericUpDownQueue";
+			this.numericUpDownQueue.Size = new System.Drawing.Size(76, 20);
+			this.numericUpDownQueue.TabIndex = 1;
+			this.numericUpDownQueue.Value = new System.Decimal(new int[] {
+																																		 1,
+																																		 0,
+																																		 0,
+																																		 0});
+			this.numericUpDownQueue.ValueChanged += new System.EventHandler(this.numericUpDownQueue_ValueChanged);
+			// 
+			// textBoxDownloadFolder
+			// 
+			this.textBoxDownloadFolder.Location = new System.Drawing.Point(132, 12);
+			this.textBoxDownloadFolder.Name = "textBoxDownloadFolder";
+			this.textBoxDownloadFolder.Size = new System.Drawing.Size(140, 20);
+			this.textBoxDownloadFolder.TabIndex = 0;
+			this.textBoxDownloadFolder.Text = "";
+			// 
+			// label4
+			// 
+			this.label4.Location = new System.Drawing.Point(0, 12);
+			this.label4.Name = "label4";
+			this.label4.Size = new System.Drawing.Size(136, 23);
+			this.label4.TabIndex = 1;
+			this.label4.Text = "Default Download Folder:";
+			this.label4.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			// 
+			// buttonBrowse
+			// 
+			this.buttonBrowse.Location = new System.Drawing.Point(204, 36);
+			this.buttonBrowse.Name = "buttonBrowse";
+			this.buttonBrowse.Size = new System.Drawing.Size(64, 23);
+			this.buttonBrowse.TabIndex = 2;
+			this.buttonBrowse.Text = "&Browse";
+			this.buttonBrowse.Click += new System.EventHandler(this.buttonBrowse_Click);
+			// 
 			// formOptions
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
@@ -209,6 +282,9 @@ namespace WindowsApplication1
 			this.tabControl1.ResumeLayout(false);
 			this.tabPageSpeed.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownBufferSize)).EndInit();
+			this.tabPageQueue.ResumeLayout(false);
+			this.tabPageDownloadFolder.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownQueue)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -238,10 +314,47 @@ namespace WindowsApplication1
 			try {
 				comboBoxBufferSize.SelectedIndex = 3;
 				numericUpDownBufferSize.Value = (int)MainForm.OpenDownloadList.OpenDownloadOptions.download_buffer_size;
+				numericUpDownQueue.Value = (int)MainForm.OpenDownloadList.OpenDownloadOptions.download_queue_limit;
 			} catch(Exception exp) {
 				//An Error happened when loading the default values
 			}
 		}
 
+		private void numericUpDownQueue_ValueChanged(object sender, System.EventArgs e) {
+			MainForm.OpenDownloadList.OpenDownloadOptions.download_queue_limit = (UInt16)numericUpDownQueue.Value;
+		}
+
+		private void buttonBrowse_Click(object sender, System.EventArgs e) {
+			FolderBrowseDialog aFolderBrowser = new FolderBrowseDialog();;
+			String selected_folder = aFolderBrowser.BrowseForFolder("Locate your default download folder");
+			if (selected_folder.Length > 0) {
+				textBoxDownloadFolder.Text = selected_folder;
+			}
+		}
+	}
+}
+
+public class FolderBrowseDialog : FolderNameEditor {
+	FolderNameEditor.FolderBrowser myFolderBrowser;
+
+	public string BrowseForFolder(string title) {
+		string myPath;			
+		myFolderBrowser = new FolderNameEditor.FolderBrowser();
+			
+		//Add the Description
+		myFolderBrowser.Description = title;
+		//Show the Dialog
+		myFolderBrowser.ShowDialog();
+		myPath = myFolderBrowser.DirectoryPath;		
+		if (myPath.Length > 0) {
+			if (myPath.Substring((myPath.Length - 1),1) != "\\") 
+				myPath += "\\";
+		}
+		//Return the path
+		return myPath;
+	}
+		
+	~FolderBrowseDialog () {
+		myFolderBrowser.Dispose(); // Dispose
 	}
 }

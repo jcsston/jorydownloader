@@ -3,6 +3,7 @@ using System.Net;
 using System.IO;
 using System.Xml;
 using System.Threading;
+using System.Diagnostics;
 using System.Drawing;
 using System.Collections;
 using System.ComponentModel;
@@ -26,10 +27,6 @@ namespace WindowsApplication1 {
 		private System.Windows.Forms.MenuItem menuItemFilePaste;
 		private System.Windows.Forms.MenuItem menuItem2;
 		private System.ComponentModel.IContainer components;
-
-		static public theDownloadList OpenDownloadList;
-		private Thread XMLParserThread;
-		private Thread theMonitorListUpdateThread;
 		private System.Windows.Forms.MenuItem contextMenuListDownload;
 		private System.Windows.Forms.MenuItem contextMenuListEdit;
 		private System.Windows.Forms.ContextMenu contextMenuList;
@@ -48,7 +45,6 @@ namespace WindowsApplication1 {
 		private System.Windows.Forms.Splitter splitterMain;
 		private System.Windows.Forms.MenuItem menuItemFileLoadURLList;
 		private System.Windows.Forms.MenuItem menuItemLeech;
-		private Thread theURLListMonitorThread;
 
 		enum DownloadListColumns {
 			Filename,
@@ -59,6 +55,12 @@ namespace WindowsApplication1 {
 			Comments,
 			UID
 		}
+		static public theDownloadList OpenDownloadList;
+		private Thread XMLParserThread;
+		private Thread theMonitorListUpdateThread;
+		private Thread theURLListMonitorThread;
+		private Thread theDownloadQueueMonitorThread;
+
 
 		public MainForm() {
 			//
@@ -102,6 +104,8 @@ namespace WindowsApplication1 {
 			this.menuItemFile = new System.Windows.Forms.MenuItem();
 			this.menuItemFileAddFile = new System.Windows.Forms.MenuItem();
 			this.menuItemFilePaste = new System.Windows.Forms.MenuItem();
+			this.menuItemLeech = new System.Windows.Forms.MenuItem();
+			this.menuItemFileLoadURLList = new System.Windows.Forms.MenuItem();
 			this.menuItem2 = new System.Windows.Forms.MenuItem();
 			this.menuItemmenuItemFileExit = new System.Windows.Forms.MenuItem();
 			this.menuItem1 = new System.Windows.Forms.MenuItem();
@@ -118,8 +122,6 @@ namespace WindowsApplication1 {
 			this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
 			this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
 			this.columnHeader7 = new System.Windows.Forms.ColumnHeader();
-			this.menuItemFileLoadURLList = new System.Windows.Forms.MenuItem();
-			this.menuItemLeech = new System.Windows.Forms.MenuItem();
 			((System.ComponentModel.ISupportInitialize)(this.statusBarPanelCount)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.statusBarPanelTotalSize)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.statusBarPanelTotalTime)).BeginInit();
@@ -199,6 +201,18 @@ namespace WindowsApplication1 {
 			this.menuItemFilePaste.Index = 1;
 			this.menuItemFilePaste.Text = "Paste";
 			this.menuItemFilePaste.Click += new System.EventHandler(this.menuItemFilePaste_Click);
+			// 
+			// menuItemLeech
+			// 
+			this.menuItemLeech.Index = 2;
+			this.menuItemLeech.Text = "Leech";
+			this.menuItemLeech.Click += new System.EventHandler(this.menuItemLeech_Click);
+			// 
+			// menuItemFileLoadURLList
+			// 
+			this.menuItemFileLoadURLList.Index = 3;
+			this.menuItemFileLoadURLList.Text = "Load URL List";
+			this.menuItemFileLoadURLList.Click += new System.EventHandler(this.menuItemFileLoadURLList_Click);
 			// 
 			// menuItem2
 			// 
@@ -283,6 +297,7 @@ namespace WindowsApplication1 {
 			this.listViewDownloadList.Size = new System.Drawing.Size(501, 323);
 			this.listViewDownloadList.TabIndex = 1;
 			this.listViewDownloadList.View = System.Windows.Forms.View.Details;
+			this.listViewDownloadList.SelectedIndexChanged += new System.EventHandler(this.listViewDownloadList_SelectedIndexChanged);
 			// 
 			// columnHeader1
 			// 
@@ -312,18 +327,6 @@ namespace WindowsApplication1 {
 			// 
 			this.columnHeader7.Text = "UID";
 			// 
-			// menuItemFileLoadURLList
-			// 
-			this.menuItemFileLoadURLList.Index = 3;
-			this.menuItemFileLoadURLList.Text = "Load URL List";
-			this.menuItemFileLoadURLList.Click += new System.EventHandler(this.menuItemFileLoadURLList_Click);
-			// 
-			// menuItemLeech
-			// 
-			this.menuItemLeech.Index = 2;
-			this.menuItemLeech.Text = "Leech";
-			this.menuItemLeech.Click += new System.EventHandler(this.menuItemLeech_Click);
-			// 
 			// MainForm
 			// 
 			this.AllowDrop = true;
@@ -338,7 +341,6 @@ namespace WindowsApplication1 {
 			this.Menu = this.mainMenu1;
 			this.Name = "MainForm";
 			this.Text = "Just anOther Redone bloatlY Downloader";
-			this.Resize += new System.EventHandler(this.MainForm_Resize);
 			this.Closing += new System.ComponentModel.CancelEventHandler(this.Form1_Closing);
 			this.Load += new System.EventHandler(this.Form1_Load);
 			((System.ComponentModel.ISupportInitialize)(this.statusBarPanelCount)).EndInit();
@@ -365,6 +367,7 @@ namespace WindowsApplication1 {
 		public void LoadDownloadList() {
 			if (!File.Exists("OpenDownload.xml"))
 				return;
+			Int64 start_time = Environment.TickCount;
 			try {
 				XmlDocument doc = new XmlDocument();				
 				doc.Load("OpenDownload.xml");
@@ -473,6 +476,7 @@ namespace WindowsApplication1 {
 				MessageBox.Show("Error while loading XML Filelist " + exp.Message);
 			}
 			OpenDownloadList.changed = true;
+			Debug.Write("Time: " + ((Int64)((Int64)Environment.TickCount - (Int64)start_time)).ToString());
 		}
 
 		public void SaveDownloadList() {
@@ -583,15 +587,15 @@ namespace WindowsApplication1 {
 		}
 
 		public void MonitorListUpdateThread() {
-			while (Thread.CurrentThread.ThreadState == ThreadState.Background) {
+			while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Background) {
 				if (OpenDownloadList.changed) {
 					UpdateDownloadList();
 					OpenDownloadList.changed = false;
 				}
 				Thread.Sleep(500);
-				//Thread.SpinWait(
 			}
 		}
+
 		private void Form1_Load(object sender, System.EventArgs e)
 		{
 			listViewDownloadList.View = View.Details;
@@ -612,6 +616,13 @@ namespace WindowsApplication1 {
 			theURLListMonitorThread.Priority = ThreadPriority.BelowNormal;
 			theURLListMonitorThread.IsBackground = true;
 			theURLListMonitorThread.Start();
+
+			theDownloadQueueMonitorThread = new Thread(new ThreadStart(OpenDownloadList.DownloadQueueMonitor));
+			theDownloadQueueMonitorThread.Name = "Background Download Queue Monitor";
+			theDownloadQueueMonitorThread.Priority = ThreadPriority.BelowNormal;
+			theDownloadQueueMonitorThread.IsBackground = true;
+			theDownloadQueueMonitorThread.Start();			
+
 		}
 
 		private void menuItemFile_Click(object sender, System.EventArgs e)
@@ -659,13 +670,6 @@ namespace WindowsApplication1 {
 			Application.Exit();
 		}
 
-		private void buttonDownload_Click(object sender, System.EventArgs e) {
-			//Progress file_download = new Progress();						
-			//file_download.Show();
-			//int selected_master_index = OpenDownloadList.FindUID((Int32)listViewDownloadList.SelectedItems[0].Tag);
-			//file_download.DownloadFile(OpenDownloadList.GetDownloadListItem(selected_master_index));
-		}
-
 		private void listViewDownloadList_SelectedIndexChanged(object sender, System.EventArgs e) {
 			try {
 				UInt64 total_sizes = 0;			
@@ -679,17 +683,18 @@ namespace WindowsApplication1 {
 				}
 				statusBarPanelTotalSize.Text = (total_sizes/1024).ToString() + "KB";
 				statusBarPanelCount.Text = listViewDownloadList.SelectedItems.Count.ToString() + " items selected";
-			} catch(Exception exp) {
-				MessageBox.Show("An error occured while calulating the amount left to download of the selected files\n" + exp.Message + "Stack" + exp.StackTrace);
+			} catch {
+				//
 			}
 		}
 
 		private void contextMenuListDownload_Click(object sender, System.EventArgs e) {
-			for (int i = 0; i < listViewDownloadList.SelectedItems.Count; i++) {
-				Progress file_download = new Progress();						
-				file_download.Show();
-				int selected_master_index = OpenDownloadList.FindUID((Int32)listViewDownloadList.SelectedItems[i].Tag);
-				file_download.DownloadFile(OpenDownloadList.GetDownloadListItem(selected_master_index));
+			for (int i = 0; i < listViewDownloadList.SelectedItems.Count; i++) {				
+				//Progress file_download = new Progress();										
+				//file_download.Show();
+				OpenDownloadList.AddDownloadToQueue(Convert.ToInt32(listViewDownloadList.SelectedItems[i].SubItems[(int)DownloadListColumns.UID].Text));
+				//int selected_master_index = OpenDownloadList.FindUID();
+				//file_download.DownloadFile(OpenDownloadList.GetDownloadListItem(selected_master_index));
 			}
 		}
 
@@ -735,7 +740,7 @@ namespace WindowsApplication1 {
 		private void menuItemLeech_Click(object sender, System.EventArgs e) {
 			formLeech new_leecher = new formLeech();
 			new_leecher.ShowDialog(this);
-		}		
+		}
 	}
 }
 
@@ -774,6 +779,7 @@ public class theOptions : object {
 		this.download_queue_limit = 1; //I don't need to stress my poor modem any more
 	}
 
+	public String download_folder;
 	public UInt32 download_buffer_size;
 	public UInt16 download_queue_limit;
 };
@@ -801,8 +807,9 @@ public class theDownloadList
 {
 	public theDownloadList()
 	{
-		master_file_list = new ArrayList(0);
-		waiting_url_list = new ArrayList(0);
+		master_file_list = new ArrayList(1);
+		waiting_url_list = new ArrayList(1);
+		download_queue = new ArrayList(1);
 		OpenDownloadOptions = new theOptions();
 	}
 
@@ -822,35 +829,72 @@ public class theDownloadList
 	}
 
 	private void RealAddURL(String one_url) {
-		aDownloadItem another_file_to_download = new aDownloadItem();		
-		another_file_to_download.FileUID = CreateUID();
+		try {
+			aDownloadItem another_file_to_download = new aDownloadItem();		
+			another_file_to_download.FileUID = CreateUID();
 		
-		HttpWebRequest new_url = (HttpWebRequest)WebRequest.Create(one_url);						
-		new_url.AllowAutoRedirect = true;
+			HttpWebRequest new_url = (HttpWebRequest)WebRequest.Create(one_url);						
+			new_url.AllowAutoRedirect = true;
+			new_url.UserAgent = Application.ProductName + " " + Application.ProductVersion;
 		
-		//HttpWebResponse resp = (HttpWebResponse)req.EndGetResponse(ar);         
+			//HttpWebResponse resp = (HttpWebResponse)req.EndGetResponse(ar);         
 		
-		HttpWebResponse url_response = (HttpWebResponse)new_url.GetResponse();
-		another_file_to_download.RemoteURL = url_response.ResponseUri.AbsoluteUri;
-		another_file_to_download.LocalFilename = "" + url_response.ResponseUri.Segments[url_response.ResponseUri.Segments.GetUpperBound(0)];
-		another_file_to_download.totalFileSize = url_response.ContentLength;
-		
+			HttpWebResponse url_response = (HttpWebResponse)new_url.GetResponse();
+			another_file_to_download.RemoteURL = url_response.ResponseUri.AbsoluteUri;
+			another_file_to_download.LocalFilename = this.OpenDownloadOptions.download_folder + url_response.ResponseUri.Segments[url_response.ResponseUri.Segments.GetUpperBound(0)];
+			if (another_file_to_download.LocalFilename.EndsWith("/")) {
+				//This is a root URL, no filename
+				//We'll set the default to index.htm
+				another_file_to_download.LocalFilename = "index.htm";
+			}
+			if (url_response.ContentLength == -1) {
+				//Site didn't return the file size
+				another_file_to_download.totalFileSize = 0;
+			}else {
+				//The File size is ok
+				another_file_to_download.totalFileSize = url_response.ContentLength;
+			}
+			url_response.Close();
 				
-		//Add this one to the list
-		this.master_file_list.Add(another_file_to_download);
-		this.changed = true;
-		
-		url_response.Close();
+			//Add this one to the list
+			this.master_file_list.Add(another_file_to_download);
+			this.changed = true;
+		} catch(Exception exp) {
+			//
+		}		
 	}
 
 	public void URLListMonitor() {
-		while (Thread.CurrentThread.ThreadState == ThreadState.Background) {
-			if (waiting_url_list.Count > 0) {
+		while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Background) {
+			if (waiting_url_list.Count > 0) {				
 				String url_to_process = (String)waiting_url_list[0];
 				RealAddURL(url_to_process);
 				waiting_url_list.RemoveAt(0);
 			}
 			Thread.Sleep(500);
+		}
+	}
+	
+	public void AddDownloadToQueue(Int32 download_UID) {
+		this.download_queue.Add(download_UID);
+	}
+
+	public void DownloadQueueMonitor() {
+		while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Background) {
+			if ((this.OpenDownloadOptions.download_queue_limit > this.downloads_in_progress) && (download_queue.Count > 0)) {
+				//Get the UID
+				Int32 UID_to_download = (Int32)download_queue[0];
+				
+				//Create a new download window
+				WindowsApplication1.Progress file_download = new WindowsApplication1.Progress();										
+				file_download.Show();
+				int download_master_index = this.FindUID((Int32)UID_to_download);
+				file_download.DownloadFile(this.GetDownloadListItem(download_master_index));
+
+				//Remove the UID from the queue
+				download_queue.RemoveAt(0);
+			}
+			Thread.Sleep(800);
 		}
 	}
 	public Int32 CreateUID() {
@@ -898,7 +942,9 @@ public class theDownloadList
 	}
 
 	public bool changed = false;
+	public int downloads_in_progress = 0;
 	public ArrayList waiting_url_list;
+	public ArrayList download_queue;
 	public ArrayList master_file_list;
 	public theOptions OpenDownloadOptions;
 };

@@ -26,14 +26,15 @@ namespace WindowsApplication1
 		private WindowsApplication1.NeatProgressBar neatProgressBarProgress;
 		private System.Windows.Forms.Label labelSpeed;
 		private System.Windows.Forms.Label labelSize;
+		private System.Windows.Forms.TrackBar trackBarVisible;
+		private System.Windows.Forms.CheckBox checkBoxOnTop;
+		private System.Windows.Forms.Label labelTransparency;
+
 
 		private int BUFFER_SIZE = 1024;
 		private Thread theDownloadThread;
 		private bool statPause = false;
 		private bool statCancel = false;
-		private System.Windows.Forms.TrackBar trackBarVisible;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.CheckBox checkBoxOnTop;
 		private avgSpeed theSpeed;
 
 		private class avgSpeed : object {
@@ -88,7 +89,7 @@ namespace WindowsApplication1
 			this.labelSpeed = new System.Windows.Forms.Label();
 			this.labelSize = new System.Windows.Forms.Label();
 			this.trackBarVisible = new System.Windows.Forms.TrackBar();
-			this.label1 = new System.Windows.Forms.Label();
+			this.labelTransparency = new System.Windows.Forms.Label();
 			this.checkBoxOnTop = new System.Windows.Forms.CheckBox();
 			((System.ComponentModel.ISupportInitialize)(this.trackBarVisible)).BeginInit();
 			this.SuspendLayout();
@@ -164,14 +165,14 @@ namespace WindowsApplication1
 			this.trackBarVisible.Value = 100;
 			this.trackBarVisible.ValueChanged += new System.EventHandler(this.trackBarVisible_ValueChanged);
 			// 
-			// label1
+			// labelTransparency
 			// 
-			this.label1.Location = new System.Drawing.Point(0, 100);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(80, 23);
-			this.label1.TabIndex = 10;
-			this.label1.Text = "Transparency:";
-			this.label1.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			this.labelTransparency.Location = new System.Drawing.Point(0, 100);
+			this.labelTransparency.Name = "labelTransparency";
+			this.labelTransparency.Size = new System.Drawing.Size(80, 23);
+			this.labelTransparency.TabIndex = 10;
+			this.labelTransparency.Text = "Transparency:";
+			this.labelTransparency.TextAlign = System.Drawing.ContentAlignment.TopRight;
 			// 
 			// checkBoxOnTop
 			// 
@@ -188,7 +189,7 @@ namespace WindowsApplication1
 			this.ClientSize = new System.Drawing.Size(384, 125);
 			this.Controls.AddRange(new System.Windows.Forms.Control[] {
 																																	this.checkBoxOnTop,
-																																	this.label1,
+																																	this.labelTransparency,
 																																	this.trackBarVisible,
 																																	this.labelSize,
 																																	this.labelSpeed,
@@ -219,6 +220,8 @@ namespace WindowsApplication1
 			theDownloadThread = new Thread(new ThreadStart(DownloadThread));
 			theDownloadThread.Name = "File Download";
 			theDownloadThread.Start();
+			//Add this download to the queue
+			MainForm.OpenDownloadList.downloads_in_progress++;
 		}
 
 		public void DownloadThread(){
@@ -246,7 +249,7 @@ namespace WindowsApplication1
 
 			HttpWebResponse url_response = (HttpWebResponse)new_url.GetResponse();
 			//Setup the progress bar
-			neatProgressBarProgress.Value = (int)((FileWriter.Position+1) / download_item.totalFileSize);
+			neatProgressBarProgress.Value = (int)((FileWriter.Position+1) / (download_item.totalFileSize+1));
 
 			Stream ResponseStream = url_response.GetResponseStream();
 			byte[] ByteBuffer = new byte[BUFFER_SIZE];
@@ -293,10 +296,19 @@ namespace WindowsApplication1
 				read_amount = ResponseStream.Read(ByteBuffer, 0, BUFFER_SIZE);
 			}
 			//We are done :)
+			//Take this download out of the queue
+			MainForm.OpenDownloadList.downloads_in_progress--;
 			//Close down the streams
 			ResponseStream.Close();         
 			FileWriter.Close();
 			this.Close();
+		}
+
+		private void FadeInProgressWindow() {
+			for (float i = 0; i <= 1; i += 0.1F) {
+				this.Opacity = i;
+				Thread.Sleep(10);
+			}
 		}
 
 		private void buttonCancel_Click(object sender, System.EventArgs e) {
@@ -323,6 +335,12 @@ namespace WindowsApplication1
 			this.labelSpeed.Text = "";
 			this.labelURL.Text = "";
 			this.neatProgressBarProgress.Value = 0;
+			/*if (Environment.OSVersion.Platform == Win32NT) {
+				//Ok we show the
+			}else {
+				this.trackBarVisible.Visible = false;
+				this.labelTransparency.Visible = false;
+			}*/
 			BUFFER_SIZE = (int)MainForm.OpenDownloadList.OpenDownloadOptions.download_buffer_size;
 		}
 
