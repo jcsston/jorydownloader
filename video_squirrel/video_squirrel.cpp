@@ -192,15 +192,8 @@ const wxSize& size)
 	panel_2 = new wxPanel(splitter_window, -1);
 	panel_1 = new wxPanel(splitter_window, -1);
 
-	//list_tree = new wxTreeCtrl(panel_1, MainApp_TreeCtrl);
-	//tree_root = list_tree->AddRoot(_T("Video Database"));
-	//list_tree->Expand(tree_root);
-
 	database_list_view = new wxListCtrl(panel_1, MainApp_DatabaseListView, wxDefaultPosition, wxDefaultSize, wxLC_REPORT);
 	database_list_view->InsertColumn(0, _T("Title"));
-
-  //item_list = new wxListBox(panel_1, MainApp_ItemList);
-  //item_list->Hide();
 
 	dnd_add = new DnDFile(database_list_view);
 	database_list_view->SetDropTarget(dnd_add);
@@ -259,7 +252,7 @@ const wxSize& size)
 	the_database = new VideoItemList(wxKEY_INTEGER);
 	// Open up our database file
 	parseXMLFile(settings->database_filename);
-	// Update the list, not needed as the list updated as items are added to the database
+	// Update the list. not needed as the list updated as items are added to the database
 	// I may add this later for sorting
 	//RefreshVideoList();
 
@@ -771,7 +764,7 @@ void AppFrame::OnMenuShowOptions(wxCommandEvent &event)
 void AppFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 {
 	DEBUG(_T("AppFrame::OnAbout called"));
- 	
+ 	this->parseXMLFile(this->settings->database_filename);
 	wxString msg;
 	unsigned long real_total_size = sizeof(the_database);
 	VideoItem *current_item = NULL;
@@ -922,7 +915,10 @@ void AppFrame::CloseFrame(wxCommandEvent &event)
 	}
 	delete settings;
 	delete the_database;
+
 	this->Destroy();
+
+	wxDebugContext::PrintStatistics(true);
 }
 
 
@@ -1047,6 +1043,7 @@ void AppFrame::parseXMLFile(wxString filename)
 					{
 						loaded_item->UID = atol((char *)node_text);
 					}
+					xmlFree(node_text);
 				}				
 				else if ((!xmlStrcmp(level_1->name, (const xmlChar *) "CD")))
 				{
@@ -1056,6 +1053,7 @@ void AppFrame::parseXMLFile(wxString filename)
 					{
 						loaded_item->cd = wxString((char *)node_text, wxConvUTF8);
 					}
+					xmlFree(node_text);
 				}
 				else if ((!xmlStrcmp(level_1->name, (const xmlChar *) "Filename")))
 				{
@@ -1065,6 +1063,7 @@ void AppFrame::parseXMLFile(wxString filename)
 					{
 						loaded_item->filename = wxString((char *)node_text, wxConvUTF8);
 					}
+					xmlFree(node_text);
 				}
 				else if ((!xmlStrcmp(level_1->name, (const xmlChar *) "FileSize")))
 				{
@@ -1074,6 +1073,7 @@ void AppFrame::parseXMLFile(wxString filename)
 					{
 						loaded_item->file_size = atol((char *)node_text);
 					}
+					xmlFree(node_text);
 				}
 				else if ((!xmlStrcmp(level_1->name, (const xmlChar *) "Title")))
 				{
@@ -1083,6 +1083,7 @@ void AppFrame::parseXMLFile(wxString filename)
 					{
 						loaded_item->title = wxString((char *)node_text, wxConvUTF8);
 					}
+					xmlFree(node_text);
 				}
 				else if ((!xmlStrcmp(level_1->name, (const xmlChar *) "Comment")))
 				{
@@ -1092,6 +1093,7 @@ void AppFrame::parseXMLFile(wxString filename)
 					{
 						loaded_item->comment_text = wxString((char *)node_text, wxConvUTF8);
 					}
+					xmlFree(node_text);
 				}
 				else if ((!xmlStrcmp(level_1->name, (const xmlChar *) "VideoData")))
 				{
@@ -1106,6 +1108,7 @@ void AppFrame::parseXMLFile(wxString filename)
 							{
 								loaded_item->video.x = atol((char *)node_text);
 							}
+							xmlFree(node_text);
 						}
 						else if ((!xmlStrcmp(level_2->name, (const xmlChar *) "PixelHeight")))
 						{
@@ -1114,6 +1117,7 @@ void AppFrame::parseXMLFile(wxString filename)
 							{
 								loaded_item->video.y = atol((char *)node_text);
 							}
+							xmlFree(node_text);
 						}
 						else if ((!xmlStrcmp(level_2->name, (const xmlChar *) "Bitrate")))
 						{
@@ -1122,6 +1126,7 @@ void AppFrame::parseXMLFile(wxString filename)
 							{
 								loaded_item->video.avg_bitrate = atol((char *)node_text);
 							}
+							xmlFree(node_text);
 						}
 						else if ((!xmlStrcmp(level_2->name, (const xmlChar *) "ColorDepth")))
 						{
@@ -1130,7 +1135,7 @@ void AppFrame::parseXMLFile(wxString filename)
 							{
 								loaded_item->video.color_depth = atol((char *)node_text);
 							}
-
+							xmlFree(node_text);
 						}
 						else if ((!xmlStrcmp(level_2->name, (const xmlChar *) "VideoFrameRate")))
 						{
@@ -1139,6 +1144,7 @@ void AppFrame::parseXMLFile(wxString filename)
 							{
 								loaded_item->video.frame_rate = atof((char *)node_text);
 							}
+							xmlFree(node_text);
 						}
 						else if ((!xmlStrcmp(level_2->name, (const xmlChar *) "VideoDuration")))
 						{
@@ -1147,6 +1153,7 @@ void AppFrame::parseXMLFile(wxString filename)
 							{
 								loaded_item->video.duration = atol((char *)node_text);
 							}
+							xmlFree(node_text);
 						}
 						else if ((!xmlStrcmp(level_2->name, (const xmlChar *) "VideoCompressor")))
 						{
@@ -1155,6 +1162,7 @@ void AppFrame::parseXMLFile(wxString filename)
 							{
 								loaded_item->video.compressor = wxString((char *)node_text, wxConvUTF8);
 							}
+							xmlFree(node_text);
 						}
 						else if ((!xmlStrcmp(level_2->name, (const xmlChar *) "VideoCompressor2")))
 						{
@@ -1163,6 +1171,7 @@ void AppFrame::parseXMLFile(wxString filename)
 							{
 								loaded_item->video.compressor2 = wxString((char *)node_text, wxConvUTF8);
 							}
+							xmlFree(node_text);
 						}
 
 						level_2 = level_2->next;
@@ -1198,6 +1207,7 @@ void AppFrame::parseXMLFile(wxString filename)
 									{
 										loaded_item->audio[audio_track_no]->avg_bitrate = atol((char *)node_text);
 									}
+									xmlFree(node_text);
 								}
 								else if ((!xmlStrcmp(level_3->name, (const xmlChar *) "AudioChannelCount")))
 								{
@@ -1206,6 +1216,7 @@ void AppFrame::parseXMLFile(wxString filename)
 									{
 										loaded_item->audio[audio_track_no]->channels = atol((char *)node_text);
 									}
+									xmlFree(node_text);
 								}
 								else if ((!xmlStrcmp(level_3->name, (const xmlChar *) "AudioSampleRate")))
 								{
@@ -1214,6 +1225,7 @@ void AppFrame::parseXMLFile(wxString filename)
 									{
 										loaded_item->audio[audio_track_no]->sample_rate = atof((char *)node_text);
 									}
+									xmlFree(node_text);
 								}
 								else if ((!xmlStrcmp(level_3->name, (const xmlChar *) "AudioBitDepth")))
 								{
@@ -1222,6 +1234,7 @@ void AppFrame::parseXMLFile(wxString filename)
 									{
 										loaded_item->audio[audio_track_no]->bit_depth = atoi((char *)node_text);
 									}
+									xmlFree(node_text);
 								}
 								// Go to the next node	in the AudioData node
 								level_3 = level_3->next;
@@ -1241,7 +1254,7 @@ void AppFrame::parseXMLFile(wxString filename)
 		}
 		level_0 = level_0->next;
 	}
-
+	xmlFreeDoc(doc);
 	return;
 }
 
@@ -1404,7 +1417,7 @@ bool AppFrame::SaveDatabase()
 		xml_buffer = _T("\t</VideoList>\n");
 		xml_output_stream.WriteString(xml_buffer);
 		xml_buffer = _T("</VideoSquirrelDatabase>");
-		xml_output_stream.WriteString(xml_buffer);
+		xml_output_stream.WriteString(xml_buffer);		
 	}
 	else
 	{
@@ -1445,6 +1458,8 @@ bool DnDFile::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filenames)
 
 VideoItem::VideoItem()
 {
+	DEBUG(_T("VideoItem::VideoItem called"));
+
 	next_item = NULL;
 	UID = 0;
 	file_size = 0;
@@ -1456,7 +1471,10 @@ VideoItem::VideoItem()
 
 VideoItem::~VideoItem()
 {
-	//
+	DEBUG(_T("VideoItem::~VideoItem called"));
+
+	//delete[] audio;
+	//delete next_item;
 };
 
 unsigned int VideoItem::GetSize()

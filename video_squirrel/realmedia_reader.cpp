@@ -32,6 +32,7 @@
 
 #include "realmedia_reader.h"
 
+/// Consructor, Sets the default values
 RealMedia_Reader::RealMedia_Reader()
 {
 	media_properties_block_count = 0;
@@ -44,6 +45,7 @@ RealMedia_Reader::RealMedia_Reader()
 	}
 };
 
+/// De-consructor, Frees the memory
 RealMedia_Reader::~RealMedia_Reader()
 {
 	int i = 0;
@@ -67,6 +69,9 @@ RealMedia_Reader::~RealMedia_Reader()
 	}
 };
 
+/// Processes a RealMedia file
+/// \param filename The filename of the file to process
+/// \return 0 if successful
 int RealMedia_Reader::Read(const char *filename)
 {
 	int error = 0;
@@ -264,11 +269,63 @@ int RealMedia_Reader::Read(const char *filename)
 				//Add to the array
 				media_properties_block[media_properties_block_count] = media_info;
 				media_properties_block_count++;
+
 			}
 			else
 			{
 				delete media_info;
 				media_info = NULL;
+			}
+		}
+		else if (!strcmpi(block_id, "DATA"))
+		{
+			RealMedia_Data_Chunk_Header data_chunk;
+			data_chunk.size = block_size;
+
+			error = fread((void *)&data_chunk.num_packets, 4, 1, real_media);
+			bswap((BYTE *)&data_chunk.num_packets, 4);
+
+			error = fread((void *)&data_chunk.next_data_header, 4, 1, real_media);
+			bswap((BYTE *)&data_chunk.next_data_header, 4);
+packet_count = 0;
+			//Now we read all the packets
+			for (int current_packet_no = 0; current_packet_no < data_chunk.num_packets; current_packet_no++)
+			{
+				RealMedia_Media_Packet_Header *new_packet = new RealMedia_Media_Packet_Header();
+
+				error = fread((void *)&new_packet->object_version, 2, 1, real_media);
+				bswap((BYTE *)&new_packet->object_version, 2);
+
+				error = fread((void *)&new_packet->length, 2, 1, real_media);
+				bswap((BYTE *)&new_packet->length, 2);
+
+				error = fread((void *)&new_packet->stream_number, 2, 1, real_media);
+				bswap((BYTE *)&new_packet->stream_number, 2);
+
+				error = fread((void *)&new_packet->timestamp, 4, 1, real_media);
+				bswap((BYTE *)&new_packet->timestamp, 4);
+
+				error = fread((void *)&new_packet->reserved, 1, 1, real_media);
+				bswap((BYTE *)&new_packet->reserved, 1);
+
+				error = fread((void *)&new_packet->flags, 1, 1, real_media);
+				bswap((BYTE *)&new_packet->flags, 1);
+				
+				int data_start_pos = ftell(real_media);
+				int data_length = new_packet->length - 12;
+				if (new_packet->length == 0)
+					data_length = 0;
+				new_packet->data = new UINT8[new_packet->length];				
+				for (int i = 0; i < data_length; i++)
+					error = fread((void *)&new_packet->data[i], 1, 1, real_media);
+
+				//bswap((BYTE *)new_packet->data, new_packet->length-18);
+
+				fseek(real_media, data_start_pos + data_length, SEEK_SET);
+				error = ftell(real_media);
+				//delete new_packet->data;
+				//delete new_packet;
+				packets[packet_count++] = new_packet;
 			}
 		}
 

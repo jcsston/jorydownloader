@@ -62,6 +62,7 @@
 #include <wx/confbase.h>
 #include <wx/dnd.h>
 #include <wx/statbmp.h>
+#include <wx/memory.h>
 
 //libxml2 includes
 #include <libxml/xmlmemory.h>
