@@ -249,6 +249,12 @@
 			<File
 				RelativePath="..\MatroskaUtils\MatroskaUtilsReader.h">
 			</File>
+			<File
+				RelativePath="..\libebml\src\platform\win32\WinIOCallback.cpp">
+			</File>
+			<File
+				RelativePath="..\libebml\src\platform\win32\WinIOCallback.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="tinyxml"
