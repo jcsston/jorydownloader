@@ -1,0 +1,65 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MusicTitleBar_foobar2000", "MusicTitleBar_Foobar2000.vcproj", "{D28D010D-74DD-42BB-8C3E-59C730053E22}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1082B637-3622-4B56-8A2F-2A78B046AAE3} = {1082B637-3622-4B56-8A2F-2A78B046AAE3}
+		{AEB8C384-BD41-4D71-89D4-0E155D77DD8C} = {AEB8C384-BD41-4D71-89D4-0E155D77DD8C}
+		{6AD7B96E-C7FE-40AE-B716-01D716CF06DB} = {6AD7B96E-C7FE-40AE-B716-01D716CF06DB}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MusicTitleBar_TCMP", "MusicTitleBar_TCMP.vcproj", "{A28D010D-74DD-42BB-8C3E-59C730053E22}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pfc", "..\Foobar2000_SDK\pfc\pfc.vcproj", "{AEB8C384-BD41-4D71-89D4-0E155D77DD8C}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "foobar2000_SDK", "..\Foobar2000_SDK\foobar2000\SDK\foobar2000_SDK.vcproj", "{1082B637-3622-4B56-8A2F-2A78B046AAE3}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utf8api", "..\Foobar2000_SDK\foobar2000\utf8api\utf8api.vcproj", "{6AD7B96E-C7FE-40AE-B716-01D716CF06DB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AEB8C384-BD41-4D71-89D4-0E155D77DD8C} = {AEB8C384-BD41-4D71-89D4-0E155D77DD8C}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+		Release ANSI = Release ANSI
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{D28D010D-74DD-42BB-8C3E-59C730053E22}.Debug.ActiveCfg = Debug|Win32
+		{D28D010D-74DD-42BB-8C3E-59C730053E22}.Debug.Build.0 = Debug|Win32
+		{D28D010D-74DD-42BB-8C3E-59C730053E22}.Release.ActiveCfg = Release|Win32
+		{D28D010D-74DD-42BB-8C3E-59C730053E22}.Release.Build.0 = Release|Win32
+		{D28D010D-74DD-42BB-8C3E-59C730053E22}.Release ANSI.ActiveCfg = Release|Win32
+		{D28D010D-74DD-42BB-8C3E-59C730053E22}.Release ANSI.Build.0 = Release|Win32
+		{A28D010D-74DD-42BB-8C3E-59C730053E22}.Debug.ActiveCfg = Debug|Win32
+		{A28D010D-74DD-42BB-8C3E-59C730053E22}.Release.ActiveCfg = Release|Win32
+		{A28D010D-74DD-42BB-8C3E-59C730053E22}.Release ANSI.ActiveCfg = Release|Win32
+		{AEB8C384-BD41-4D71-89D4-0E155D77DD8C}.Debug.ActiveCfg = Debug|Win32
+		{AEB8C384-BD41-4D71-89D4-0E155D77DD8C}.Debug.Build.0 = Debug|Win32
+		{AEB8C384-BD41-4D71-89D4-0E155D77DD8C}.Release.ActiveCfg = Release|Win32
+		{AEB8C384-BD41-4D71-89D4-0E155D77DD8C}.Release.Build.0 = Release|Win32
+		{AEB8C384-BD41-4D71-89D4-0E155D77DD8C}.Release ANSI.ActiveCfg = Release ANSI|Win32
+		{AEB8C384-BD41-4D71-89D4-0E155D77DD8C}.Release ANSI.Build.0 = Release ANSI|Win32
+		{1082B637-3622-4B56-8A2F-2A78B046AAE3}.Debug.ActiveCfg = Debug|Win32
+		{1082B637-3622-4B56-8A2F-2A78B046AAE3}.Debug.Build.0 = Debug|Win32
+		{1082B637-3622-4B56-8A2F-2A78B046AAE3}.Release.ActiveCfg = Release|Win32
+		{1082B637-3622-4B56-8A2F-2A78B046AAE3}.Release.Build.0 = Release|Win32
+		{1082B637-3622-4B56-8A2F-2A78B046AAE3}.Release ANSI.ActiveCfg = Release|Win32
+		{1082B637-3622-4B56-8A2F-2A78B046AAE3}.Release ANSI.Build.0 = Release|Win32
+		{6AD7B96E-C7FE-40AE-B716-01D716CF06DB}.Debug.ActiveCfg = Debug|Win32
+		{6AD7B96E-C7FE-40AE-B716-01D716CF06DB}.Debug.Build.0 = Debug|Win32
+		{6AD7B96E-C7FE-40AE-B716-01D716CF06DB}.Release.ActiveCfg = Release|Win32
+		{6AD7B96E-C7FE-40AE-B716-01D716CF06DB}.Release.Build.0 = Release|Win32
+		{6AD7B96E-C7FE-40AE-B716-01D716CF06DB}.Release ANSI.ActiveCfg = Release ANSI|Win32
+		{6AD7B96E-C7FE-40AE-B716-01D716CF06DB}.Release ANSI.Build.0 = Release ANSI|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
