@@ -32,7 +32,7 @@
 //#define AVI_SUPPORT
 #define REALMEDIA_SUPPORT
 #define MPEG_SUPPORT
-#define MATROSKA_SUPPORT
+//#define MATROSKA_SUPPORT
 
 #include "video_squirrel.h"
 

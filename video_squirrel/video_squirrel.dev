@@ -11,7 +11,7 @@ PrivateResource=video_squirrel_private.rc
 ResourceIncludes=
 MakeIncludes=
 Compiler=-D_X86_=1 -DWIN32 -D_WIN32 -D__WIN95__ -D__GNUWIN32__ -D__WIN32__ -DSTRICT  -D__WXMSW__ -D__WXDEBUG__ -D__WINDOWS__ -DPACKAGE -DVERSION -fvtable-thunks -fno-pcc-struct-return -fno-rtti -fno-exceptions -fstrict-aliasing_@@_
-Linker=-lwx -lxpm -lstdc++ -lgcc -lwinspool -lwinmm -lshell32 -lcomctl32 -lctl3d32 -lodbc32 -ladvapi32 -lole32 -loleaut32 -luuid -lodbc32 -lwsock32 -lopengl32 -lglu32 -lxml2 -lwsock32 -liconv -lpng -lz -s_@@_
+Linker=-lwx -lxpm -lstdc++ -lgcc -lwinspool -lwinmm -lshell32 -lcomctl32 -lctl3d32 -lodbc32 -ladvapi32 -lole32 -loleaut32 -luuid -lodbc32 -lwsock32 -lopengl32 -lglu32 -lxml2 -lwsock32 -liconv -lpng -lz_@@_
 IsCpp=1
 Icon=video_squirrel.ico
 ExeOutput=exe\
@@ -24,7 +24,7 @@ CommandLine=
 IncludeVersionInfo=1
 SupportXPThemes=1
 CompilerSet=0
-CompilerSettings=000000000100100000
+CompilerSettings=000000000100100100
 CppCompiler=-D_X86_=1 -DWIN32 -D_WIN32 -D__WIN95__ -D__GNUWIN32__ -D__WIN32__ -DSTRICT  -D__WXMSW__ -D__WXDEBUG__ -D__WINDOWS__ -DPACKAGE -DVERSION -fvtable-thunks -fno-pcc-struct-return -fno-rtti -fno-exceptions -fstrict-aliasing_@@_
 
 [Unit1]
@@ -51,7 +51,7 @@ Priority=1000
 Major=0
 Minor=1
 Release=1
-Build=492
+Build=497
 LanguageID=1033
 CharsetID=1252
 CompanyName=

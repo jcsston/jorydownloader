@@ -67,276 +67,320 @@ RealMedia_Reader::~RealMedia_Reader()
 		delete content_description_block[i];
 		i++;
 	}
+	fclose(real_media);
 };
 
-/// Processes a RealMedia file
-/// \param filename The filename of the file to process
-/// \return 0 if successful
 int RealMedia_Reader::Read(const char *filename)
 {
-	int error = 0;
-	FILE *real_media = fopen(filename, "r");
-
-	bool keep_looping = true;
-	while (keep_looping)
+	if (filename != NULL)
 	{
-		//First we store the current file position
-		unsigned int file_pos = ftell(real_media);
-		//Read the header
-		//First we read the block id
-		char block_id[5];
-		memset(&block_id, 0, sizeof(block_id));
-		error = fread((void *)&block_id, 4, 1, real_media);
-		//Add the NULL char
-		block_id[4] = 0;
-		//Read the block size
-		UINT32 block_size = 0;
-		error = fread((void *)&block_size, 4, 1, real_media);
-		bswap((BYTE *)&block_size, 4);
-		//Now the block version
-		UINT16 block_version = 0;
-		error = fread((void *)&block_version, 2, 1, real_media);
-		bswap((BYTE *)&block_version, 2);
+		the_filename = new char[strlen(filename)+1];
+		strcpy(the_filename, filename);
 
-		//Now we find out what block type this is
-		if (!strcmpi(block_id, ".RMF"))
+		int error = 0;
+		real_media = fopen(filename, "rb");
+
+		bool keep_looping = true;
+		while (keep_looping)
 		{
-			//This is the main header chunk
-			RealMedia_File_Header *main_header = new RealMedia_File_Header;
-			memset(main_header, 0, sizeof(RealMedia_File_Header));
+			//First we store the current file position
+			unsigned int file_pos = ftell(real_media);
+			//Read the header
+			//First we read the block id
+			char block_id[5];
+			memset(&block_id, 0, sizeof(block_id));
+			error = fread((void *)&block_id, 4, 1, real_media);
+			//Add the NULL char
+			block_id[4] = 0;
+			//Read the block size
+			UINT32 block_size = 0;
+			error = fread((void *)&block_size, 4, 1, real_media);
+			bswap((BYTE *)&block_size, 4);
+			//Now the block version
+			UINT16 block_version = 0;
+			error = fread((void *)&block_version, 2, 1, real_media);
+			bswap((BYTE *)&block_version, 2);
 
-			if (block_version == 0)
+			//Now we find out what block type this is
+			if (!strcmpi(block_id, ".RMF"))
 			{
-				error = fread((void *)&main_header->file_version, 4, 1, real_media);
-				bswap((BYTE *)&main_header->file_version, 4);
+				//This is the main header chunk
+				RealMedia_File_Header *main_header = new RealMedia_File_Header;
+				memset(main_header, 0, sizeof(RealMedia_File_Header));
 
-				error = fread((void *)&main_header->num_headers, 4, 1, real_media);
-				bswap((BYTE *)&main_header->num_headers, 4);
+				if (block_version == 0)
+				{
+					error = fread((void *)&main_header->file_version, 4, 1, real_media);
+					bswap((BYTE *)&main_header->file_version, 4);
+
+					error = fread((void *)&main_header->num_headers, 4, 1, real_media);
+					bswap((BYTE *)&main_header->num_headers, 4);
+				}
 			}
-		}
-		else if (!strcmpi(block_id, "PROP"))
-		{
-			//The Properties Header
-			RealMedia_Properties *info = &properties_block;//new RealMedia_Properties;
-			memset(info, 0, sizeof(RealMedia_Properties));
-			if (block_version == 0)
+			else if (!strcmpi(block_id, "PROP"))
 			{
-				error = fread((void *)&info->max_bit_rate, 4, 1, real_media);
-				bswap((BYTE *)&info->max_bit_rate, 4);
+				//The Properties Header
+				RealMedia_Properties *info = &properties_block;//new RealMedia_Properties;
+				memset(info, 0, sizeof(RealMedia_Properties));
+				if (block_version == 0)
+				{
+					error = fread((void *)&info->max_bit_rate, 4, 1, real_media);
+					bswap((BYTE *)&info->max_bit_rate, 4);
 
-				error = fread((void *)&info->avg_bit_rate, 4, 1, real_media);
-				bswap((BYTE *)&info->avg_bit_rate, 4);
+					error = fread((void *)&info->avg_bit_rate, 4, 1, real_media);
+					bswap((BYTE *)&info->avg_bit_rate, 4);
 
-				error = fread((void *)&info->max_packet_size, 4, 1, real_media);
-				bswap((BYTE *)&info->max_packet_size, 4);
+					error = fread((void *)&info->max_packet_size, 4, 1, real_media);
+					bswap((BYTE *)&info->max_packet_size, 4);
 
-				error = fread((void *)&info->avg_packet_size, 4, 1, real_media);
-				bswap((BYTE *)&info->avg_packet_size, 4);
+					error = fread((void *)&info->avg_packet_size, 4, 1, real_media);
+					bswap((BYTE *)&info->avg_packet_size, 4);
 
-				error = fread((void *)&info->num_packets, 4, 1, real_media);
-				bswap((BYTE *)&info->num_packets, 4);
+					error = fread((void *)&info->num_packets, 4, 1, real_media);
+					bswap((BYTE *)&info->num_packets, 4);
 
-				error = fread((void *)&info->duration, 4, 1, real_media);
-				bswap((BYTE *)&info->duration, 4);
+					error = fread((void *)&info->duration, 4, 1, real_media);
+					bswap((BYTE *)&info->duration, 4);
 
-				error = fread((void *)&info->preroll, 4, 1, real_media);
-				bswap((BYTE *)&info->preroll, 4);
+					error = fread((void *)&info->preroll, 4, 1, real_media);
+					bswap((BYTE *)&info->preroll, 4);
 
-				error = fread((void *)&info->index_offset, 4, 1, real_media);
-				bswap((BYTE *)&info->index_offset, 4);
+					error = fread((void *)&info->index_offset, 4, 1, real_media);
+					bswap((BYTE *)&info->index_offset, 4);
 
-				error = fread((void *)&info->data_offset, 4, 1, real_media);
-				bswap((BYTE *)&info->data_offset, 4);
+					error = fread((void *)&info->data_offset, 4, 1, real_media);
+					bswap((BYTE *)&info->data_offset, 4);
 
-				error = fread((void *)&info->num_streams, 2, 1, real_media);
-				bswap((BYTE *)&info->num_streams, 2);
+					error = fread((void *)&info->num_streams, 2, 1, real_media);
+					bswap((BYTE *)&info->num_streams, 2);
 
-				error = fread((void *)&info->flags, 2, 1, real_media);
-				bswap((BYTE *)&info->flags, 2);
+					error = fread((void *)&info->flags, 2, 1, real_media);
+					bswap((BYTE *)&info->flags, 2);
 
-				//Add to the array
-				//properties_block[properties_block_count] = info;
-				//properties_block_count++;
-			}
-			else
-			{
-				delete info;
-				info = NULL;
-			}
-
-		}
-		else if (!strcmpi(block_id, "CONT"))
-		{
-			//The Content Description Header
-			RealMedia_Content_Description *content_desc = new RealMedia_Content_Description;
-			memset(content_desc, 0, sizeof(RealMedia_Content_Description));
-			if (block_version == 0)
-			{
-				//Read Title text
-				error = fread((void *)&content_desc->title_len, 2, 1, real_media);
-				bswap((BYTE *)&content_desc->title_len, 2);
-
-				content_desc->title = new char[content_desc->title_len+1];
-				error = fread((void *)content_desc->title, content_desc->title_len, 1, real_media);
-				content_desc->title[content_desc->title_len] = 0;
-
-				//Read Author text
-				error = fread((void *)&content_desc->author_len, 2, 1, real_media);
-				bswap((BYTE *)&content_desc->author_len, 2);
-
-				content_desc->author = new char[content_desc->author_len+1];
-				error = fread((void *)content_desc->author, content_desc->author_len, 1, real_media);
-				content_desc->author[content_desc->author_len] = 0;
-
-				//Read Copyright text
-				error = fread((void *)&content_desc->copyright_len, 2, 1, real_media);
-				bswap((BYTE *)&content_desc->copyright_len, 2);
-
-				content_desc->copyright = new char[content_desc->copyright_len+1];
-				error = fread((void *)content_desc->copyright, content_desc->copyright_len, 1, real_media);
-				content_desc->copyright[content_desc->copyright_len] = 0;
-
-				//Read Comment text
-				error = fread((void *)&content_desc->comment_len, 2, 1, real_media);
-				bswap((BYTE *)&content_desc->comment_len, 2);
-
-				content_desc->comment = new char[content_desc->comment_len+1];
-				error = fread((void *)content_desc->comment, content_desc->comment_len, 1, real_media);
-				content_desc->comment[content_desc->comment_len] = 0;
-
-				//Add to the array
-				content_description_block[content_description_block_count] = content_desc;
-				content_description_block_count++;
-			}
-			else
-			{
-				delete content_desc;
-				content_desc = NULL;
-			}
-		}
-		else if (!strcmpi(block_id, "MDPR"))
-		{
-			RealMedia_Media_Properties *media_info = new RealMedia_Media_Properties;
-			memset(media_info, 0, sizeof(RealMedia_Media_Properties));
-
-			if (block_version == 0)
-			{
-				error = fread((void *)&media_info->stream_number, 2, 1, real_media);
-				bswap((BYTE *)&media_info->stream_number, 2);
-
-				error = fread((void *)&media_info->max_bit_rate, 4, 1, real_media);
-				bswap((BYTE *)&media_info->max_bit_rate, 4);
-
-				error = fread((void *)&media_info->avg_bit_rate, 4, 1, real_media);
-				bswap((BYTE *)&media_info->avg_bit_rate, 4);
-
-				error = fread((void *)&media_info->max_packet_size, 4, 1, real_media);
-				bswap((BYTE *)&media_info->max_packet_size, 4);
-
-				error = fread((void *)&media_info->avg_packet_size, 4, 1, real_media);
-				bswap((BYTE *)&media_info->avg_packet_size, 4);
-
-				error = fread((void *)&media_info->start_time, 4, 1, real_media);
-				bswap((BYTE *)&media_info->start_time, 4);
-
-				error = fread((void *)&media_info->preroll, 4, 1, real_media);
-				bswap((BYTE *)&media_info->preroll, 4);
-
-				error = fread((void *)&media_info->duration, 4, 1, real_media);
-				bswap((BYTE *)&media_info->duration, 4);
-
-				//Read Stream Name text
-				error = fread((void *)&media_info->stream_name_size, 1, 1, real_media);
-
-				media_info->stream_name = new char[media_info->stream_name_size+1];
-				error = fread((void *)media_info->stream_name, media_info->stream_name_size, 1, real_media);
-				media_info->stream_name[media_info->stream_name_size] = 0;
-
-				//Read Mime Type text
-				error = fread((void *)&media_info->mime_type_size, 1, 1, real_media);
-
-				media_info->mime_type = new char[media_info->mime_type_size+1];
-				error = fread((void *)media_info->mime_type, media_info->mime_type_size, 1, real_media);
-				media_info->mime_type[media_info->mime_type_size] = 0;
-
-				//Read Type Specific text
-				error = fread((void *)&media_info->type_specific_len, 1, 1, real_media);
-
-				media_info->type_specific_data = new char[media_info->type_specific_len+1];
-				error = fread((void *)media_info->type_specific_data, media_info->type_specific_len, 1, real_media);
-				media_info->type_specific_data[media_info->type_specific_len] = 0;
-
-				//Add to the array
-				media_properties_block[media_properties_block_count] = media_info;
-				media_properties_block_count++;
+					printf("Properties Header\nMax Bitrate: %i\tAvg Bitrate: %i\nMax Packet Size: %i\tAvg Packet Size: %i", info->max_bit_rate, info->avg_bit_rate, info->max_packet_size, info->avg_packet_size);
+					//Add to the array
+					//properties_block[properties_block_count] = info;
+					//properties_block_count++;
+				}
+				else
+				{
+					delete info;
+					info = NULL;
+				}
 
 			}
-			else
+			else if (!strcmpi(block_id, "CONT"))
 			{
-				delete media_info;
-				media_info = NULL;
+				//The Content Description Header
+				RealMedia_Content_Description *content_desc = new RealMedia_Content_Description;
+				memset(content_desc, 0, sizeof(RealMedia_Content_Description));
+				if (block_version == 0)
+				{
+					//Read Title text
+					error = fread((void *)&content_desc->title_len, 2, 1, real_media);
+					bswap((BYTE *)&content_desc->title_len, 2);
+
+					content_desc->title = new char[content_desc->title_len+1];
+					error = fread((void *)content_desc->title, content_desc->title_len, 1, real_media);
+					content_desc->title[content_desc->title_len] = 0;
+
+					//Read Author text
+					error = fread((void *)&content_desc->author_len, 2, 1, real_media);
+					bswap((BYTE *)&content_desc->author_len, 2);
+
+					content_desc->author = new char[content_desc->author_len+1];
+					error = fread((void *)content_desc->author, content_desc->author_len, 1, real_media);
+					content_desc->author[content_desc->author_len] = 0;
+
+					//Read Copyright text
+					error = fread((void *)&content_desc->copyright_len, 2, 1, real_media);
+					bswap((BYTE *)&content_desc->copyright_len, 2);
+
+					content_desc->copyright = new char[content_desc->copyright_len+1];
+					error = fread((void *)content_desc->copyright, content_desc->copyright_len, 1, real_media);
+					content_desc->copyright[content_desc->copyright_len] = 0;
+
+					//Read Comment text
+					error = fread((void *)&content_desc->comment_len, 2, 1, real_media);
+					bswap((BYTE *)&content_desc->comment_len, 2);
+
+					content_desc->comment = new char[content_desc->comment_len+1];
+					error = fread((void *)content_desc->comment, content_desc->comment_len, 1, real_media);
+					content_desc->comment[content_desc->comment_len] = 0;
+
+					//Add to the array
+					content_description_block[content_description_block_count] = content_desc;
+					content_description_block_count++;
+				}
+				else
+				{
+					delete content_desc;
+					content_desc = NULL;
+				}
 			}
-		}
-		else if (!strcmpi(block_id, "DATA"))
-		{
-			RealMedia_Data_Chunk_Header data_chunk;
-			data_chunk.size = block_size;
-
-			error = fread((void *)&data_chunk.num_packets, 4, 1, real_media);
-			bswap((BYTE *)&data_chunk.num_packets, 4);
-
-			error = fread((void *)&data_chunk.next_data_header, 4, 1, real_media);
-			bswap((BYTE *)&data_chunk.next_data_header, 4);
-packet_count = 0;
-			//Now we read all the packets
-			for (int current_packet_no = 0; current_packet_no < data_chunk.num_packets; current_packet_no++)
+			else if (!strcmpi(block_id, "MDPR"))
 			{
-				RealMedia_Media_Packet_Header *new_packet = new RealMedia_Media_Packet_Header();
+				RealMedia_Media_Properties *media_info = new RealMedia_Media_Properties;
+				memset(media_info, 0, sizeof(RealMedia_Media_Properties));
 
-				error = fread((void *)&new_packet->object_version, 2, 1, real_media);
-				bswap((BYTE *)&new_packet->object_version, 2);
+				if (block_version == 0)
+				{
+					error = fread((void *)&media_info->stream_number, 2, 1, real_media);
+					bswap((BYTE *)&media_info->stream_number, 2);
 
-				error = fread((void *)&new_packet->length, 2, 1, real_media);
-				bswap((BYTE *)&new_packet->length, 2);
+					error = fread((void *)&media_info->max_bit_rate, 4, 1, real_media);
+					bswap((BYTE *)&media_info->max_bit_rate, 4);
 
-				error = fread((void *)&new_packet->stream_number, 2, 1, real_media);
-				bswap((BYTE *)&new_packet->stream_number, 2);
+					error = fread((void *)&media_info->avg_bit_rate, 4, 1, real_media);
+					bswap((BYTE *)&media_info->avg_bit_rate, 4);
 
-				error = fread((void *)&new_packet->timestamp, 4, 1, real_media);
-				bswap((BYTE *)&new_packet->timestamp, 4);
+					error = fread((void *)&media_info->max_packet_size, 4, 1, real_media);
+					bswap((BYTE *)&media_info->max_packet_size, 4);
 
-				error = fread((void *)&new_packet->reserved, 1, 1, real_media);
-				bswap((BYTE *)&new_packet->reserved, 1);
+					error = fread((void *)&media_info->avg_packet_size, 4, 1, real_media);
+					bswap((BYTE *)&media_info->avg_packet_size, 4);
 
-				error = fread((void *)&new_packet->flags, 1, 1, real_media);
-				bswap((BYTE *)&new_packet->flags, 1);
-				
-				int data_start_pos = ftell(real_media);
-				int data_length = new_packet->length - 12;
-				if (new_packet->length == 0)
-					data_length = 0;
-				new_packet->data = new UINT8[new_packet->length];				
-				for (int i = 0; i < data_length; i++)
-					error = fread((void *)&new_packet->data[i], 1, 1, real_media);
+					error = fread((void *)&media_info->start_time, 4, 1, real_media);
+					bswap((BYTE *)&media_info->start_time, 4);
 
-				//bswap((BYTE *)new_packet->data, new_packet->length-18);
+					error = fread((void *)&media_info->preroll, 4, 1, real_media);
+					bswap((BYTE *)&media_info->preroll, 4);
 
-				fseek(real_media, data_start_pos + data_length, SEEK_SET);
-				error = ftell(real_media);
-				//delete new_packet->data;
-				//delete new_packet;
-				packets[packet_count++] = new_packet;
+					error = fread((void *)&media_info->duration, 4, 1, real_media);
+					bswap((BYTE *)&media_info->duration, 4);
+
+					//Read Stream Name text
+					error = fread((void *)&media_info->stream_name_size, 1, 1, real_media);
+
+					media_info->stream_name = new char[media_info->stream_name_size+1];
+					error = fread((void *)media_info->stream_name, media_info->stream_name_size, 1, real_media);
+					media_info->stream_name[media_info->stream_name_size] = 0;
+
+					//Read Mime Type text
+					error = fread((void *)&media_info->mime_type_size, 1, 1, real_media);
+
+					media_info->mime_type = new char[media_info->mime_type_size+1];
+					error = fread((void *)media_info->mime_type, media_info->mime_type_size, 1, real_media);
+					media_info->mime_type[media_info->mime_type_size] = 0;
+
+					//Read Type Specific text
+					error = fread((void *)&media_info->type_specific_len, 1, 1, real_media);
+
+					media_info->type_specific_data = new char[media_info->type_specific_len+1];
+					error = fread((void *)media_info->type_specific_data, media_info->type_specific_len, 1, real_media);
+					media_info->type_specific_data[media_info->type_specific_len] = 0;
+
+					//Add to the array
+					media_properties_block[media_properties_block_count] = media_info;
+					media_properties_block_count++;
+
+				}
+				else
+				{
+					delete media_info;
+					media_info = NULL;
+				}
 			}
-		}
+			else if (!strcmpi(block_id, "DATA"))
+			{
+				printf("\nReading Data chunk\n");
+				RealMedia_Data_Chunk_Header data_chunk;
+				data_chunk.size = block_size;
 
-		//Now we seek to the end of the block, (just in case we didn't)
-		fseek(real_media, file_pos+block_size, SEEK_SET);
-		//If we are seeking to the same point it's useless
-		if (file_pos == ftell(real_media))
-			keep_looping = false;
+				error = fread((void *)&data_chunk.num_packets, 4, 1, real_media);
+				bswap((BYTE *)&data_chunk.num_packets, 4);
+
+				error = fread((void *)&data_chunk.next_data_header, 4, 1, real_media);
+				bswap((BYTE *)&data_chunk.next_data_header, 4);
+
+				error = fread((void *)&data_chunk.object_version, 2, 1, real_media);
+				bswap((BYTE *)&data_chunk.object_version, 2);
+
+				packet_count = 0;
+
+				/*using namespace std;
+				ifstream input_rm_file;
+				input_rm_file.open(filename, ios_base::in | ios_base::binary);
+				input_rm_file.read(*/
+
+				//Now we read all the packets
+				for (int current_packet_no = 0; current_packet_no < data_chunk.num_packets; current_packet_no++)
+				{
+					RealMedia_Media_Packet_Header *new_packet = new RealMedia_Media_Packet_Header();
+					memset(new_packet, 0, sizeof(*new_packet));
+					
+					int packet_start_pos = ftell(real_media);
+					
+					error = fread((void *)&new_packet->length, 2, 1, real_media);
+					bswap((BYTE *)&new_packet->length, 2);
+
+					error = fread((void *)&new_packet->stream_number, 2, 1, real_media);
+					bswap((BYTE *)&new_packet->stream_number, 2);
+
+					error = fread((void *)&new_packet->timestamp, 4, 1, real_media);
+					bswap((BYTE *)&new_packet->timestamp, 4);
+
+					error = fread((void *)&new_packet->reserved, 1, 1, real_media);
+					bswap((BYTE *)&new_packet->reserved, 1);
+
+					error = fread((void *)&new_packet->flags, 1, 1, real_media);
+					bswap((BYTE *)&new_packet->flags, 1);
+					
+					
+					int data_length = new_packet->length - 10;
+					int data_start = ftell(real_media);
+
+					/*
+					new_packet->data = new UINT8[new_packet->length];				
+					int i = 0;
+					for (i = 0; i < data_length; i++)
+						error = fread((void *)&new_packet->data[i], 1, 1, real_media);
+					*/
+					
+
+					fseek(real_media, packet_start_pos + new_packet->length, SEEK_SET);				
+					
+					ReadMedia_Packet *min_packet_data = new ReadMedia_Packet;
+					min_packet_data->stream_number = new_packet->stream_number;
+					min_packet_data->timestamp = new_packet->timestamp;
+					min_packet_data->reserved = new_packet->reserved;
+					min_packet_data->flags = new_packet->flags;
+					min_packet_data->packet_start_pos = data_start;
+					min_packet_data->packet_data_length = data_length;
+
+					packets[packet_count++] = min_packet_data;
+									
+					delete new_packet;
+				}
+			}
+
+			//Now we seek to the end of the block, (just in case we didn't)
+			fseek(real_media, file_pos+block_size, SEEK_SET);
+			//If we are seeking to the same point it's useless
+			if (file_pos == ftell(real_media))
+				keep_looping = false;
+		}		
+		return 0;
 	}
-	fclose(real_media);
-	return 0;
+	return 1;
+};
+
+BYTE *RealMedia_Reader::GetPacketData(UINT16 packet_no)
+{
+	if (the_filename == NULL || real_media == NULL)
+		return NULL;
+
+	if ((packet_no < packet_count) && (packets[packet_no] != NULL))
+	{
+		BYTE *packet_data = new BYTE[packets[packet_no]->packet_data_length];
+
+		fseek(real_media, packets[packet_no]->packet_start_pos, SEEK_SET);
+		fread(packet_data, packets[packet_no]->packet_data_length, 1, real_media);
+
+		return packet_data;
+	}
+
+	return NULL;
 };
 
 void bswap(BYTE* s, int len)

@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <fstream>
 
 #define BYTE unsigned char
 #define UINT8 unsigned char
@@ -169,19 +170,42 @@ struct RealMedia_Media_Packet_Header
 };
 
 
+struct ReadMedia_Packet
+{
+	/// The start of the raw packet data in the file
+	UINT16 packet_start_pos;
+	/// The length of the raw packet data in bytes
+	UINT16 packet_data_length;
+	/// The 16-bit alias used to associate data packets with their associated Media Properties Header
+  UINT16 stream_number;
+	/// The timestamp of the packet in milliseconds
+  UINT32 timestamp;
+	/// This is not used
+  UINT8 reserved; 
+	/// Flags describing the properties of the packet. Look at RealMedia_Media_Packet_Header.flags for values
+  UINT8 flags; 
+
+};
 class RealMedia_Reader
 {
 	public:
 		RealMedia_Reader();
 		~RealMedia_Reader();
+		/// Processes a RealMedia file
+		/// Call this first!
+		/// \param filename The filename of the file to process
+		/// \return 0 if successful		
 		int Read(const char *filename);
 
+		BYTE *GetPacketData(UINT16 packet_no);
+		
+	//Data members
+		char *the_filename;
+		FILE *real_media;
 		RealMedia_File_Header the_header;
-
 		RealMedia_Properties properties_block;
-		//UINT8 properties_block_count;
 
-		RealMedia_Media_Packet_Header *packets[10000];
+		ReadMedia_Packet *packets[10000];
 		UINT16 packet_count;
 
 		RealMedia_Media_Properties *media_properties_block[255];
