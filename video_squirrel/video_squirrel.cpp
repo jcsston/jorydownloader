@@ -330,7 +330,7 @@ void SearchFrame::OnSearchFrame_SearchButton(wxCommandEvent &event)
 	DEBUG(_T("Searching"));
 	for (size_t d = 0; d < frame->m_Database.size(); d++)
 	{
-		current_item = (VideoItem *)frame->m_Database.at(d);
+		current_item = (VideoItem *)&frame->m_Database.at(d);
 
 		int found_index = current_item->title.Lower().Find(search_string.Lower().c_str());
 		if (found_index != -1)
@@ -563,8 +563,7 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 	DEBUG(filename.c_str());
 	
 	SetStatusText(wxString(_T("Please wait, adding: ")) + filename);
-	VideoItem *pNewItem = new VideoItem();
-	VideoItem &new_item = *pNewItem;
+	VideoItem new_item;
 	new_item.filename = filename;
 	new_item.cd = group_under;
 	if (filename.Right(4).Lower() == _T(".avi"))
@@ -618,7 +617,7 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 			AVI_close(avi_infomation);
 			
 			//Add item to database list
-			AddVideoItemToDatabase(pNewItem);			
+			AddVideoItemToDatabase(new_item);			
 		}
 		else
 		{
@@ -699,7 +698,7 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 		}
 		
 		//We are done so now add the item to the database
-		AddVideoItemToDatabase(pNewItem);
+		AddVideoItemToDatabase(new_item);
 		
 		#else
 		SetStatusText(_T("RealVideo support not compiled in"));
@@ -737,7 +736,7 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 		new_item.video.avg_bitrate = file_length / new_item.video.duration / 128;
 
 		//We are done so now add the item to the database
-		AddVideoItemToDatabase(pNewItem);
+		AddVideoItemToDatabase(new_item);
 		
 		#else
 		SetStatusText(_T("MPEG support not compiled in"));
@@ -806,7 +805,7 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 		
 		
 		//We are done so now add the item to the database
-		AddVideoItemToDatabase(pNewItem);		
+		AddVideoItemToDatabase(new_item);		
 		#else
 		SetStatusText(_T("Matroska support not compiled in"));
 		#endif																				//MATROSKA_SUPPORT
@@ -816,9 +815,6 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 		DEBUG(_T("Failed to open:"));
 		DEBUG(filename.c_str());
 		SetStatusText(_T("File type not supported"));
-		
-		delete pNewItem;
-
 		return;
 	}
 	SetStatusText(wxString(_T("Done, added: ")) + filename);
@@ -836,6 +832,14 @@ void AppFrame::OnMenuSearchDatabase(wxCommandEvent &event)
 
 int AppFrame::AddVideoItemToDatabase(VideoItem *new_item)
 {
+	if (new_item != NULL)
+		return AddVideoItemToDatabase(*new_item);
+
+	return -1;
+}
+
+int AppFrame::AddVideoItemToDatabase(VideoItem &new_item)
+{
 	DEBUG(_T("AppFrame::AddVideoItemToDatabase called"));
 
 	m_DatabaseChanged = true;
@@ -844,8 +848,8 @@ int AppFrame::AddVideoItemToDatabase(VideoItem *new_item)
 	m_Database.push_back(new_item);
 	//Now append this item to the Database ListView Control
 	long new_item_index = 0;
-	new_item_index = database_list_view->InsertItem(database_list_view->GetItemCount()+1, new_item->title);
-	database_list_view->SetItemData(new_item_index, (long)new_item->UID);
+	new_item_index = database_list_view->InsertItem(database_list_view->GetItemCount()+1, new_item.title);
+	database_list_view->SetItemData(new_item_index, (long)new_item.UID);
 	database_list_view->SetColumnWidth(0, -1);
 	
 	//If we got this far without crashing, We're doing great :)
@@ -897,7 +901,7 @@ void AppFrame::OnAbout(wxCommandEvent &WXUNUSED(event))
 	long real_total_size = sizeof(m_Database);
 	for (size_t d = 0; d < m_Database.size(); d++)
 	{
-		VideoItem &current_item = *m_Database.at(d);
+		VideoItem &current_item = m_Database.at(d);
 		real_total_size += current_item.GetSize();
 	}
 	msg = _T("<html>");
@@ -965,7 +969,7 @@ void AppFrame::OnMenuGenerateHTMLListing(wxCommandEvent &event)
 	html_listing = _T("<html><body><font size=+2><b>Squirrel Video Listing</b></font><hr>");
 	for (size_t d = 0; d < m_Database.size(); d++)
 	{
-		VideoItem &current_item = *m_Database.at(d);
+		VideoItem &current_item = m_Database.at(d);
 
 		html_listing += CreateHTMLPage(&current_item, true);   
 	}
@@ -1094,7 +1098,7 @@ void AppFrame::RefreshVideoList()
 	for (size_t d = 0; d < m_Database.size(); d++)
 	{
 		//Get the current item's data
-		VideoItem *current_item = (VideoItem *)m_Database.at(d);
+		VideoItem *current_item = (VideoItem *)&m_Database.at(d);
 		if (current_item != NULL) {
 			current_item_index = database_list_view->InsertItem(database_list_view->GetItemCount()+1, current_item->title); 
  			database_list_view->SetItemData(current_item_index, (long)current_item->UID);
@@ -1142,7 +1146,7 @@ void AppFrame::parseXMLFile(wxString filename)
 				{					
 					if (!stricmp(level_1->Value(), "VideoItem")) {				
 						// Create a new VideoItem
-						VideoItem *newItem = new VideoItem();
+						VideoItem newItem;
 
 						TiXmlNode *level_2 = level_1->IterateChildren(NULL);
 						while (level_2 != NULL)
@@ -1150,32 +1154,32 @@ void AppFrame::parseXMLFile(wxString filename)
 							if (!stricmp(level_2->Value(), "UID")) {
 								TiXmlNode *level_2_data = level_2->FirstChild();
 								if (level_2_data != NULL) {
-									newItem->UID = atol(level_2_data->Value());
+									newItem.UID = atol(level_2_data->Value());
 								}
 							}else if (!stricmp(level_2->Value(), "Title")) {
 								TiXmlNode *level_2_data = level_2->FirstChild();
 								if (level_2_data != NULL) {
-									newItem->title = wxString(level_2_data->Value(), wxConvUTF8);
+									newItem.title = wxString(level_2_data->Value(), wxConvUTF8);
 								}
 							}else if (!stricmp(level_2->Value(), "CD")) {
 								TiXmlNode *level_2_data = level_2->FirstChild();
 								if (level_2_data != NULL) {
-									newItem->cd = wxString(level_2_data->Value(), wxConvUTF8);
+									newItem.cd = wxString(level_2_data->Value(), wxConvUTF8);
 								}
 							}else if (!stricmp(level_2->Value(), "Filename")) {
 								TiXmlNode *level_2_data = level_2->FirstChild();
 								if (level_2_data != NULL) {
-									newItem->filename = wxString(level_2_data->Value(), wxConvUTF8);
+									newItem.filename = wxString(level_2_data->Value(), wxConvUTF8);
 								}
 							}else if (!stricmp(level_2->Value(), "Comment")) {
 								TiXmlNode *level_2_data = level_2->FirstChild();
 								if (level_2_data != NULL) {
-									newItem->comment_text = wxString(level_2_data->Value(), wxConvUTF8);
+									newItem.comment_text = wxString(level_2_data->Value(), wxConvUTF8);
 								}
 							}else if (!stricmp(level_2->Value(), "FileSize")) {
 								TiXmlNode *level_2_data = level_2->FirstChild();
 								if (level_2_data != NULL) {
-									newItem->file_size = atol(level_2_data->Value());
+									newItem.file_size = atol(level_2_data->Value());
 								}
 							}else if (!stricmp(level_2->Value(), "VideoData")) {
 								TiXmlNode *level_3 = level_2->IterateChildren(NULL);
@@ -1184,37 +1188,37 @@ void AppFrame::parseXMLFile(wxString filename)
 									if (!stricmp(level_3->Value(), "VideoBitrate")) {
 										TiXmlNode *level_3_data = level_3->FirstChild();
 										if (level_3_data != NULL) {
-											newItem->video.avg_bitrate = atol(level_3_data->Value());
+											newItem.video.avg_bitrate = atol(level_3_data->Value());
 										}
 									
 									} else if (!stricmp(level_3->Value(), "PixelWidth")) {
 										TiXmlNode *level_3_data = level_3->FirstChild();
 										if (level_3_data != NULL) {
-											newItem->video.x = atol(level_3_data->Value());
+											newItem.video.x = atol(level_3_data->Value());
 										}
 
 									} else if (!stricmp(level_3->Value(), "PixelHeight")) {
 										TiXmlNode *level_3_data = level_3->FirstChild();
 										if (level_3_data != NULL) {
-											newItem->video.y = atol(level_3_data->Value());
+											newItem.video.y = atol(level_3_data->Value());
 										}
 
 									} else if (!stricmp(level_3->Value(), "VideoFrameRate")) {
 										TiXmlNode *level_3_data = level_3->FirstChild();
 										if (level_3_data != NULL) {
-											newItem->video.frame_rate = atof(level_3_data->Value());
+											newItem.video.frame_rate = atof(level_3_data->Value());
 										}
 
 									} else if (!stricmp(level_3->Value(), "VideoDuration")) {
 										TiXmlNode *level_3_data = level_3->FirstChild();
 										if (level_3_data != NULL) {
-											newItem->video.duration = atol(level_3_data->Value());
+											newItem.video.duration = atol(level_3_data->Value());
 										}
 
 									} else if (!stricmp(level_3->Value(), "VideoCompressor")) {
 										TiXmlNode *level_3_data = level_3->FirstChild();
 										if (level_3_data != NULL) {
-											newItem->video.compressor = wxString(level_3_data->Value(), wxConvUTF8);
+											newItem.video.compressor = wxString(level_3_data->Value(), wxConvUTF8);
 										}
 									}
 									level_3 = level_2->IterateChildren(level_3);
@@ -1251,7 +1255,7 @@ void AppFrame::parseXMLFile(wxString filename)
 									}
 									level_3 = level_2->IterateChildren(level_3);
 								}	// while (level_3 != NULL)
-								newItem->audio.push_back(newAudioData);
+								newItem.audio.push_back(newAudioData);
 
 							}else if (!stricmp(level_2->Value(), "Option")) {
 
@@ -1439,7 +1443,7 @@ VideoItem *AppFrame::FindVideoItemByUID(long uid)
 	for (size_t d = 0; d < m_Database.size(); d++)
 	{
 		//Get the current item's data
-		VideoItem &current_item = *m_Database.at(d);
+		VideoItem &current_item = m_Database.at(d);
 		if (current_item.UID == uid)
 			return &current_item;
 	}
