@@ -1,0 +1,50 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BaseClassesNET", "BaseClassesNET.vcproj", "{85775F2E-2C19-41A4-85E3-6DF4FA72A802}"
+	ProjectSection(ProjectDependencies) = postProject
+		{45FFF731-DB3D-47CB-9A7E-30692D38B7CB} = {45FFF731-DB3D-47CB-9A7E-30692D38B7CB}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BaseClasses", "..\BaseClasses\baseclasses.vcproj", "{45FFF731-DB3D-47CB-9A7E-30692D38B7CB}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Debug NoDLL = Debug NoDLL
+		Debug Unicode = Debug Unicode
+		Release = Release
+		Release NoDLL = Release NoDLL
+		Release Unicode = Release Unicode
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{85775F2E-2C19-41A4-85E3-6DF4FA72A802}.Debug.ActiveCfg = Debug|Win32
+		{85775F2E-2C19-41A4-85E3-6DF4FA72A802}.Debug.Build.0 = Debug|Win32
+		{85775F2E-2C19-41A4-85E3-6DF4FA72A802}.Debug NoDLL.ActiveCfg = Debug|Win32
+		{85775F2E-2C19-41A4-85E3-6DF4FA72A802}.Debug NoDLL.Build.0 = Debug|Win32
+		{85775F2E-2C19-41A4-85E3-6DF4FA72A802}.Debug Unicode.ActiveCfg = Debug|Win32
+		{85775F2E-2C19-41A4-85E3-6DF4FA72A802}.Debug Unicode.Build.0 = Debug|Win32
+		{85775F2E-2C19-41A4-85E3-6DF4FA72A802}.Release.ActiveCfg = Release|Win32
+		{85775F2E-2C19-41A4-85E3-6DF4FA72A802}.Release.Build.0 = Release|Win32
+		{85775F2E-2C19-41A4-85E3-6DF4FA72A802}.Release NoDLL.ActiveCfg = Release|Win32
+		{85775F2E-2C19-41A4-85E3-6DF4FA72A802}.Release NoDLL.Build.0 = Release|Win32
+		{85775F2E-2C19-41A4-85E3-6DF4FA72A802}.Release Unicode.ActiveCfg = Release|Win32
+		{85775F2E-2C19-41A4-85E3-6DF4FA72A802}.Release Unicode.Build.0 = Release|Win32
+		{45FFF731-DB3D-47CB-9A7E-30692D38B7CB}.Debug.ActiveCfg = Debug NoDLL|Win32
+		{45FFF731-DB3D-47CB-9A7E-30692D38B7CB}.Debug.Build.0 = Debug NoDLL|Win32
+		{45FFF731-DB3D-47CB-9A7E-30692D38B7CB}.Debug NoDLL.ActiveCfg = Debug NoDLL|Win32
+		{45FFF731-DB3D-47CB-9A7E-30692D38B7CB}.Debug NoDLL.Build.0 = Debug NoDLL|Win32
+		{45FFF731-DB3D-47CB-9A7E-30692D38B7CB}.Debug Unicode.ActiveCfg = Debug Unicode|Win32
+		{45FFF731-DB3D-47CB-9A7E-30692D38B7CB}.Debug Unicode.Build.0 = Debug Unicode|Win32
+		{45FFF731-DB3D-47CB-9A7E-30692D38B7CB}.Release.ActiveCfg = Release NoDLL|Win32
+		{45FFF731-DB3D-47CB-9A7E-30692D38B7CB}.Release.Build.0 = Release NoDLL|Win32
+		{45FFF731-DB3D-47CB-9A7E-30692D38B7CB}.Release NoDLL.ActiveCfg = Release NoDLL|Win32
+		{45FFF731-DB3D-47CB-9A7E-30692D38B7CB}.Release NoDLL.Build.0 = Release NoDLL|Win32
+		{45FFF731-DB3D-47CB-9A7E-30692D38B7CB}.Release Unicode.ActiveCfg = Release Unicode|Win32
+		{45FFF731-DB3D-47CB-9A7E-30692D38B7CB}.Release Unicode.Build.0 = Release Unicode|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
