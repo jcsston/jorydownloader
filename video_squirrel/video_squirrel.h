@@ -31,7 +31,8 @@
 #ifndef _VIDEO_SQUIRREL_H_
 #define _VIDEO_SQUIRREL_H_
 
-#define DEBUG(x) wxLogDebug(x);
+#define DEBUG(x) wxMessageBox(x)
+//wxLogDebug(x)
 #define Video_Squirrel_Version "v0.1"
 
 //wxWindows includes
@@ -91,7 +92,7 @@ extern "C" {
 
 #ifdef MATROSKA_SUPPORT
 //MatroskaInfoParser includes
-#include "MatroskaUtils.h" // Win32 GCC don't work with these
+#include "MatroskaUtils.h"
 #endif
 
 class audioData

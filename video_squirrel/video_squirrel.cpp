@@ -322,7 +322,7 @@ void SearchFrame::OnSearchFrame_SearchButton(wxCommandEvent &event)
  	wxString search_string = text_ctrl_search_string->GetLineText(0);
 	wxString html_report;
 	VideoItem *current_item = NULL;
-
+	
 	wxVideoItemListNode *node = frame->the_database->GetFirst();
 	wxArrayLong found_items;
 	DEBUG(_T("Searching"));
@@ -471,9 +471,11 @@ void AppFrame::AddFolderToDatabase(wxString &folder, wxString group_under)
 	int num_of_files = 0;
 
 	//Setup the file types to scan for
-	file_types.Alloc(3);														//< This should improve the speed a tiny bit
+	file_types.Alloc(5);														//< This should improve the speed a tiny bit
 	file_types.Add(_T("*.avi"));
+	file_types.Add(_T("*.mpg"));
 	file_types.Add(_T("*.rm"));
+	file_types.Add(_T("*.rmvb"));
 	file_types.Add(_T("*.mkv"));
 
 	for (int m = 0; m < menuBar->GetMenuCount(); m++)
@@ -574,7 +576,7 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 		SetStatusText(_T("AVI support not compiled in"));
 		#endif																				//AVI_SUPPORT
 	}
-	else if ((filename.Right(3).Lower() == _T(".rm")) || (filename.Right(4).Lower() == _T(".rvb")))
+	else if ((filename.Right(3).Lower() == _T(".rm")) || (filename.Right(4).Lower() == _T(".rmvb")))
 	{
 		#ifdef REALMEDIA_SUPPORT
 		//A RealMedia file :D
@@ -589,21 +591,24 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 		int audio_stream_no = 0;
 		for (int stream_no = 0; stream_no < rm_reader.properties_block.num_streams; stream_no++)
 		{
-			if (!strcmpi(rm_reader.media_properties_block[stream_no]->stream_name, "Video Stream"))
-			{
-				//Since RealMedia files don't have a framerate
-				new_item->video.frame_rate = 30;
-				new_item->video.duration = rm_reader.media_properties_block[stream_no]->duration / 1000;
+			RealMedia_Media_Properties *current_stream = rm_reader.media_properties_block[stream_no];
+			if (current_stream != NULL) {
+				if (!strcmpi(current_stream->stream_name, "Video Stream"))
+				{
+					//Since RealMedia files don't have a framerate
+					new_item->video.frame_rate = current_stream->frame_rate;
+					new_item->video.duration = current_stream->duration / 1000;
 
-				new_item->video.compressor = wxString(rm_reader.media_properties_block[stream_no]->mime_type, wxConvUTF8);
-				new_item->video.avg_bitrate = rm_reader.media_properties_block[stream_no]->avg_bit_rate / 1000;
-			}
-			else if (!strcmpi(rm_reader.media_properties_block[stream_no]->stream_name, "Audio Stream"))
-			{
-					new_item->audio[audio_stream_no] = new audioData();
-					new_item->audio[audio_stream_no]->avg_bitrate = rm_reader.media_properties_block[stream_no]->avg_bit_rate / 1000;
-					new_item->audio[audio_stream_no]->compression = wxString(rm_reader.media_properties_block[stream_no]->mime_type, wxConvUTF8);
-					audio_stream_no++;
+					new_item->video.compressor = wxString((char *)((char *)current_stream->video_header->fcc1)[0], wxConvUTF8) + wxString((char *)((char *)current_stream->video_header->fcc1)[1], wxConvUTF8) + wxString((char *)((char *)current_stream->video_header->fcc2)[0], wxConvUTF8) + wxString((char *)((char *)current_stream->video_header->fcc2)[1], wxConvUTF8);
+					new_item->video.avg_bitrate = current_stream->avg_bit_rate / 1000;
+				}
+				else if (!strcmpi(current_stream->stream_name, "Audio Stream"))
+				{
+						new_item->audio[audio_stream_no] = new audioData();
+						new_item->audio[audio_stream_no]->avg_bitrate = current_stream->avg_bit_rate / 1000;
+						new_item->audio[audio_stream_no]->compression = wxString(rm_reader.media_properties_block[stream_no]->mime_type, wxConvUTF8);
+						audio_stream_no++;
+				}
 			}
 		}
 
@@ -642,15 +647,6 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 		new_item->video.duration = long(mpeg_reader.GetTotalFrames() / new_item->video.frame_rate);
 
 		new_item->video.compressor = _T("MPEG Video");
-		//new_item->video.avg_bitrate = rm_reader.properties_block[0]->avg_bit_rate / 1000;
-
-		/*int stream_no = 1;
-		while (rm_reader.media_properties_block[stream_no] != NULL)
-		{
-			new_item->audio[stream_no] = new audioData();
-			new_item->audio[stream_no]->avg_bitrate = rm_reader.media_properties_block[stream_no]->avg_bit_rate / 1000;
-			stream_no++;
-		}*/
 
 		wxFile source_file(filename.c_str());
 		off_t file_length = source_file.Length();
@@ -675,9 +671,37 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 		#ifdef MATROSKA_SUPPORT
 		//This is where some code goes ;P
 		char *nice_filename = new char[filename.length()];
-		strcpy(nice_filename, filename.mb_str());
-		MatroskaInfoParser *new_file = new MatroskaInfoParser(nice_filename);
+		strcpy(nice_filename, filename.mb_str());		
+  	
+   	MatroskaInfoParser *new_file = new MatroskaInfoParser(nice_filename);
 		new_file->ParseFile();		
+		
+  	for (int t = 0; t < new_file->GetNumberOfTracks(); t++)
+		{
+			MatroskaTrackInfo *current_track = new_file->GetTrackInfo(t);
+			if (current_track != NULL)
+			{
+				if (current_track->GetTrackType() == track_video) {
+					new_item->video.compressor = wxString(current_track->GetCodecID(), wxConvUTF8);
+					MatroskaVideoTrackInfo *video_track = current_track->GetVideoInfo();
+					if (video_track != NULL)
+					{
+ 			 			new_item->video.x = video_track->video_Width;
+     			 	new_item->video.y = video_track->video_Height;
+     			 	new_item->video.display_x = video_track->video_DisplayWidth;
+     			 	new_item->video.display_y = video_track->video_DisplayHeight;
+     			 	new_item->video.frame_rate = video_track->video_FrameRate;
+     			 	new_item->video.color_depth = video_track->video_ColorDepth;
+ 			    }				
+				}else if (current_track->GetTrackType() == track_audio) {
+				
+				
+				}
+			}
+		}
+		
+		//We are done so now add the item to the database
+		AddVideoItemToDatabase(new_item);		
 		#else
 		SetStatusText(_T("Matroska support not compiled in"));
 		#endif																				//MATROSKA_SUPPORT
@@ -698,8 +722,9 @@ void AppFrame::OnMenuSearchDatabase(wxCommandEvent &event)
 {
 	DEBUG(_T("AppFrame::OnMenuSearchDatabase called"));
 	//Time to SEARCH :D
-	search_box = new SearchFrame(this, _T("Search Database"));
-	search_box->Show(TRUE);
+	wxString search_text = wxGetTextFromUser(_T("Enter the text to search for"));
+	//search_box = new SearchFrame(this, _T("Search Database"));
+	//search_box->Show(TRUE);
 };
 
 int AppFrame::AddVideoItemToDatabase(VideoItem *new_item)
@@ -952,8 +977,11 @@ void AppFrame::RefreshVideoList()
 	while (node)
 	{
 		current_item = (VideoItem *)node->GetData();
- 		current_item_index = database_list_view->InsertItem(database_list_view->GetItemCount()+1, current_item->title); 
- 		database_list_view->SetItemData(current_item_index, (long)current_item);
+		if (current_item != NULL)
+		{
+			current_item_index = database_list_view->InsertItem(database_list_view->GetItemCount()+1, current_item->title); 
+ 			database_list_view->SetItemData(current_item_index, (long)current_item);
+		}
  		
 		node = node->GetNext();
 	}

@@ -40,7 +40,7 @@
 #define UINT32 unsigned long
 
 #ifndef strcmpi
-#define strcmpi strcmp
+#define strcmpi stricmp
 #endif
 
 typedef struct {
@@ -107,6 +107,7 @@ struct RealMedia_Properties
 	UINT16 flags;
 };
 
+#pragma pack(push, 1)
 struct RealMedia_VideoHeader 
 {
 	UINT32 dwSize;
@@ -126,8 +127,8 @@ struct RealMedia_VideoHeader
 };
 
 struct RealMedia_AudioHeader {
-	UINT16 unknown1; // No clue
-	UINT8 unknown2; // just need to skip 4, 6? bytes
+	UINT32 unknown1; // No clue
+	UINT32 unknown2; // just need to skip 4, 6? bytes
 	UINT16 header_version;
 	UINT16 unknown3; // 00 00
 	UINT32 format; //? .ra4 or .ra5
@@ -155,8 +156,8 @@ struct RealMedia_AudioHeader {
 	UINT16 channels;
 
 	//Here if format_version == 5
-	UINT32 unknown12;
-	UINT32 codec_name;
+	UINT32 codec_prefix; // Often 'genr'
+	UINT32 codec_name; // Can be 'cook'
 	//End if format_version == 5
 
 	//If codec_name == "cook"
@@ -167,6 +168,7 @@ struct RealMedia_AudioHeader {
 	UINT8 *codecdata; //This is the size codecdata_length
 	//End if codec_name == "cook"
 };
+#pragma pack()
 
 struct RealMedia_Media_Properties
 {
@@ -198,17 +200,17 @@ struct RealMedia_Media_Properties
 	//Audio Stream
 	RealMedia_AudioHeader *audio_header;
 	WAVEFORMATEX_real *wav_data;
-  UINT32 frequency;
-	UINT16 samplesize;
-  UINT16 channels;
-  UINT8 codec_audience_number;
+  //UINT32 frequency;
+	//UINT16 samplesize;
+  //UINT16 channels;
+  //UINT8 codec_audience_number;
 
 	//Video Stream
 	RealMedia_VideoHeader *video_header;
-	void *extra_videocodec_data;
-	UINT8 extra_videocodec_data_size;
-	UINT16 frame_width;
-  UINT16 frame_height;
+	//void *extra_videocodec_data;
+	//UINT8 extra_videocodec_data_size;
+	//UINT16 frame_width;
+  //UINT16 frame_height;
   float frame_rate;
 
 };

@@ -29,7 +29,6 @@
 	\author Jory Stone            <jcsston @ toughguy.net>
 	\author Gabest
 */
-#pragma pack(1)
 
 #include "realmedia_reader.h"
 
@@ -272,7 +271,7 @@ int RealMedia_Reader::Read(const char *filename, bool bPreReadDataPackets)
 
 					media_info->type_specific_data = new UINT8[media_info->type_specific_len+1];
 					error = fread((void *)media_info->type_specific_data, media_info->type_specific_len, 1, real_media);
-					media_info->type_specific_data[media_info->type_specific_len] = 0;
+					//media_info->type_specific_data[media_info->type_specific_len] = 0;
 
 					//Now depending on the mime type we can read more infomation about this track
 					//Thanks to Dark-Cracker for help
@@ -323,11 +322,21 @@ int RealMedia_Reader::Read(const char *filename, bool bPreReadDataPackets)
 					else if (!stricmp(media_info->mime_type, "audio/x-pn-realaudio"))
 					{
 						media_info->audio_header = (RealMedia_AudioHeader *)media_info->type_specific_data;
-						int size = sizeof(RealMedia_AudioHeader);
-						size++;
+						UINT32 size = sizeof(RealMedia_AudioHeader);						
 						bswap((BYTE *)&media_info->audio_header->codecdata_length, 4);
+						size = media_info->audio_header->codecdata_length;
 						bswap((BYTE *)&media_info->audio_header->channels, 2);
+						size = media_info->audio_header->channels;
 						bswap((BYTE *)&media_info->audio_header->sample_rate, 2);
+						size = media_info->audio_header->sample_rate;
+						bswap((BYTE *)&media_info->audio_header->sample_size, 2);
+						bswap((BYTE *)&media_info->audio_header->sub_packet_h, 2);
+						bswap((BYTE *)&media_info->audio_header->sub_packet_size, 2);
+						bswap((BYTE *)&media_info->audio_header->coded_frame_size, 4);
+						bswap((BYTE *)&media_info->audio_header->format_version, 2);
+						bswap((BYTE *)&media_info->audio_header->frame_size, 2);
+						bswap((BYTE *)&media_info->audio_header->header_size, 4);
+						bswap((BYTE *)&media_info->audio_header->header_version, 2);
 						/*error = ftell(real_media);
 						UINT16 version = 0;
 						UINT16 flavor = 0;

@@ -1,7 +1,7 @@
 [Project]
 FileName=video_squirrel.dev
 Name=Video Squirrel
-UnitCount=108
+UnitCount=110
 Type=0
 Ver=1
 ObjFiles=
@@ -25,7 +25,7 @@ IncludeVersionInfo=1
 SupportXPThemes=1
 CompilerSet=0
 CompilerSettings=000000100100100100
-CppCompiler=-D_X86_=1 -DWIN32 -DWINVER=0x0400 -D__WIN95__ -D__GNUWIN32__ -D__WIN32__ -mthreads -DSTRICT  -D__WXMSW__ -D__WINDOWS__ -Wall -fno-pcc-struct-return -O2 -fno-rtti -fexceptions_@@_
+CppCompiler=-D_X86_=1 -DWIN32 -DWINVER=0x0400 -D__WIN95__ -D__GNUWIN32__ -D__WIN32__ -mthreads -DSTRICT  -D__WXMSW__ -D__WINDOWS__ -Wall -fno-pcc-struct-return -fno-rtti_@@_
 
 [Unit1]
 FileName=video_squirrel.cpp
@@ -51,7 +51,7 @@ Priority=1000
 Major=0
 Minor=1
 Release=1
-Build=526
+Build=538
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -1119,6 +1119,26 @@ BuildCmd=
 FileName=..\libmatroska\src\KaxVersion.h
 CompileCpp=1
 Folder=libmatroska
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit109]
+FileName=..\libebml\src\MemIOCallback.cpp
+CompileCpp=1
+Folder=libebml
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit110]
+FileName=..\libebml\src\MemIOCallback.h
+CompileCpp=1
+Folder=libebml
 Compile=1
 Link=1
 Priority=1000
