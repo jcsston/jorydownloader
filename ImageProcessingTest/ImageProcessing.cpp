@@ -313,8 +313,95 @@ void ImageProcessing_MMXAlphaSet(BYTE *image, int w, int h)
 		psll		mm4, 32
 		por			mm4, mm3
 		;movq		mm4, 0FF000000FF000000h ; this doesn't assemble
+		
 		align 16 
 codeloop:
+		movq		mm0, [esi]			; mov 8 bytes of src data to mmx reg 0
+		movq		mm1, [edi]			; mov 8 bytes of src data to mmx reg 1
+		movq		mm2, [edx]			; mov 8 bytes of src data to mmx reg 2
+		movq		mm3, [ebx]			; mov 8 bytes of src data to mmx reg 3
+		
+		; We AND 8*2 rgb32 pixels at a time
+		por			mm0, mm4			; AND the image data with the set alpha
+		por			mm1, mm4			; AND the image data with the set alpha
+		por			mm2, mm4			; AND the image data with the set alpha
+		por			mm3, mm4			; AND the image data with the set alpha
+				
+		movq		[esi], mm0			; mov the processed mmx reg 0
+		movq		[edi], mm1			; mov the processed mmx reg 1
+		movq		[edx], mm2			; mov the processed mmx reg 2
+		movq		[ebx], mm3			; mov the processed mmx reg 3
+
+		; get ready for next pass
+		add			esi, 40
+		add			edx, 40
+		add			edi, 40
+		add			ebx, 40
+
+		dec			ecx					; decrement count by 1
+		jnz			codeloop			; jump to codeloop if not Zero
+		emms							; Restore FPU state to normal
+	}
+}
+
+// 16-mod
+void ImageProcessing_MMX16AlphaSet(BYTE *image, int w, int h)
+{
+	// we assume all data in the register is not used by others
+	__asm
+	{
+		// Assign pointers to register
+		mov			ecx, [w]		; put width to ecx reg
+		mov			eax, [h]		; put height to ecx reg
+		imul		ecx					; eax = eax * ecx
+		mov			ecx, eax		; put count to ecx reg
+		shr			ecx, 5				; divide count with 32 by shifting 4 bits to right
+		;shl			ecx, 2        ; multiple count with 4 by shifting 2 bits to the left
+		;shr			ecx, 3				; divide count with 8 by shifting 3 bits to right
+		;shr			ecx, 3				; divide count with 8 by shifting 3 bits to right
+		
+		; we do 8 pixels at a time
+		mov			esi, [image]			; put src addr to esi reg
+		mov			edi, [image]			; put src addr to edi reg
+		mov			edx, [image]			; put src addr to edx reg
+		mov			ebx, [image]			; put src addr to ebx reg		
+		add			edi, 8
+		add			edx, 16
+		add			edi, 24
+		add			ebx, 32
+		
+		; The alpha channel value
+		mov			eax, 0FF000000h
+		movd		mm3, eax
+		movd		mm4, eax
+		psll		mm4, 32
+		por			mm4, mm3
+		;movq		mm4, 0FF000000FF000000h ; this doesn't assemble
+		
+		align 16 
+codeloop:
+		movq		mm0, [esi]			; mov 8 bytes of src data to mmx reg 0
+		movq		mm1, [edi]			; mov 8 bytes of src data to mmx reg 1
+		movq		mm2, [edx]			; mov 8 bytes of src data to mmx reg 2
+		movq		mm3, [ebx]			; mov 8 bytes of src data to mmx reg 3
+		
+		; We AND 8*2 rgb32 pixels at a time
+		por			mm0, mm4			; AND the image data with the set alpha
+		por			mm1, mm4			; AND the image data with the set alpha
+		por			mm2, mm4			; AND the image data with the set alpha
+		por			mm3, mm4			; AND the image data with the set alpha
+				
+		movq		[esi], mm0			; mov the processed mmx reg 0
+		movq		[edi], mm1			; mov the processed mmx reg 1
+		movq		[edx], mm2			; mov the processed mmx reg 2
+		movq		[ebx], mm3			; mov the processed mmx reg 3
+
+		; get ready for next pass
+		add			esi, 40
+		add			edx, 40
+		add			edi, 40
+		add			ebx, 40
+
 		movq		mm0, [esi]			; mov 8 bytes of src data to mmx reg 0
 		movq		mm1, [edi]			; mov 8 bytes of src data to mmx reg 1
 		movq		mm2, [edx]			; mov 8 bytes of src data to mmx reg 2

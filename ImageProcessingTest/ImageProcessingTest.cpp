@@ -177,7 +177,14 @@ int main(int argc, char* argv[])
 			ImageProcessing_MMXAlphaSet(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
 		}
 	}
-
+	printf("ImageProcessing_MMX16AlphaSet\n");
+	{
+		CProfile profile2("ImageProcessing_MMX16AlphaSet");
+		for (i = 0; i < cycleCount; i++) {
+			ImageProcessing_MMX16AlphaSet(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
+		}
+	}
+/*
 	printf("\n");
 	printf("Timing flipping routines... \n");
 
@@ -220,7 +227,7 @@ int main(int argc, char* argv[])
 			ImageProcessing_MMXOverlay(pTargetImage, pOverlayImage, (int)bihTargetImage.biWidth, (int)abs(bihTargetImage.biHeight));
 		}
 	}
-
+*/
 	printf("\n");
 	printf("Timing complete. \n");
 	printf("\n");

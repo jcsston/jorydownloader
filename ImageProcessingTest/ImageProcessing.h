@@ -33,5 +33,7 @@ void ImageProcessing_ASMAlphaSet(BYTE *image, int w, int h);
 
 // 8-mod width required
 void ImageProcessing_MMXAlphaSet(BYTE *image, int w, int h);
+// 16-mod width
+void ImageProcessing_MMX16AlphaSet(BYTE *image, int w, int h);
 
 #endif // _IMAGE_PROCESSING_H_
