@@ -116,6 +116,16 @@
                     BuildAction = "EmbeddedResource"
                 />
                 <File
+                    RelPath = "NeatProgressBar.cs"
+                    SubType = "UserControl"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "NeatProgressBar.resx"
+                    DependentUpon = "NeatProgressBar.cs"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
                     RelPath = "OpenDownload.xml"
                     BuildAction = "Content"
                 />

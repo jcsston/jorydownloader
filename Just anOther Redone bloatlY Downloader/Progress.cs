@@ -18,15 +18,29 @@ namespace WindowsApplication1
 		private System.Windows.Forms.Button buttonPause;
 		private System.Windows.Forms.Button buttonCancel;
 		private System.Windows.Forms.Label labelFile;
-		private System.Windows.Forms.ProgressBar progressBarDownload;
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
 		private System.ComponentModel.Container components = null;
+		private System.Windows.Forms.Label labelURL;
+		private WindowsApplication1.NeatProgressBar neatProgressBarProgress;
+		private System.Windows.Forms.Label labelSpeed;
+		private System.Windows.Forms.Label labelSize;
 
-		public static ManualResetEvent allDone = new ManualResetEvent(false);
-		private System.Windows.Forms.LinkLabel labelURL;
-		const int BUFFER_SIZE = 1024;
+		private int BUFFER_SIZE = 1024; //Is 1KB good?
+		private Thread theDownloadThread;
+		private bool statPause = false;
+		private bool statCancel = false;
+		private avgSpeed theSpeed;
+
+		private class avgSpeed : object {
+			//
+			public avgSpeed() {
+				//
+			}
+			public UInt64 totalTime;
+			public UInt32 totalSize;
+		};
 
 		public Progress()
 		{
@@ -62,32 +76,29 @@ namespace WindowsApplication1
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.progressBarDownload = new System.Windows.Forms.ProgressBar();
 			this.buttonPause = new System.Windows.Forms.Button();
 			this.buttonCancel = new System.Windows.Forms.Button();
 			this.labelFile = new System.Windows.Forms.Label();
-			this.labelURL = new System.Windows.Forms.LinkLabel();
+			this.neatProgressBarProgress = new WindowsApplication1.NeatProgressBar();
+			this.labelURL = new System.Windows.Forms.Label();
+			this.labelSpeed = new System.Windows.Forms.Label();
+			this.labelSize = new System.Windows.Forms.Label();
 			this.SuspendLayout();
-			// 
-			// progressBarDownload
-			// 
-			this.progressBarDownload.Location = new System.Drawing.Point(0, 40);
-			this.progressBarDownload.Name = "progressBarDownload";
-			this.progressBarDownload.Size = new System.Drawing.Size(352, 32);
-			this.progressBarDownload.TabIndex = 0;
 			// 
 			// buttonPause
 			// 
-			this.buttonPause.Location = new System.Drawing.Point(200, 80);
+			this.buttonPause.Location = new System.Drawing.Point(240, 100);
 			this.buttonPause.Name = "buttonPause";
+			this.buttonPause.Size = new System.Drawing.Size(64, 23);
 			this.buttonPause.TabIndex = 1;
 			this.buttonPause.Text = "Pause";
 			this.buttonPause.Click += new System.EventHandler(this.buttonPause_Click);
 			// 
 			// buttonCancel
 			// 
-			this.buttonCancel.Location = new System.Drawing.Point(280, 80);
+			this.buttonCancel.Location = new System.Drawing.Point(312, 100);
 			this.buttonCancel.Name = "buttonCancel";
+			this.buttonCancel.Size = new System.Drawing.Size(72, 23);
 			this.buttonCancel.TabIndex = 2;
 			this.buttonCancel.Text = "Cancel";
 			this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
@@ -95,146 +106,175 @@ namespace WindowsApplication1
 			// labelFile
 			// 
 			this.labelFile.Name = "labelFile";
-			this.labelFile.Size = new System.Drawing.Size(304, 16);
+			this.labelFile.Size = new System.Drawing.Size(352, 16);
 			this.labelFile.TabIndex = 3;
 			this.labelFile.Text = "Downloading File:";
 			// 
+			// neatProgressBarProgress
+			// 
+			this.neatProgressBarProgress.BackColor = System.Drawing.SystemColors.Control;
+			this.neatProgressBarProgress.Location = new System.Drawing.Point(4, 68);
+			this.neatProgressBarProgress.Name = "neatProgressBarProgress";
+			this.neatProgressBarProgress.Size = new System.Drawing.Size(378, 28);
+			this.neatProgressBarProgress.TabIndex = 5;
+			// 
 			// labelURL
 			// 
-			this.labelURL.Location = new System.Drawing.Point(0, 16);
+			this.labelURL.Location = new System.Drawing.Point(4, 32);
 			this.labelURL.Name = "labelURL";
-			this.labelURL.Size = new System.Drawing.Size(352, 16);
-			this.labelURL.TabIndex = 4;
+			this.labelURL.Size = new System.Drawing.Size(376, 16);
+			this.labelURL.TabIndex = 6;
+			this.labelURL.Text = "URL";
+			// 
+			// labelSpeed
+			// 
+			this.labelSpeed.Location = new System.Drawing.Point(296, 52);
+			this.labelSpeed.Name = "labelSpeed";
+			this.labelSpeed.Size = new System.Drawing.Size(88, 16);
+			this.labelSpeed.TabIndex = 7;
+			this.labelSpeed.Text = "200.0 KB/s";
+			this.labelSpeed.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			// 
+			// labelSize
+			// 
+			this.labelSize.Location = new System.Drawing.Point(4, 52);
+			this.labelSize.Name = "labelSize";
+			this.labelSize.Size = new System.Drawing.Size(160, 16);
+			this.labelSize.TabIndex = 8;
+			this.labelSize.Text = "100KB of 960KB";
 			// 
 			// Progress
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-			this.ClientSize = new System.Drawing.Size(360, 109);
+			this.ClientSize = new System.Drawing.Size(384, 125);
 			this.Controls.AddRange(new System.Windows.Forms.Control[] {
+																																	this.labelSize,
+																																	this.labelSpeed,
 																																	this.labelURL,
+																																	this.neatProgressBarProgress,
 																																	this.labelFile,
 																																	this.buttonCancel,
-																																	this.buttonPause,
-																																	this.progressBarDownload});
+																																	this.buttonPause});
 			this.Name = "Progress";
 			this.Text = "Progress";
 			this.Load += new System.EventHandler(this.Progress_Load);
+			this.Closed += new System.EventHandler(this.Progress_Closed);
 			this.ResumeLayout(false);
 
 		}
 		#endregion
 
-		public void StartDownload(aDownloadItem download_item){
+		public void DownloadFile(aDownloadItem download_item) {
+			//Store the download item
+			this.Tag = download_item;
+			theSpeed = new avgSpeed();
+			//Start the real downloading
+			theDownloadThread = new Thread(new ThreadStart(StartDownload));
+			theDownloadThread.Name = "File Download";
+			theDownloadThread.Start();
+		}
+
+		public void StartDownload(){
+			aDownloadItem download_item = (aDownloadItem)this.Tag;
 			labelURL.Text = download_item.RemoteURL;
-			
+			labelFile.Text = download_item.LocalFilename;
+
 			HttpWebRequest new_url = (HttpWebRequest)WebRequest.Create(download_item.RemoteURL);
-			new_url.AllowAutoRedirect = true;
-			HttpWebResponse url_response = (HttpWebResponse)new_url.GetResponse();
+			new_url.AllowAutoRedirect = true;			
 			
-			//Create a RequestState object to store all the data needed by the Aync Callback
-			RequestState rs = new RequestState();
-			
-			//Store the File's UID so we can find it again in the main download list
-			rs.DownloadFileUID = download_item.FileUID;
-			
-			//Create and store a FileWriter object
-			rs.FileWriter = new FileStream(download_item.LocalFilename, FileMode.Append);
+			//Create the FileStream object			
+			FileStream FileWriter = new FileStream(download_item.LocalFilename, FileMode.OpenOrCreate);
+			FileWriter.Seek(0, SeekOrigin.End);
 			
 			//Cut off the last 1K for resuming
-			download_item.doneFileSize = rs.FileWriter.Length;
-			if ((download_item.doneFileSize > 1000) && (url_response.ContentLength > 1000)) {
-				rs.FileWriter.Seek(download_item.doneFileSize-1000, SeekOrigin.Begin);
+			download_item.doneFileSize = FileWriter.Length;
+			if ((download_item.doneFileSize > 1000) && (download_item.totalFileSize > 1000)) {
+				FileWriter.Seek(download_item.doneFileSize-1000, SeekOrigin.Begin);
 			}else {
-				rs.FileWriter.Seek(download_item.doneFileSize, SeekOrigin.Begin);
+				FileWriter.Seek(download_item.doneFileSize, SeekOrigin.Begin);
 			}
 									
 			//Resuming?
-			new_url.AddRange((int)rs.FileWriter.Position, (int)url_response.ContentLength);			
+			new_url.AddRange((int)FileWriter.Position);			
 
-			// Put the HttpWebRequest into the state object so it can be passed around.
-			rs.Request = new_url;
-									
+			HttpWebResponse url_response = (HttpWebResponse)new_url.GetResponse();
 			//Setup the progress bar
-			progressBarDownload.Minimum = (int)0;
-			progressBarDownload.Maximum = (int)100;
-			progressBarDownload.Tag = (long)url_response.ContentLength;
-			progressBarDownload.Value = (int)((rs.FileWriter.Position+1) / url_response.ContentLength);
+			neatProgressBarProgress.Value = (int)((FileWriter.Position+1) / url_response.ContentLength);
 
-			// Issue the async request.
-			IAsyncResult r = (IAsyncResult) new_url.BeginGetResponse(new AsyncCallback(RespCallback), rs);
+			Stream ResponseStream = url_response.GetResponseStream();
+			byte[] ByteBuffer = new byte[BUFFER_SIZE];
 
-			this.Tag = download_item;
-		}
-
-		private static void RespCallback(IAsyncResult ar) {
-			// Get the RequestState object from the async result.
-			RequestState rs = (RequestState) ar.AsyncState;
-
-			// Get the HttpWebResponse from RequestState.
-			HttpWebRequest req = rs.Request;
-
-			// Call EndGetResponse, which produces the HttpWebResponse object
-			//  that came from the request issued above.
-			HttpWebResponse resp = (HttpWebResponse)req.EndGetResponse(ar);         
-
-			//  Start reading data from the response stream.
-			Stream ResponseStream = resp.GetResponseStream();
-
-			// Store the response stream in RequestState to read 
-			// the stream asynchronously.
-			rs.ResponseStream = ResponseStream;
-
-			//  Pass rs.BufferRead to BeginRead. Read data into rs.BufferRead
-			IAsyncResult iarRead = ResponseStream.BeginRead(rs.BufferRead, 0, BUFFER_SIZE, new AsyncCallback(ReadCallBack), rs);
-		}
-
-
-		private static void ReadCallBack(IAsyncResult asyncResult) {
-			// Get the RequestState object from AsyncResult.
-			RequestState rs = (RequestState)asyncResult.AsyncState;
-
-			// Retrieve the ResponseStream that was set in RespCallback. 
-			Stream responseStream = rs.ResponseStream;
-
-			// Read rs.BufferRead to verify that it contains data. 
-			int read = responseStream.EndRead(asyncResult);
-			if (read > 0) {
-				// Prepare a Char array buffer for converting to Unicode.
-				byte[] byteBuffer = new byte[BUFFER_SIZE];
-         
-				rs.FileWriter.Write(rs.BufferRead, 0, rs.BufferRead.Length);
-				if ((int)((long)MainForm.file_download.progressBarDownload.Tag / rs.FileWriter.Position) != MainForm.file_download.progressBarDownload.Value) {
-					MainForm.file_download.progressBarDownload.Value = (int)((long)MainForm.file_download.progressBarDownload.Tag / rs.FileWriter.Position);
-				}
+			int read_amount = 1;
+			int start_ticks = Environment.TickCount;
+			//Read the BUFFER_SIZE
+			read_amount = ResponseStream.Read(ByteBuffer, 0, BUFFER_SIZE);
+			this.theSpeed.totalTime += (UInt64)(Environment.TickCount - start_ticks);
+			this.theSpeed.totalSize += (UInt32)read_amount;
+			while (read_amount > 0) {				
+				//Write to the file
+				FileWriter.Write(ByteBuffer, 0, read_amount);
 				
-				int file_index = MainForm.OpenDownloadList.FindUID(rs.DownloadFileUID);
+				//Update Progress Bar
+				if ((int)(100 / (float)url_response.ContentLength * (float)FileWriter.Position) != this.neatProgressBarProgress.Value) {
+					this.neatProgressBarProgress.Value = (int)(100 / (float)url_response.ContentLength * (float)FileWriter.Position);
+				}
+				//Update the Size Label
+				this.labelSize.Text = ((int)(FileWriter.Position/1024)).ToString() + "KB of " + ((int)(url_response.ContentLength/1024)).ToString() + "KB";
+				
+				//Update the Download Item with the completed amount
+				Int32 DownloadFileUID = ((aDownloadItem)this.Tag).FileUID;
+				int file_index = MainForm.OpenDownloadList.FindUID(DownloadFileUID);
 				if (file_index != -1) {
-					aDownloadItem current_item = (aDownloadItem)MainForm.OpenDownloadList.master_file_list[file_index];
-					current_item.doneFileSize = rs.FileWriter.Position;
-					MainForm.OpenDownloadList.master_file_list[file_index] = current_item;
+					MainForm.OpenDownloadList.GetDownloadListItem(file_index).doneFileSize = FileWriter.Position;;
+					MainForm.OpenDownloadList.changed = true;
 				}
+				this.theSpeed.totalTime += (UInt64)(Environment.TickCount - start_ticks);
+				this.theSpeed.totalSize += (UInt32)read_amount;
+				//this.avgSpeed = (avgSpeed + (((float)BUFFER_SIZE / (float)((Environment.TickCount+1) - start_ticks)))) / 2;
+				//this.labelSpeed.Text = avgSpeed.ToString() + "KB/s";
+				//We check here if the user paused or canceled the download
+				if (statPause) {
+					while (statPause && !statCancel) {
+						Thread.Sleep(500);
+					}
+				}
+				if (statCancel)
+					break;
 				
-				IAsyncResult ar = responseStream.BeginRead(rs.BufferRead, 0, BUFFER_SIZE, new AsyncCallback(ReadCallBack), rs);
+				start_ticks = Environment.TickCount;
+				//Read the data for the next loop				
+				read_amount = ResponseStream.Read(ByteBuffer, 0, BUFFER_SIZE);
 			}
-			else {
-				// Close down the response stream.
-				responseStream.Close();         
-				rs.FileWriter.Close();
-				// Set the ManualResetEvent so the main thread can exit.
-				allDone.Set();                           
-			}
-		}
-
-		private void Progress_Load(object sender, System.EventArgs e) {
-		
+			//We are done :)
+			//Close down the streams
+			ResponseStream.Close();         
+			FileWriter.Close();
+			this.Close();
 		}
 
 		private void buttonCancel_Click(object sender, System.EventArgs e) {
-		
+			statCancel = true;
 		}
 
 		private void buttonPause_Click(object sender, System.EventArgs e) {
-		
+			if (buttonPause.Text == "Pause") {
+				statPause = true;
+				buttonPause.Text = "Resume";
+			}else if (buttonPause.Text == "Resume") {
+				statPause = false;
+				buttonPause.Text = "Pause";
+			}
+		}
+
+		private void Progress_Closed(object sender, System.EventArgs e) {
+			statCancel = true;
+		}
+
+		private void Progress_Load(object sender, System.EventArgs e) {
+			this.labelFile.Text = "";
+			this.labelSize.Text = "";
+			this.labelSpeed.Text = "";
+			this.labelURL.Text = "";
 		}
 	}
 }
