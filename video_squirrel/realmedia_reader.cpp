@@ -44,6 +44,29 @@ RealMedia_Reader::RealMedia_Reader()
 	}
 };
 
+RealMedia_Reader::~RealMedia_Reader()
+{
+	int i = 0;
+	while (media_properties_block[i] != NULL)
+	{
+		delete media_properties_block[i]->type_specific_data;
+		delete media_properties_block[i]->stream_name;
+		delete media_properties_block[i]->mime_type;
+		delete media_properties_block[i];
+		i++;
+	}
+	i = 0;
+	while (content_description_block[i] != NULL)
+	{
+		delete content_description_block[i]->author;
+		delete content_description_block[i]->comment;
+		delete content_description_block[i]->copyright;
+		delete content_description_block[i]->title;
+		delete content_description_block[i];
+		i++;
+	}
+};
+
 int RealMedia_Reader::Read(const char *filename)
 {
 	int error = 0;

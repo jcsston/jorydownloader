@@ -118,6 +118,7 @@ class RealMedia_Reader
 {
 	public:
 		RealMedia_Reader();
+		~RealMedia_Reader();
 		int Read(const char *filename);
 
 		RealMedia_File_Header the_header;
