@@ -2,7 +2,7 @@
 #ifndef _AVS2OGG_H_
 #define _AVS2OGG_H_
 
-#define AVS2OGG_NAME "avs2wav v1.1"
+#define AVS2OGG_NAME "avs2wav v1.2"
 
 #include <windows.h>
 #include <string.h>

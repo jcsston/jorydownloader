@@ -3,9 +3,24 @@
 
 #include "avs2ogg.h"
 
+void change_log()
+{
+	fprintf(stderr, "Change Log for " AVS2OGG_NAME " compiled " __DATE__ " " __TIME__ "\n");
+	fprintf(stderr, "\t v1.2 - 2004-07-27 \n");
+	fprintf(stderr, "\t\t -Fixed Avs2Ogg::WriteWavWithGain() function, it was applying the gain after the data was written. \n");
+  fprintf(stderr, "\t\t -Added Change Log option. \n");
+  fprintf(stderr, "\t\t -Added mappings to various help option to display usage. \n");
+  fprintf(stderr, "\t v1.1 - 2004-07-26 \n");
+  fprintf(stderr, "\t\t -Fix for stdout by kassandro. \n");
+  fprintf(stderr, "\t\t -Added -g Gain option. \n");
+  fprintf(stderr, "\t v1.0 - 2004-03-08 \n");
+  fprintf(stderr, "\t\t -First Release. \n");
+}
+
 void usage()
 {
-	fprintf(stderr, "Usage: -n <input filename> -g <float> <output filename> \n");
+	fprintf(stderr, "Usage: -n -g <float> <input filename> <output filename> \n");
+	fprintf(stderr, "\n -c Display Change Log and exit \n");
 	fprintf(stderr, "\t -n         Normalize Audio \n");		
 	fprintf(stderr, "\t -g <float> Adjust the audio level, 1.0 is orignal level \n");
 	fprintf(stderr, "\t <input filename>  Input AVS Script \n");		
@@ -19,6 +34,9 @@ int main(int argc, const char **args)
 	double fGain = 1.0;
 	std::string inputFilename;
 	std::string outputFilename;
+	
+	fprintf(stderr, AVS2OGG_NAME " by Jory Stone <jcsston@toughguy.net>, stdout patch by kassandro\n");
+	
 	for (int c = 1; c < argc; c++) {
 		if (args[c][0] == '-' && args[c][1] == 'n') {
 			bNormalize = true;
@@ -30,7 +48,21 @@ int main(int argc, const char **args)
         usage();
         return -1;
       }
-			
+
+    } else if (args[c][0] == '-' && args[c][1] == 'c') {
+      change_log();
+      return 0;
+      
+    } else if (args[c][0] == '-' && args[c][1] == 'h') {
+      usage();
+
+    } else if (args[c][0] == '/' && args[c][1] == '?') {
+      usage();
+      
+    } else if (args[c][0] == '/' && args[c][1] == 'h') {
+      usage();
+      
+
 		} else if (inputFilename.length() == 0) {
 				inputFilename = args[c];
 
@@ -43,7 +75,6 @@ int main(int argc, const char **args)
 		}
 	}	
 	
-	fprintf(stderr, AVS2OGG_NAME " by Jory Stone <jcsston@toughguy.net>, stdout patch by kassandro\n");
 	if (inputFilename.length() == 0) {
 		usage();
 		return -1;
@@ -292,9 +323,6 @@ WORD Avs2Ogg::WriteWavWithGain(double fGain)
 	}
 
 	if (frameBufferSize > 0) {
-		//m_Encoder->EncodeFrame(frameBuffer, frameBufferSize);
-		m_Writer->WriteData(frameBuffer, frameBufferSize);
-		frameSample += samplesRead;
 		if (m_WavHeader->wBitsPerSample == 16) {
 			DWORD sampleCount = frameBufferSize / 2;
 			for (DWORD s = 0; s < sampleCount; s++) {
@@ -306,7 +334,9 @@ WORD Avs2Ogg::WriteWavWithGain(double fGain)
 				((char *)frameBuffer)[s] = ((char *)frameBuffer)[s] * fGain;
 			}
 		}
-		//bufferedPacket->m_Timecode = AVIStreamSampleToTime(stream->myAVIStream, stream->frameSample);
+		// Write the data out
+		m_Writer->WriteData(frameBuffer, frameBufferSize);
+		frameSample += samplesRead;
 	}
 	return 0;
 }
