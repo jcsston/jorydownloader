@@ -31,8 +31,8 @@
 */
 
 #include <stdio.h>
+#include <malloc.h>
 #include <string.h>
-#include <fstream>
 
 #define BYTE unsigned char
 #define UINT8 unsigned char
@@ -42,6 +42,16 @@
 #ifndef strcmpi
 #define strcmpi strcmp
 #endif
+
+typedef struct {
+    UINT8 wFormatTag[2];
+    UINT32 nChannels;
+    UINT32 nSamplesPerSec;
+    UINT32 nAvgBytesPerSec;
+    UINT16 nBlockAlign;
+    UINT16 wBitsPerSample;
+    UINT16 cbSize;
+} WAVEFORMATEX_real;
 
 /// RealMedia_Properties.flags
 #define PN_SAVE_ENABLED 0x0001										//< Allows clients to save a copy of the RealMedia file to disk.
@@ -97,6 +107,67 @@ struct RealMedia_Properties
 	UINT16 flags;
 };
 
+struct RealMedia_VideoHeader 
+{
+	UINT32 dwSize;
+	UINT32 fcc1;
+	UINT32 fcc2; 
+	UINT16 w; 
+	UINT16 h; 
+	UINT16 bpp; 
+	UINT32 unk1; 
+	UINT32 unk2; 
+	UINT32 type1; 
+	UINT32 type2;
+	UINT8 w2;
+	UINT8 h2;
+	UINT8 w3;
+	UINT8 h3;
+};
+
+struct RealMedia_AudioHeader {
+	UINT16 unknown1; // No clue
+	UINT8 unknown2; // just need to skip 4, 6? bytes
+	UINT16 header_version;
+	UINT16 unknown3; // 00 00
+	UINT32 format; //? .ra4 or .ra5
+	UINT32 unknown4; // ???
+	UINT16 format_version; // version (4 or 5)
+	UINT32 header_size; // header size == 0x4E 
+	UINT16 codec_flavor; // codec flavor id, Also called the codec_audience_number
+	UINT32 coded_frame_size; // coded frame size, needed by codec
+	UINT32 unknown5; // big number
+	UINT32 unknown6; // bigger number
+	UINT32 unknown7; // 2 || -''-
+	UINT16 sub_packet_h; //Sub packet header???
+	UINT16 frame_size;
+	UINT16 sub_packet_size;
+	UINT16 unknown8; //Two bytes of 0's
+
+	//Here if format_version == 5
+	UINT32 unknown9;
+	UINT16 unknown10;
+	//End if format_version == 5
+
+	UINT16 sample_rate;
+	UINT16 unknown11;
+	UINT16 sample_size;
+	UINT16 channels;
+
+	//Here if format_version == 5
+	UINT32 unknown12;
+	UINT32 codec_name;
+	//End if format_version == 5
+
+	//If codec_name == "cook"
+	UINT16 unknown13; // Skip 3 unknown bytes 
+	UINT8 unknown14;
+	UINT8 unknown15;  // Skip 1 additional unknown byte If format_version == 5
+	UINT32 codecdata_length;
+	UINT8 *codecdata; //This is the size codecdata_length
+	//End if codec_name == "cook"
+};
+
 struct RealMedia_Media_Properties
 {
 	//char object_id[4];
@@ -116,7 +187,7 @@ struct RealMedia_Media_Properties
 	UINT8 mime_type_size;
 	char *mime_type;
 	UINT32 type_specific_len;
-	char *type_specific_data;
+	UINT8 *type_specific_data;
 
   /// This one sort of applies to all a/v streams :P
 	char *codec_name;
@@ -125,11 +196,17 @@ struct RealMedia_Media_Properties
 	//This stuff goes in the RealMedia_Infomation_Field_List
 
 	//Audio Stream
+	RealMedia_AudioHeader *audio_header;
+	WAVEFORMATEX_real *wav_data;
   UINT32 frequency;
-  UINT8 channels;
+	UINT16 samplesize;
+  UINT16 channels;
   UINT8 codec_audience_number;
 
 	//Video Stream
+	RealMedia_VideoHeader *video_header;
+	void *extra_videocodec_data;
+	UINT8 extra_videocodec_data_size;
 	UINT16 frame_width;
   UINT16 frame_height;
   float frame_rate;
@@ -236,23 +313,42 @@ class RealMedia_Reader
 		/// Processes a RealMedia file
 		/// Call this first!
 		/// \param filename The filename of the file to process
-		/// \param bReadDataPackets If set to true the data packets are read and the headers stored
+		/// \param bPreReadDataPackets If set to true the data packets are read and the headers stored
 		/// \return 0 if successful		
 		int Read(const char *filename, bool bPreReadDataPackets = false);
-		BYTE *GetPacketData(RealMedia_Packet *packet_info);
-		
+		/// The pre-loading method of reading data packets from a RM file
+		/// \param packet_info A pointer to the needed packet info, this can be found in the packet_array[]
+		/// \return NULL on error
+		/// \return A RealMedia_Packet pointer to the same packet info you with the data memer filled, you have to free the memory
+		RealMedia_Packet *GetPacketData(RealMedia_Packet *packet_info);
+		/// The on-the-fly method of reading data packets from a RM file
+		/// \return NULL on error
+		/// \return A RealMedia_Packet pointer with the data member filled, remeber you have to free the memory for both the RealMedia_Packet pointer and the RealMedia_Packet->data pointer
 		RealMedia_Packet *GetNextDataPacket();
 		/// Get the length of the longest track
 		/// \return The length of the longest track in milliseconds
 		UINT32 GetLongestTrackLength();
 
-		///Byte Swaping Function by Gabest
-		void bswap(BYTE* s, int len);
+		/// Easy way to read some data
+		/// \param store_here Pointer to the location to store the data
+		/// \param store_length How much to read, WARNING the store_here pointer must have enough memory
+		/// \param bByteSwap Byte Swap the data or not, the main use for the function
+		/// \return 0 if failed
+		/// \return 1 if succeful, The value returned by fread()
+		int ReadData(void *store_here, UINT32 store_length, bool bByteSwap = false);
+
+		/// Byte Swaping Function by Gabest
+		/// It's inline because it's so small, the function calling overhead would likely result in more memory and less speed
+		/// \param s  A BTYE pointer to the data to swap
+		/// \param len Length of the data pointed by s
+		void inline bswap(BYTE* s, int len);
 		
 	//Data members
+		//Filename of the current file
 		char *the_filename;
+		//FILE handle for current file
 		FILE *real_media;
-		RealMedia_File_Header the_header;
+
 		RealMedia_Properties properties_block;
 
 		//Used for both reading methods

@@ -269,8 +269,8 @@ SearchFrame::SearchFrame(wxWindow *parent, const wxString &title)
 	wxPanel *panel_1 = new wxPanel(this, -1);
 	text_ctrl_search_string = new wxTextCtrl(panel_1, -1, _T(""));
 	text_ctrl_search_string_backup = text_ctrl_search_string;
- 	DEBUG(this->text_ctrl_search_string->GetClassInfo()->GetClassName());
- 	DEBUG(this->text_ctrl_search_string->GetClassInfo()->GetBaseClassName1());
+ 	//DEBUG(this->text_ctrl_search_string->GetClassInfo()->GetClassName());
+ 	//DEBUG(this->text_ctrl_search_string->GetClassInfo()->GetBaseClassName1());
  	DEBUG(wxString::Format(_T("Points to %i"), text_ctrl_search_string));
  	DEBUG(wxString::Format(_T("Points to %i"), text_ctrl_search_string_backup));
  	DEBUG(wxString::Format(_T("Location Pointer %i"), &text_ctrl_search_string));
@@ -308,10 +308,10 @@ void SearchFrame::OnSearchFrame_SearchButton(wxCommandEvent &event)
 	DEBUG(_T("SearchFrame::OnSearchFrame_SearchButton called"));
 	wxBusyInfo wait(_T("Please wait, searching..."));
 	
- 	DEBUG(frame->search_box->text_ctrl_search_string->GetClassInfo()->GetClassName());
- 	DEBUG(frame->search_box->text_ctrl_search_string->GetClassInfo()->GetBaseClassName1());
- 	DEBUG(frame->search_box->text_ctrl_search_string_backup->GetClassInfo()->GetClassName());
- 	DEBUG(frame->search_box->text_ctrl_search_string_backup->GetClassInfo()->GetBaseClassName1());
+ 	//DEBUG(frame->search_box->text_ctrl_search_string->GetClassInfo()->GetClassName());
+ 	//DEBUG(frame->search_box->text_ctrl_search_string->GetClassInfo()->GetBaseClassName1());
+ 	//DEBUG(frame->search_box->text_ctrl_search_string_backup->GetClassInfo()->GetClassName());
+ 	//DEBUG(frame->search_box->text_ctrl_search_string_backup->GetClassInfo()->GetBaseClassName1());
 
 
  	DEBUG(wxString::Format(_T("Points to %i"), frame->search_box->text_ctrl_search_string));
@@ -1625,8 +1625,8 @@ void OptionsFrame::OnTreeSelectionChange(wxCommandEvent &event)
  	DEBUG(wxString::Format(_T("Points to %i"), frame->new_options->tree_ctrl_options));
  	DEBUG(wxString::Format(_T("Location Pointer %i"), &frame->new_options->tree_ctrl_options));
 
- 	DEBUG(tree_ctrl_options->GetClassInfo()->GetClassName());
- 	DEBUG(tree_ctrl_options->GetClassInfo()->GetBaseClassName1());
+ 	//DEBUG(tree_ctrl_options->GetClassInfo()->GetClassName());
+ 	//DEBUG(tree_ctrl_options->GetClassInfo()->GetBaseClassName1());
 
 	wxTreeItemId selected_tree_item = tree_ctrl_options->GetSelection();
 	if (tree_ctrl_options->GetItemText(selected_tree_item) == _T("Base Template"))

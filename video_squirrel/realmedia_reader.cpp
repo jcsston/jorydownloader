@@ -29,6 +29,7 @@
 	\author Jory Stone            <jcsston @ toughguy.net>
 	\author Gabest
 */
+#pragma pack(1)
 
 #include "realmedia_reader.h"
 
@@ -43,6 +44,7 @@ RealMedia_Reader::RealMedia_Reader()
 		media_properties_block[i] = NULL;
 		content_description_block[i] = NULL;
 	}
+	packet_array = NULL;
 	packet_count = 0;
 	current_packet_no = 0;
 	packet_start_pos = 0;
@@ -265,18 +267,38 @@ int RealMedia_Reader::Read(const char *filename, bool bPreReadDataPackets)
 					media_info->mime_type[media_info->mime_type_size] = 0;
 
 					//Read Type Specific text
-					error = fread((void *)&media_info->type_specific_len, 1, 1, real_media);
+					error = ftell(real_media);
+					ReadData((void *)&media_info->type_specific_len, 4, true);
 
-					media_info->type_specific_data = new char[media_info->type_specific_len+1];
+					media_info->type_specific_data = new UINT8[media_info->type_specific_len+1];
 					error = fread((void *)media_info->type_specific_data, media_info->type_specific_len, 1, real_media);
 					media_info->type_specific_data[media_info->type_specific_len] = 0;
 
 					//Now depending on the mime type we can read more infomation about this track
 					//Thanks to Dark-Cracker for help
 					if (!stricmp(media_info->mime_type, "video/x-pn-realvideo"))
-					{
-						media_info->codec_name = new char[9+1];
+					{		
+						media_info->video_header = (RealMedia_VideoHeader *)media_info->type_specific_data;
+						bswap((BYTE *)&media_info->video_header->dwSize, 4);
+						bswap((BYTE *)&media_info->video_header->w, 2);
+						bswap((BYTE *)&media_info->video_header->h, 2);
+						bswap((BYTE *)&media_info->video_header->bpp, 2);
+						bswap((BYTE *)&media_info->video_header->unk1, 4);
+						bswap((BYTE *)&media_info->video_header->unk2, 4);
+						bswap((BYTE *)&media_info->video_header->type1, 4);
+						bswap((BYTE *)&media_info->video_header->type2, 4);
+
+						media_info->frame_rate = (float)media_info->video_header->unk2 / 0x10000;//*(float *)(((UINT8 *)&media_info->video_header->unk2 - 1));
+						//media_info->frame_rate = media_info->video_header->unk1 + ((float)(*((UINT8 *)&media_info->video_header->unk2 + 3)) / 256);
+						/*error = ftell(real_media);
+						fseek(real_media, 2, SEEK_CUR);
+						media_info->extra_videocodec_data_size = 34;
+						media_info->extra_videocodec_data = new UINT8[media_info->extra_videocodec_data_size];						
+						ReadData(media_info->extra_videocodec_data, media_info->extra_videocodec_data_size, false);
+
+						fseek(real_media, error, SEEK_SET);
 						fseek(real_media, 6, SEEK_CUR);
+						media_info->codec_name = new char[9+1];
 						error = fread((void *)media_info->codec_name, 9, 1, real_media);
 						media_info->codec_name[9] = 0;
 
@@ -295,48 +317,173 @@ int RealMedia_Reader::Read(const char *filename, bool bPreReadDataPackets)
 						
 						error = fread((void *)&FpsRM_Part2, 1, 1, real_media);
 
-						media_info->frame_rate = FpsRM_Part1 + ((float)FpsRM_Part2 / 256);
+						media_info->frame_rate = FpsRM_Part1 + ((float)FpsRM_Part2 / 256);*/
 
 					}
 					else if (!stricmp(media_info->mime_type, "audio/x-pn-realaudio"))
 					{
-						//Seek to the audience number pos
-						fseek(real_media, 26, SEEK_CUR);
+						media_info->audio_header = (RealMedia_AudioHeader *)media_info->type_specific_data;
+						int size = sizeof(RealMedia_AudioHeader);
+						size++;
+						bswap((BYTE *)&media_info->audio_header->codecdata_length, 4);
+						bswap((BYTE *)&media_info->audio_header->channels, 2);
+						bswap((BYTE *)&media_info->audio_header->sample_rate, 2);
+						/*error = ftell(real_media);
+						UINT16 version = 0;
+						UINT16 flavor = 0;
+						UINT16 sub_packet_h = 0;
+						UINT16 frame_size = 0;
+						UINT16 sub_packet_size = 0;
+
+						UINT32 header_size = 0;
+						UINT32 coded_frame_size = 0;
+						UINT32 codecdata_length = 0;
+						UINT8 *dummy_buffer = new UINT8[4];
+
+						//Seek past the unknown stuff
+						fseek(real_media, 7, SEEK_CUR);
+
+						//Read in the version header???
+						ReadData((void *)&version, 2, true);
+						// 00 00
+						fread((void *)dummy_buffer, 2, 1, real_media); 
+						
+						// .ra4 or .ra5
+						fread((void *)dummy_buffer, 4, 1, real_media); 
+						// ???
+						fread((void *)dummy_buffer, 4, 1, real_media);						
+						// version (4 or 5)
+						ReadData((void *)&version, 2, true);
+						// header size == 0x4E 
+						ReadData((void *)&header_size, 4, true);
 						
 						//Read in the codec_audience_number
-						error = fread((void *)&media_info->codec_audience_number, 1, 1, real_media);
-						bswap((BYTE *)&media_info->codec_audience_number, 1);
+						// codec flavor id, Also called the codec_audience_number
+						ReadData((void *)&flavor, 2, true);
 
-						//Seek to the frequency pos
-						fseek(real_media, 26, SEEK_CUR);
+						// coded frame size, needed by codec
+						ReadData((void *)&coded_frame_size, 4, true);
+
+						fread((void *)dummy_buffer, 4, 1, real_media); // big number
+						fread((void *)dummy_buffer, 4, 1, real_media); // bigger number
+						fread((void *)dummy_buffer, 4, 1, real_media); // 2 || -''-
+						//		stream_skip(demuxer->stream, 2); // 0x10
+						ReadData((void *)&sub_packet_h, 2, true);
+						// coded frame size
+						ReadData((void *)&frame_size, 2, true);
+						ReadData((void *)&sub_packet_size, 2, true);
+						//Skip past the next 2 btyes of 0's
+						fread((void *)dummy_buffer, 2, 1, real_media);  // 0
+
+						if (version == 5)
+							fseek(real_media, 6, SEEK_CUR); //0,srate,0
 												
-						error = fread((void *)&media_info->frequency, 2, 1, real_media);
-						bswap((BYTE *)&media_info->frequency, 2);
+						//Good, now we read the sample rate info
+						error = ftell(real_media);
 
-						//Seek to the channels pos
-						fseek(real_media, 9, SEEK_CUR);
+						ReadData((void *)&media_info->frequency, 2, true);
+
+						//Skip some 0's
+						fseek(real_media, 2, SEEK_CUR);
 						
-						error = fread((void *)&media_info->channels, 1, 1, real_media);
-						bswap((BYTE *)&media_info->channels, 1);
+						ReadData((void *)&media_info->samplesize, 2, true);
+
+						ReadData((void *)&media_info->channels, 2, true);
+
+						if (version == 5)
+						{
+							//Seek to the codec name pos
+							fseek(real_media, 4, SEEK_CUR);
+
+							media_info->codec_name = new char[4+1];
+							error = fread((void *)media_info->codec_name, 4, 1, real_media);
+							media_info->codec_name[4] = 0;
+						}
+						else
+						{		
+							//I don't know what to do with this code
+							// Desc #1
+							//skip_str(1, demuxer);
+							// Desc #2
+							//get_str(1, demuxer, buf, sizeof(buf));
+						}
+
+						//Emulate WAVEFORMATEX struct:
+						WAVEFORMATEX_real *wf;
+						wf = (WAVEFORMATEX_real *)malloc(sizeof(WAVEFORMATEX_real));
+						memset(wf, 0, sizeof(WAVEFORMATEX_real));
+						wf->nChannels = media_info->channels;
+						wf->wBitsPerSample = media_info->samplesize*8;
+						wf->nSamplesPerSec = media_info->frequency;
+						//wf->nAvgBytesPerSec = bitrate;
+						wf->nBlockAlign = frame_size;
+						wf->cbSize = 0;
+						media_info->wav_data = wf;
+						//sh->format = MKTAG(buf[0], buf[1], buf[2], buf[3]);
 						
-						//Seek to the codec name pos
-						fseek(real_media, 4, SEEK_CUR);
+						//Find out what format the audio is
+						if (!stricmp(media_info->codec_name,"atrc")) {
+							//"Audio: Sony ATRAC3 (RealAudio 8) (unsupported)"
+							//sh->format = 0x270;
+							// 14 bytes extra header needed !
+							wf->cbSize = 14;
+							wf = (WAVEFORMATEX_real *)realloc(wf, sizeof(WAVEFORMATEX_real) + wf->cbSize);
+							wf->nAvgBytesPerSec = 16537; // 8268
+							wf->nBlockAlign = 384; // 192
+							wf->wBitsPerSample = 0; // from AVI created by VirtualDub
 
-						media_info->codec_name = new char[4+1];
-						error = fread((void *)media_info->codec_name, 4, 1, real_media);
-						media_info->codec_name[4] = 0;
+						}else	if (!stricmp(media_info->codec_name, "cook")) {
+							//"Audio: Real's GeneralCooker (?) (RealAudio G2?) (unsupported)"
+							// realaudio codec plugins - common:
+							//			    sh->wf->cbSize = 4+2+24;
+							fseek(real_media, 3, SEEK_CUR);  // Skip 3 unknown bytes 
+							if (version==5)
+								fseek(real_media, 1, SEEK_CUR);  // Skip 1 additional unknown byte 
 
+							ReadData(&codecdata_length ,4, true);
+							
+							wf->cbSize = 10 + codecdata_length;
+							wf = (WAVEFORMATEX_real *)realloc(wf, sizeof(WAVEFORMATEX_real) + wf->cbSize);
+							( (short*) (wf+1) )[0] = sub_packet_size;
+							( (short*) (wf+1) )[1] = sub_packet_h;
+							( (short*) (wf+1) )[2] = flavor;
+							( (short*) (wf+1) )[3] = coded_frame_size;
+							( (short*) (wf+1) )[4] = codecdata_length;
+							//			    stream_read(demuxer->stream, ((char*)(sh->wf+1))+6, 24); // extras
+							// extras
+							ReadData(((char*)(wf+1))+10, codecdata_length, true);
+
+						}else if (!stricmp(media_info->codec_name, "dnet")) {
+							//"Audio: DNET (AC3 with low-bitrate extension)"
+							
+							//sh->format = 0x2000;							
+						}else	if (!stricmp(media_info->codec_name, "sipr")) {
+							//"Audio: SiproLab's ACELP.net"
+							
+							//sh->format = 0x130;
+							//for buggy directshow loader
+							wf->cbSize = 4;
+							wf = (WAVEFORMATEX_real *)realloc(wf, sizeof(WAVEFORMATEX_real) + wf->cbSize);
+							wf->wBitsPerSample = 0;
+							wf->nAvgBytesPerSec = 1055;
+							wf->nBlockAlign = 19;
+							//	wf->nBlockAlign = frame_size / 288;
+							dummy_buffer[0] = 30;
+							dummy_buffer[1] = 1;
+							dummy_buffer[2] = 1;
+							dummy_buffer[3] = 0;
+							memcpy((wf + 18), (char *)&dummy_buffer[0], 4);
+						}*/
 					}
 					else if (!stricmp(media_info->mime_type, "logical-fileinfo"))
 					{
 						error = ftell(real_media);
 						//Seek to the audience number pos
-						fseek(real_media, 11, SEEK_CUR);
+						/*fseek(real_media, 11, SEEK_CUR);
 						
 						//Read in the codec_audience_number
 						UINT32 field_count = 0;
-						error = fread((void *)&field_count, 4, 1, real_media);
-						bswap((BYTE *)&field_count, 4);
+						ReadData((void *)&field_count, 4, true);
 
 						for (int current_field = 0; current_field < field_count; current_field++)
 						{
@@ -347,14 +494,12 @@ int RealMedia_Reader::Read(const char *filename, bool bPreReadDataPackets)
 							RealMedia_Infomation_Field *new_item = new RealMedia_Infomation_Field();
 
 							//Read the total length of this field and text
-							error = fread((void *)&test_len, 4, 1, real_media);
-							bswap((BYTE *)&test_len, 4);
+							ReadData((void *)&test_len, 4, true);
 														
 							//Seek ahead one byte, for some reason
 							fseek(real_media, 1, SEEK_CUR);
 							//Read the length of the field name
-							error = fread((void *)&field_title_len, 2, 1, real_media);
-							bswap((BYTE *)&field_title_len, 2);	
+							ReadData((void *)&field_title_len, 2, true);
 							//Read in field name
 							new_item->field_title = new char[field_title_len+1];
 							error = fread((void *)new_item->field_title, field_title_len, 1, real_media);
@@ -364,15 +509,14 @@ int RealMedia_Reader::Read(const char *filename, bool bPreReadDataPackets)
 							//Seek ahead one byte, for some reason
 							fseek(real_media, 4, SEEK_CUR);
 							//Read the length of the field text
-							error = fread((void *)&field_text_len, 2, 1, real_media);
-							bswap((BYTE *)&field_text_len, 2);
+							ReadData((void *)&field_text_len, 2, true);
 							//Read in the field text
 							new_item->field_text = new char[field_text_len+1];
 							error = fread((void *)new_item->field_text, field_text_len, 1, real_media);
 							new_item->field_text[field_text_len] = 0;
 
 							field_list.AddItem(new_item);
-						}
+						}*/
 
 					}
 
@@ -393,14 +537,11 @@ int RealMedia_Reader::Read(const char *filename, bool bPreReadDataPackets)
 				RealMedia_Data_Chunk_Header data_chunk;
 				data_chunk.size = block_size;
 
-				error = fread((void *)&data_chunk.num_packets, 4, 1, real_media);
-				bswap((BYTE *)&data_chunk.num_packets, 4);
+				ReadData((void *)&data_chunk.num_packets, 4, true);
 								
-				error = fread((void *)&data_chunk.next_data_header, 4, 1, real_media);
-				bswap((BYTE *)&data_chunk.next_data_header, 4);
+				ReadData((void *)&data_chunk.next_data_header, 4, true);
 
-				error = fread((void *)&data_chunk.object_version, 2, 1, real_media);
-				bswap((BYTE *)&data_chunk.object_version, 2);
+				ReadData((void *)&data_chunk.object_version, 2, true);
 
 				//Store the start of the packets
 				packet_start_pos = ftell(real_media);
@@ -417,20 +558,15 @@ int RealMedia_Reader::Read(const char *filename, bool bPreReadDataPackets)
 						
 						long packet_start_pos = ftell(real_media);
 						
-						error = fread((void *)&new_packet->length, 2, 1, real_media);
-						bswap((BYTE *)&new_packet->length, 2);
+						ReadData((void *)&new_packet->length, 2, true);
 
-						error = fread((void *)&new_packet->stream_number, 2, 1, real_media);
-						bswap((BYTE *)&new_packet->stream_number, 2);
+						ReadData((void *)&new_packet->stream_number, 2, true);
 
-						error = fread((void *)&new_packet->timestamp, 4, 1, real_media);
-						bswap((BYTE *)&new_packet->timestamp, 4);
+						ReadData((void *)&new_packet->timestamp, 4, true);
 
-						error = fread((void *)&new_packet->reserved, 1, 1, real_media);
-						bswap((BYTE *)&new_packet->reserved, 1);
+						ReadData((void *)&new_packet->reserved, 1, true);
 
-						error = fread((void *)&new_packet->flags, 1, 1, real_media);
-						bswap((BYTE *)&new_packet->flags, 1);
+						ReadData((void *)&new_packet->flags, 1, true);
 												
 						long data_length = new_packet->length - 10;
 						long data_start = ftell(real_media);
@@ -470,17 +606,18 @@ int RealMedia_Reader::Read(const char *filename, bool bPreReadDataPackets)
 	return 1;
 };
 
-BYTE *RealMedia_Reader::GetPacketData(RealMedia_Packet *packet_info)
+RealMedia_Packet *RealMedia_Reader::GetPacketData(RealMedia_Packet *packet_info)
 {
 	if (the_filename == NULL || real_media == NULL || packet_info == NULL)
 		return NULL;
 
-	BYTE *packet_data = new BYTE[packet_info->packet_data_length];
+
+	packet_info->data = new BYTE[packet_info->packet_data_length];
 
 	fseek(real_media, packet_info->packet_start_pos, SEEK_SET);
-	fread(packet_data, packet_info->packet_data_length, 1, real_media);
+	fread(packet_info->data, packet_info->packet_data_length, 1, real_media);
 
-	return packet_data;
+	return packet_info;
 };
 
 RealMedia_Packet *RealMedia_Reader::GetNextDataPacket()
@@ -491,8 +628,8 @@ RealMedia_Packet *RealMedia_Reader::GetNextDataPacket()
 	if (current_packet_no > packet_count)
 	{
 		//Reset the packet reading
-		current_packet_no = 0;
-		last_packet_start_pos = packet_start_pos;
+		//current_packet_no = 0;
+		//last_packet_start_pos = packet_start_pos;
 		//return NULL so we know we reached the end
 		return NULL;
 	}
@@ -502,23 +639,18 @@ RealMedia_Packet *RealMedia_Reader::GetNextDataPacket()
 	fseek(real_media, last_packet_start_pos, SEEK_SET);				
 
 	RealMedia_Packet *new_packet = new RealMedia_Packet();
-	memset(new_packet, 0, sizeof(*new_packet));
+	memset((void *)new_packet, 0, sizeof(*new_packet));
 		
-	error = fread((void *)&new_packet->packet_data_length, 2, 1, real_media);
-	bswap((BYTE *)&new_packet->packet_data_length, 2);
+	ReadData((void *)&new_packet->packet_data_length, 2, true);	
 	new_packet->packet_data_length = new_packet->packet_data_length - 10;
 
-	error = fread((void *)&new_packet->stream_number, 2, 1, real_media);
-	bswap((BYTE *)&new_packet->stream_number, 2);
+	ReadData((void *)&new_packet->stream_number, 2, true);
 
-	error = fread((void *)&new_packet->timestamp, 4, 1, real_media);
-	bswap((BYTE *)&new_packet->timestamp, 4);
+	ReadData((void *)&new_packet->timestamp, 4, true);
 
-	error = fread((void *)&new_packet->reserved, 1, 1, real_media);
-	bswap((BYTE *)&new_packet->reserved, 1);
+	ReadData((void *)&new_packet->reserved, 1, true);
 
-	error = fread((void *)&new_packet->flags, 1, 1, real_media);
-	bswap((BYTE *)&new_packet->flags, 1);		
+	ReadData((void *)&new_packet->flags, 1, true);		
 
 	new_packet->data = new UINT8[new_packet->packet_data_length];
 	error = fread((void *)new_packet->data, new_packet->packet_data_length, 1, real_media);
@@ -539,7 +671,22 @@ UINT32 RealMedia_Reader::GetLongestTrackLength()
 	return longest_length;
 };
 
-void RealMedia_Reader::bswap(BYTE* s, int len)
+int RealMedia_Reader::ReadData(void *store_here, UINT32 store_length, bool bByteSwap)
+{
+	if ((store_here == NULL) || (real_media == NULL))
+		return 0;
+
+	int error = 0;
+	
+	error = fread(store_here, store_length, 1, real_media);
+	
+	if (bByteSwap)
+		bswap((BYTE *)store_here, store_length);
+
+	return error;
+};
+
+void inline RealMedia_Reader::bswap(BYTE* s, int len)
 {
 	for(BYTE* d = s + len-1; s < d; s++, d--)
 		*s ^= *d, *d ^= *s, *s ^= *d;

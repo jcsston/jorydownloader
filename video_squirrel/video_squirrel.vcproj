@@ -41,10 +41,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib ..\..\..\wxwindows\LIB\wxmswd.lib ..\..\..\wxwindows\LIB\ZLIBD.LIB ..\..\..\wxwindows\LIB\PNGD.LIB ..\libxml2-2.5.4\win32\dsp\libxml2\libxml2_a.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib ..\..\..\wxwindows\LIB\wxmswd.lib ..\..\..\wxwindows\LIB\ZLIBD.LIB ..\..\..\wxwindows\LIB\PNGD.LIB &quot;C:\Visual Studio Projects\matroska\libxml2-2.5.4\win32\dsp\libxml2\libxml2_a.lib&quot;"
 				OutputFile=".\Debug/video_squirrel.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug/video_squirrel.pdb"
 				GenerateMapFile="TRUE"
@@ -106,7 +107,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib ..\..\..\wxwindows\LIB\wxmsw.lib ..\..\..\wxwindows\LIB\ZLIB.LIB ..\..\..\wxwindows\LIB\PNG.LIB ..\libxml2-2.5.4\win32\dsp\libxml2\libxml2_a.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib ..\..\..\wxwindows\LIB\wxmsw.lib ..\..\..\wxwindows\LIB\ZLIB.LIB ..\..\..\wxwindows\LIB\PNG.LIB ..\libxml2-2.5.4\win32\dsp\libxml2\libxml2.lib"
 				OutputFile=".\Release/video_squirrel.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"

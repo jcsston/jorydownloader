@@ -31,8 +31,8 @@
 #ifndef _VIDEO_SQUIRREL_H_
 #define _VIDEO_SQUIRREL_H_
 
-// Windows includes (for Debug ouput)
-//#include <windows.h>
+#define DEBUG(x) wxLogDebug(x);
+#define Video_Squirrel_Version "v0.1"
 
 //wxWindows includes
 #include <wx/wx.h>
@@ -70,7 +70,13 @@
 
 #ifdef AVI_SUPPORT //< Avi Support compilied in
 //avilib includes
+#ifdef _MSC_VER
+extern "C" {
+#endif
 #include "avilib/avilib.h"
+#ifdef _MSC_VER
+};
+#endif
 #endif
 
 #ifdef REALMEDIA_SUPPORT
@@ -87,9 +93,6 @@
 //MatroskaInfoParser includes
 #include "MatroskaUtils.h" // Win32 GCC don't work with these
 #endif
-
-#define DEBUG(x) //wxLogDebug(x);
-#define Video_Squirrel_Version "v0.1"
 
 class audioData
 {
