@@ -175,7 +175,7 @@ int main(int argc, char* argv[])
 	printf("\n");
 	printf("Timing flipping routines... \n");
 
-
+/*
 	printf("ImageProcessing_RGB32_Flip_C\n");
 	{
 		CProfile profile2("ImageProcessing_RGB32_Flip_C");
@@ -238,7 +238,7 @@ int main(int argc, char* argv[])
 			ImageProcessing_RGB32_AlphaSet16_MMX(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight, 0xFF);
 		}
 	}
-	
+	*/
 	printf("\n");
 	printf("Timing overlay routines... \n");
 	
@@ -261,6 +261,7 @@ int main(int argc, char* argv[])
 		CProfile profile2("ImageProcessing_RGB32_Overlay_MMX");
 		for (i = 0; i < cycleCount; i++) {
 			ImageProcessing_RGB32_Overlay_MMX(pTargetImage, pOverlayImage, (int)bihTargetImage.biWidth, bihTargetImage.biHeight, 0xFFFFFFFF);
+			//SaveBMPFile("test.bmp", pTargetImage, &bihTargetImage);
 		}
 	}
 

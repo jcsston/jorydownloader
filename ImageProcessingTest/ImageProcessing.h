@@ -23,9 +23,8 @@ void ImageProcessing_RGB32_Overlay_C(BYTE *imageDest, BYTE *overlaySrc, int w, i
 /// About 1.2x the speed of COverlay with compiler set to max speed
 void ImageProcessing_RGB32_Overlay_ASM(BYTE *imageDest, BYTE *overlaySrc, int w, int h, int transparentColor);
 
-/// Majorly b0rked
-/// Horridly slow 0.0592 seconds for a 352x240 frame
-/// 0.0347x of the COverlay version
+/// 8-Mod Width required
+/// iSSE or better required (MASKMOVQ instruction used)
 void ImageProcessing_RGB32_Overlay_MMX(BYTE *imageDest, BYTE *overlaySrc, int w, int h, int transparentColor);
 
 void ImageProcessing_RGB32_AlphaSet_C(BYTE *image, int w, int h, int alpha);

@@ -268,51 +268,77 @@ nooverlay:
 	}
 }
 
-/// Majorly b0rked
-/// Horridly slow 0.0592 seconds for a 352x240 frame
-/// 0.0347x of the COverlay version
 void ImageProcessing_RGB32_Overlay_MMX(BYTE *imageDest, BYTE *overlaySrc, int w, int h, int transparentColor)
 {
 	assert(imageDest != NULL);
 	assert(overlaySrc != NULL);
 	assert(w > 0 && h > 0);
-	// Mod-2 width required
-	assert(w % 2 == 0);
+	// Mod-8 width required
+	assert(w % 8 == 0);
 
-	int iCount = w * h;
-	int pTransparentColorData[2] = { transparentColor, transparentColor };
-
+	DWORD transparentColors[2] = { (DWORD)transparentColor, (DWORD)transparentColor };
 	// we assume all data in the register is not used by others
 	__asm
 	{
 		// Assign pointers to register
 		mov			esi, [overlaySrc]			; put src addr to esi reg
 		mov			edi, [imageDest]			; put dest addr to edi reg
-		mov			ecx, [iCount]		; put count to ecx reg
-		shl			ecx, 2        ; multiple count with 4 by shifting 2 bits to the left
+		mov			ecx, [w]		; put width to ecx reg
+		mov			eax, [h]		; put height to ecx reg
+		imul		ecx					; eax = eax * ecx
+		mov			ecx, eax		; put count to ecx reg				
+		;shl			ecx, 2        ; multiple count with 4 by shifting 2 bits to the left
 		shr			ecx, 3				; divide count with 8 by shifting 3 bits to right
+		;shr			ecx, 2				; divide count with 4 by shifting 2 bits to right
+
+		; Load the alpha channel value
+		;mov			eax, [transparentColor]
+		;movd		mm6, eax
+		;movd		mm7, eax
+		;psll		mm7, 32
+		;por			mm7, mm6
 
 		; We compare two pixels at a time
 		; This increases speed, however the some white pixels get through
-		movq		mm2, [pTransparentColorData]
 		align 16 
 codeloop:
-		movq		mm0, [esi]			; mov 8 bytes of src data to mmx reg 0
-		movq		mm1, [edi]			; mov 8 bytes of dest data to mmx reg 1
-		PCMPEQD	mm0, mm2        ; compare and see if these two pixels are the transparent color
-		; if they are, then the source pixels (mm0) will be set to zero, so the following add operation will
-		; have null effect		
-		PADDUSB	  mm0, mm1			  ; Add
-		movq		[edi], mm0			; dump back the added 8 bytes of data to dest memory
+		movq		mm0, [esi]			; mov 8 bytes of overlay src data to mmx reg 0		
+		movq		mm2, [esi+8]			; mov 8 bytes of overlay src data to mmx reg 0
+		movq		mm4, [esi+16]			; mov 8 bytes of overlay src data to mmx reg 0		
+		movq		mm6, [esi+24]			; mov 8 bytes of overlay src data to mmx reg 0
 
-; move to next two pixels
-		add			esi, 8				; add src pointer by 8 bytes
-		add			edi, 8				; add dest pointer by 8 bytes
+		movq		mm1, mm0
+		movq		mm3, mm2
+		movq		mm5, mm4
+		movq		mm7, mm6
+
+		PCMPEQD	mm0, [transparentColors]        ; compare and see if these two pixels are the transparent color
+		PCMPEQD	mm2, [transparentColors]        ; compare and see if these two pixels are the transparent color
+		PCMPEQD	mm4, [transparentColors]        ; compare and see if these two pixels are the transparent color
+		PCMPEQD	mm6, [transparentColors]        ; compare and see if these two pixels are the transparent color
+
+		PANDN		mm0, [transparentColors]				; reverse the flags set by the compare function
+		PANDN		mm2, [transparentColors]				; reverse the flags set by the compare function
+		PANDN		mm4, [transparentColors]				; reverse the flags set by the compare function
+		PANDN		mm6, [transparentColors]				; reverse the flags set by the compare function
+		
+		MASKMOVQ mm1, mm0				; dump 8 bytes of overlay data to dest memory if it matches our mask
+		add			edi, 8				; add dest pointer by 8 bytes				
+		
+		MASKMOVQ mm3, mm2				; dump 8 bytes of overlay data to dest memory if it matches our mask
+		add			edi, 8				; add dest pointer by 8 bytes				
+		
+		MASKMOVQ mm4, mm5				; dump 8 bytes of overlay data to dest memory if it matches our mask
+		add			edi, 8				; add dest pointer by 8 bytes				
+		
+		MASKMOVQ mm6, mm7				; dump 8 bytes of overlay data to dest memory if it matches our mask
+		add			edi, 8				; add dest pointer by 8 bytes				
+
+		add			esi, (4*8)				; add src pointer by 8 pixels
 
 		dec			ecx					; decrement count by 1
 		jnz			codeloop			; jump to codeloop if not Zero
 		emms							; Restore FPU state to normal
-
 	}
 }
 
