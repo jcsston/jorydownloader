@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libxml2", "..\libxml2-2.5.4
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libebml", "..\libebml\make\vc6\lib\static\libebml.vcproj", "{20D48C6F-B036-4894-9796-039FF1DDEFD4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmatroska", "..\libmatroska\make\vc6\lib\static\libmatroska.vcproj", "{7C0936FC-16C0-4726-8C8F-8C1A06437E82}"
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		ConfigName.0 = Debug
@@ -19,6 +21,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectDependencies) = postSolution
 		{F1C6DCC9-D0B5-489A-9A5D-9EF0F84CE3FC}.0 = {5F2AEA5F-6B6D-4F36-A722-6D073ABB18A2}
+		{F1C6DCC9-D0B5-489A-9A5D-9EF0F84CE3FC}.1 = {7C0936FC-16C0-4726-8C8F-8C1A06437E82}
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.0 = {20D48C6F-B036-4894-9796-039FF1DDEFD4}
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
 		{F1C6DCC9-D0B5-489A-9A5D-9EF0F84CE3FC}.Debug.ActiveCfg = Debug|Win32
@@ -75,6 +79,24 @@ Global
 		{20D48C6F-B036-4894-9796-039FF1DDEFD4}.Release Unicode DLL.Build.0 = Release|Win32
 		{20D48C6F-B036-4894-9796-039FF1DDEFD4}.Test.ActiveCfg = Debug|Win32
 		{20D48C6F-B036-4894-9796-039FF1DDEFD4}.Test.Build.0 = Debug|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Debug.ActiveCfg = Debug|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Debug.Build.0 = Debug|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Debug DLL.ActiveCfg = Debug|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Debug DLL.Build.0 = Debug|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Debug Unicode.ActiveCfg = Debug|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Debug Unicode.Build.0 = Debug|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Debug Unicode DLL.ActiveCfg = Debug|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Debug Unicode DLL.Build.0 = Debug|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Release.ActiveCfg = Release|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Release.Build.0 = Release|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Release DLL.ActiveCfg = Release|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Release DLL.Build.0 = Release|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Release Unicode.ActiveCfg = Release|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Release Unicode.Build.0 = Release|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Release Unicode DLL.ActiveCfg = Release|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Release Unicode DLL.Build.0 = Release|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Test.ActiveCfg = Debug|Win32
+		{7C0936FC-16C0-4726-8C8F-8C1A06437E82}.Test.Build.0 = Debug|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

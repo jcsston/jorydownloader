@@ -34,13 +34,11 @@
 
 RealMedia_Reader::RealMedia_Reader()
 {
-	properties_block_count = 0;
 	media_properties_block_count = 0;
 	content_description_block_count = 0;
 
 	for (int i = 0; i < 255; i++)
 	{
-		properties_block[i] = NULL;
 		media_properties_block[i] = NULL;
 		content_description_block[i] = NULL;
 	}
@@ -91,7 +89,7 @@ int RealMedia_Reader::Read(const char *filename)
 		else if (!strcmpi(block_id, "PROP"))
 		{
 			//The Properties Header
-			RealMedia_Properties *info = new RealMedia_Properties;
+			RealMedia_Properties *info = &properties_block;//new RealMedia_Properties;
 			memset(info, 0, sizeof(RealMedia_Properties));
 			if (block_version == 0)
 			{
@@ -129,8 +127,8 @@ int RealMedia_Reader::Read(const char *filename)
 				bswap((BYTE *)&info->flags, 2);
 
 				//Add to the array
-				properties_block[properties_block_count] = info;
-				properties_block_count++;
+				//properties_block[properties_block_count] = info;
+				//properties_block_count++;
 			}
 			else
 			{
@@ -175,7 +173,7 @@ int RealMedia_Reader::Read(const char *filename)
 				bswap((BYTE *)&content_desc->comment_len, 2);
 
 				content_desc->comment = new char[content_desc->comment_len+1];
-				error = fread((void *)content_desc->title, content_desc->comment_len, 1, real_media);
+				error = fread((void *)content_desc->comment, content_desc->comment_len, 1, real_media);
 				content_desc->comment[content_desc->comment_len] = 0;
 
 				//Add to the array

@@ -59,9 +59,9 @@ struct RealMedia_File_Header
 
 struct RealMedia_Properties
 {
-	char object_id[4];
-	UINT32    size;
-	UINT16    object_version;
+	//char object_id[4];
+	//UINT32    size;
+	//UINT16    object_version;
 
 	UINT32   max_bit_rate;
 	UINT32   avg_bit_rate;
@@ -78,9 +78,9 @@ struct RealMedia_Properties
 
 struct RealMedia_Media_Properties
 {
-	char object_id[4];
-	UINT32     size;
-	UINT16     object_version;
+	//char object_id[4];
+	//UINT32     size;
+	//UINT16     object_version;
 
 	UINT16 stream_number;
 	UINT32                      max_bit_rate;
@@ -100,9 +100,9 @@ struct RealMedia_Media_Properties
 
 struct RealMedia_Content_Description
 {
-	char object_id[4];
-	UINT32     size;
-	UINT16      object_version;
+	//char object_id[4];
+	//UINT32     size;
+	//UINT16      object_version;
 
 	UINT16    title_len;
 	char *title;
@@ -122,8 +122,8 @@ class RealMedia_Reader
 
 		RealMedia_File_Header the_header;
 
-		RealMedia_Properties *properties_block[255];
-		UINT8 properties_block_count;
+		RealMedia_Properties properties_block;
+		//UINT8 properties_block_count;
 
 		RealMedia_Media_Properties *media_properties_block[255];
 		UINT8 media_properties_block_count;

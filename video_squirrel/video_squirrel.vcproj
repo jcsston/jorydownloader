@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;.\avilib;..\libmatroska\src;..\libebml\src;&quot;..\libxml2-2.5.4\include&quot;;..\..\WXWINDOWS\INCLUDE;..\..\wxWindows\LIB\MSW"
+				AdditionalIncludeDirectories=".\;.\avilib;..\matroska_cdl;..\libmatroska\src;..\libebml\src;&quot;..\libxml2-2.5.4\include&quot;;..\..\WXWINDOWS\INCLUDE;..\..\wxWindows\LIB\MSW"
 				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;WINVER=0x400;_MT;wxUSE_GUI=1;__WXDEBUG__;WXDEBUG=1"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
@@ -218,6 +218,28 @@
 			</File>
 			<File
 				RelativePath="avilib\avimisc.c">
+			</File>
+		</Filter>
+		<Filter
+			Name="MatroskaUtils"
+			Filter="">
+			<File
+				RelativePath="..\matroska_cdl\MatroskaTagData.cpp">
+			</File>
+			<File
+				RelativePath="..\matroska_cdl\MatroskaTagData.h">
+			</File>
+			<File
+				RelativePath="..\matroska_cdl\MatroskaTrackData.cpp">
+			</File>
+			<File
+				RelativePath="..\matroska_cdl\MatroskaTrackData.h">
+			</File>
+			<File
+				RelativePath="..\matroska_cdl\MatroskaUtils.cpp">
+			</File>
+			<File
+				RelativePath="..\matroska_cdl\MatroskaUtils.h">
 			</File>
 		</Filter>
 		<File

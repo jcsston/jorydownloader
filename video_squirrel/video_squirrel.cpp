@@ -29,13 +29,12 @@
 */
 
 // Here are the defines for each file format support
-#define AVI_SUPPORT
+//#define AVI_SUPPORT
 #define REALMEDIA_SUPPORT
 #define MPEG_SUPPORT
-//#define MATROSKA_SUPPORT
+#define MATROSKA_SUPPORT
 
 #include "video_squirrel.h"
-//#include "exe/squirrel_logo.xpm"
 
 AppFrame *frame;
 // program execution "starts" here
@@ -260,8 +259,9 @@ const wxSize& size)
 	the_database = new VideoItemList(wxKEY_INTEGER);
 	// Open up our database file
 	parseXMLFile(settings->database_filename);
-	// Update the list
-	RefreshVideoList();
+	// Update the list, not needed as the list updated as items are added to the database
+	// I may add this later for sorting
+	//RefreshVideoList();
 
 	// Create a statusbar
 	CreateStatusBar(1);
@@ -592,19 +592,26 @@ void AppFrame::AddFileToDatabase(wxString &filename, wxString group_under)
 		new_item->title = wxFileNameFromPath(filename).BeforeLast('.');
 		new_item->filename = filename;
 		new_item->comment_text = wxString(rm_reader.content_description_block[0]->comment, wxConvUTF8);
-		//Since RealMedia files don't have a framerate
-		new_item->video.frame_rate = 30;
-		new_item->video.duration = rm_reader.properties_block[0]->duration / 1000;
-
-		new_item->video.compressor = wxString(rm_reader.media_properties_block[0]->mime_type, wxConvUTF8);
-		new_item->video.avg_bitrate = rm_reader.properties_block[0]->avg_bit_rate / 1000;
-
-		int stream_no = 1;
-		while (rm_reader.media_properties_block[stream_no] != NULL)
+		
+		int audio_stream_no = 0;
+		for (int stream_no = 0; stream_no < rm_reader.properties_block.num_streams; stream_no++)
 		{
-			new_item->audio[stream_no] = new audioData();
-			new_item->audio[stream_no]->avg_bitrate = rm_reader.media_properties_block[stream_no]->avg_bit_rate / 1000;
-			stream_no++;
+			if (!strcmpi(rm_reader.media_properties_block[stream_no]->stream_name, "Video Stream"))
+			{
+				//Since RealMedia files don't have a framerate
+				new_item->video.frame_rate = 30;
+				new_item->video.duration = rm_reader.media_properties_block[stream_no]->duration / 1000;
+
+				new_item->video.compressor = wxString(rm_reader.media_properties_block[stream_no]->mime_type, wxConvUTF8);
+				new_item->video.avg_bitrate = rm_reader.media_properties_block[stream_no]->avg_bit_rate / 1000;
+			}
+			else if (!strcmpi(rm_reader.media_properties_block[stream_no]->stream_name, "Audio Stream"))
+			{
+					new_item->audio[audio_stream_no] = new audioData();
+					new_item->audio[audio_stream_no]->avg_bitrate = rm_reader.media_properties_block[stream_no]->avg_bit_rate / 1000;
+					new_item->audio[audio_stream_no]->compression = wxString(rm_reader.media_properties_block[stream_no]->mime_type, wxConvUTF8);
+					audio_stream_no++;
+			}
 		}
 
 		wxFile source_file(filename.c_str());
