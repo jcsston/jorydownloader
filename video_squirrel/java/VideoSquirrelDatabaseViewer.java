@@ -68,7 +68,6 @@ public class VideoSquirrelDatabaseViewer extends javax.swing.JDialog {
 
         jSplitPane1.setDividerSize(9);
         jScrollPane1.setPreferredSize(new java.awt.Dimension(150, 131));
-        jList1.setBackground(java.awt.SystemColor.window);
         jList1.setBorder(new javax.swing.border.CompoundBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0)), new javax.swing.border.EmptyBorder(new java.awt.Insets(1, 1, 1, 1))));
         jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jList1.setMaximumSize(new java.awt.Dimension(2147483647, 2147483647));
@@ -90,7 +89,6 @@ public class VideoSquirrelDatabaseViewer extends javax.swing.JDialog {
         jSplitPane1.setLeftComponent(jScrollPane1);
 
         jScrollPane2.setPreferredSize(new java.awt.Dimension(200, 67));
-        jTextArea1.setBackground(java.awt.SystemColor.window);
         jTextArea1.setEditable(false);
         jTextArea1.setLineWrap(true);
         jTextArea1.setText("Video Squirrel Database Java Viewer");
@@ -252,7 +250,7 @@ public class VideoSquirrelDatabaseViewer extends javax.swing.JDialog {
                                             } else if (level4Node.getNodeName() == "ColorDepth") {
                                                 Node level4NodeData = level4Node.getFirstChild();                                                
                                                 if (level4NodeData != null)
-                                                    videoTrack.color_depth = Integer.parseInteger(level4NodeData.getNodeValue());
+                                                    videoTrack.color_depth = Integer.parseInt(level4NodeData.getNodeValue());
                                                 
                                             } else if (level4Node.getNodeName() == "VideoFrameRate") {
                                                 Node level4NodeData = level4Node.getFirstChild();                                                
@@ -374,6 +372,9 @@ class VideoSquirrelListItem extends java.lang.Object {
       for (int v = 0; v < videoTracks.size(); v++) {
           VideoSquirrelListItemVideoTrack currentTrack = (VideoSquirrelListItemVideoTrack)videoTracks.get(v);
           formattedString += "\nVideo Track " + String.valueOf(v);
+          formattedString += "\nPixel Width: " + String.valueOf(currentTrack.x);
+          formattedString += "\nPixel Height: " + String.valueOf(currentTrack.y);
+          formattedString += "\nFramerate: " + String.valueOf(currentTrack.frame_rate);
           formattedString += "\n Compressor: " + currentTrack.compressor;
           formattedString += "\n Compressor2: " + currentTrack.compressor2;
       }
