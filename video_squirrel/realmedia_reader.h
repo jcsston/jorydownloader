@@ -104,19 +104,34 @@ struct RealMedia_Media_Properties
 	//UINT16     object_version;
 
 	UINT16 stream_number;
-	UINT32                      max_bit_rate;
-	UINT32                      avg_bit_rate;
-	UINT32                      max_packet_size;
-	UINT32                      avg_packet_size;
-	UINT32                      start_time;
-	UINT32                      preroll;
-	UINT32                      duration;
-	UINT8                       stream_name_size;
-	char     *stream_name;
-	UINT8                       mime_type_size;
+	UINT32 max_bit_rate;
+	UINT32 avg_bit_rate;
+	UINT32 max_packet_size;
+	UINT32 avg_packet_size;
+	UINT32 start_time;
+	UINT32 preroll;
+	UINT32 duration;
+	UINT8 stream_name_size;
+	char *stream_name;
+	UINT8 mime_type_size;
 	char *mime_type;
-	UINT32                      type_specific_len;
+	UINT32 type_specific_len;
 	char *type_specific_data;
+
+  /// This one sort of applies to all a/v streams :P
+	char *codec_name;
+	//Logical file-info
+
+	//Audio Stream
+  UINT32 frequency;
+  UINT8 channels;
+  UINT8 codec_audience_number;
+
+	//Video Stream
+	UINT16 frame_width;
+  UINT16 frame_height;
+  float frame_rate;
+
 };
 
 struct RealMedia_Content_Description
@@ -125,13 +140,13 @@ struct RealMedia_Content_Description
 	//UINT32     size;
 	//UINT16      object_version;
 
-	UINT16    title_len;
+	UINT16 title_len;
 	char *title;
-	UINT16    author_len;
+	UINT16 author_len;
 	char *author;
-	UINT16    copyright_len;
+	UINT16 copyright_len;
 	char *copyright;
-	UINT16    comment_len;
+	UINT16 comment_len;
 	char *comment;
 };
 
@@ -170,7 +185,7 @@ struct RealMedia_Media_Packet_Header
 };
 
 
-struct ReadMedia_Packet
+struct RealMedia_Packet
 {
 	/// The start of the raw packet data in the file
 	UINT16 packet_start_pos;
@@ -185,6 +200,44 @@ struct ReadMedia_Packet
 	/// Flags describing the properties of the packet. Look at RealMedia_Media_Packet_Header.flags for values
   UINT8 flags; 
 
+	RealMedia_Packet *next_item;
+};
+
+class RealMedia_Packet_List
+{
+public:
+	public:
+	RealMedia_Packet_List();
+	~RealMedia_Packet_List();
+	int AddItem(RealMedia_Packet *new_item, bool bCheckIfExisting = true);	
+	//int GetListCount();
+	RealMedia_Packet *operator[] (int requested_index);
+
+	UINT16 list_count;
+protected:
+	RealMedia_Packet *first_item;
+};
+
+struct RealMedia_Infomation_Field
+{
+	char *field_title;
+	char *field_text;
+
+	RealMedia_Infomation_Field *next_item;
+};
+
+class RealMedia_Infomation_Field_List
+{
+public:
+	public:
+	RealMedia_Infomation_Field_List();
+	~RealMedia_Infomation_Field_List();
+	int AddItem(RealMedia_Infomation_Field *new_item, bool bCheckIfExisting = true);	
+	int GetListCount();
+	RealMedia_Infomation_Field *operator[] (int requested_index);
+
+protected:
+	RealMedia_Infomation_Field *first_item;
 };
 class RealMedia_Reader
 {
@@ -196,8 +249,10 @@ class RealMedia_Reader
 		/// \param filename The filename of the file to process
 		/// \return 0 if successful		
 		int Read(const char *filename);
-
 		BYTE *GetPacketData(UINT16 packet_no);
+		/// Get the length of the longest track
+		/// \return The length of the longest track in milliseconds
+		UINT32 GetLongestTrackLength();
 		
 	//Data members
 		char *the_filename;
@@ -205,11 +260,14 @@ class RealMedia_Reader
 		RealMedia_File_Header the_header;
 		RealMedia_Properties properties_block;
 
-		ReadMedia_Packet *packets[10000];
-		UINT16 packet_count;
+		RealMedia_Packet_List packets;
+		//RealMedia_Packet *packets[10000];
+		//UINT16 packet_count;
 
 		RealMedia_Media_Properties *media_properties_block[255];
 		UINT8 media_properties_block_count;
+
+		RealMedia_Infomation_Field_List field_list;
 
 		RealMedia_Content_Description *content_description_block[255];
 		UINT8 content_description_block_count;

@@ -270,6 +270,111 @@ int RealMedia_Reader::Read(const char *filename)
 					error = fread((void *)media_info->type_specific_data, media_info->type_specific_len, 1, real_media);
 					media_info->type_specific_data[media_info->type_specific_len] = 0;
 
+					//Now depending on the mime type we can read more infomation about this track
+					//Thanks to Dark-Cracker for help
+					if (!stricmp(media_info->mime_type, "video/x-pn-realvideo"))
+					{
+						media_info->codec_name = new char[8+1];
+						fseek(real_media, 6, SEEK_CUR);
+						error = fread((void *)media_info->codec_name, 9, 1, real_media);
+						media_info->codec_name[9] = 0;
+
+						error = fread((void *)&media_info->frame_width, 2, 1, real_media);
+						bswap((BYTE *)&media_info->frame_width, 2);
+
+						error = fread((void *)&media_info->frame_height, 2, 1, real_media);
+						bswap((BYTE *)&media_info->frame_height, 2);
+						
+						fseek(real_media, 6, SEEK_CUR);
+						UINT16 FpsRM_Part1 = 0;
+						UINT8 FpsRM_Part2 = 0;
+
+						error = fread((void *)&FpsRM_Part1, 2, 1, real_media);
+						bswap((BYTE *)&FpsRM_Part1, 2);						
+						
+						error = fread((void *)&FpsRM_Part2, 1, 1, real_media);
+
+						media_info->frame_rate = FpsRM_Part1 + ((float)FpsRM_Part2 / 256);
+
+					}
+					else if (!stricmp(media_info->mime_type, "audio/x-pn-realaudio"))
+					{
+						//Seek to the audience number pos
+						fseek(real_media, 26, SEEK_CUR);
+						
+						//Read in the codec_audience_number
+						error = fread((void *)&media_info->codec_audience_number, 1, 1, real_media);
+						bswap((BYTE *)&media_info->codec_audience_number, 1);
+
+						//Seek to the frequency pos
+						fseek(real_media, 26, SEEK_CUR);
+												
+						error = fread((void *)&media_info->frequency, 2, 1, real_media);
+						bswap((BYTE *)&media_info->frequency, 2);
+
+						//Seek to the channels pos
+						fseek(real_media, 9, SEEK_CUR);
+						
+						error = fread((void *)&media_info->channels, 1, 1, real_media);
+						bswap((BYTE *)&media_info->channels, 1);
+						
+						//Seek to the codec name pos
+						fseek(real_media, 4, SEEK_CUR);
+
+						media_info->codec_name = new char[4+1];
+						error = fread((void *)media_info->codec_name, 4, 1, real_media);
+						media_info->codec_name[4] = 0;
+
+					}
+					else if (!stricmp(media_info->mime_type, "logical-fileinfo"))
+					{
+						error = ftell(real_media);
+						//Seek to the audience number pos
+						fseek(real_media, 11, SEEK_CUR);
+						
+						//Read in the codec_audience_number
+						UINT32 field_count = 0;
+						error = fread((void *)&field_count, 4, 1, real_media);
+						bswap((BYTE *)&field_count, 4);
+
+						for (int current_field = 0; current_field < field_count; current_field++)
+						{
+							UINT32 test_len = 0;
+							UINT16 field_title_len = 0;
+							UINT16 field_text_len = 0;
+							
+							RealMedia_Infomation_Field *new_item = new RealMedia_Infomation_Field();
+
+							//Read the total length of this field and text
+							error = fread((void *)&test_len, 4, 1, real_media);
+							bswap((BYTE *)&test_len, 4);
+														
+							//Seek ahead one byte, for some reason
+							fseek(real_media, 1, SEEK_CUR);
+							//Read the length of the field name
+							error = fread((void *)&field_title_len, 2, 1, real_media);
+							bswap((BYTE *)&field_title_len, 2);	
+							//Read in field name
+							new_item->field_title = new char[field_title_len+1];
+							error = fread((void *)new_item->field_title, field_title_len, 1, real_media);
+							new_item->field_title[field_title_len] = 0;														
+
+							error = ftell(real_media);
+							//Seek ahead one byte, for some reason
+							fseek(real_media, 4, SEEK_CUR);
+							//Read the length of the field text
+							error = fread((void *)&field_text_len, 2, 1, real_media);
+							bswap((BYTE *)&field_text_len, 2);
+							//Read in the field text
+							new_item->field_text = new char[field_text_len+1];
+							error = fread((void *)new_item->field_text, field_text_len, 1, real_media);
+							new_item->field_text[field_text_len] = 0;
+
+							field_list.AddItem(new_item);
+						}
+
+					}
+
 					//Add to the array
 					media_properties_block[media_properties_block_count] = media_info;
 					media_properties_block_count++;
@@ -295,13 +400,6 @@ int RealMedia_Reader::Read(const char *filename)
 
 				error = fread((void *)&data_chunk.object_version, 2, 1, real_media);
 				bswap((BYTE *)&data_chunk.object_version, 2);
-
-				packet_count = 0;
-
-				/*using namespace std;
-				ifstream input_rm_file;
-				input_rm_file.open(filename, ios_base::in | ios_base::binary);
-				input_rm_file.read(*/
 
 				//Now we read all the packets
 				for (int current_packet_no = 0; current_packet_no < data_chunk.num_packets; current_packet_no++)
@@ -329,18 +427,11 @@ int RealMedia_Reader::Read(const char *filename)
 					
 					int data_length = new_packet->length - 10;
 					int data_start = ftell(real_media);
-
-					/*
-					new_packet->data = new UINT8[new_packet->length];				
-					int i = 0;
-					for (i = 0; i < data_length; i++)
-						error = fread((void *)&new_packet->data[i], 1, 1, real_media);
-					*/
 					
-
 					fseek(real_media, packet_start_pos + new_packet->length, SEEK_SET);				
 					
-					ReadMedia_Packet *min_packet_data = new ReadMedia_Packet;
+					RealMedia_Packet *min_packet_data = new RealMedia_Packet();
+					memset(min_packet_data, 0, sizeof(*min_packet_data));
 					min_packet_data->stream_number = new_packet->stream_number;
 					min_packet_data->timestamp = new_packet->timestamp;
 					min_packet_data->reserved = new_packet->reserved;
@@ -348,7 +439,8 @@ int RealMedia_Reader::Read(const char *filename)
 					min_packet_data->packet_start_pos = data_start;
 					min_packet_data->packet_data_length = data_length;
 
-					packets[packet_count++] = min_packet_data;
+					packets.AddItem(min_packet_data);
+					packets.list_count++;
 									
 					delete new_packet;
 				}
@@ -370,7 +462,7 @@ BYTE *RealMedia_Reader::GetPacketData(UINT16 packet_no)
 	if (the_filename == NULL || real_media == NULL)
 		return NULL;
 
-	if ((packet_no < packet_count) && (packets[packet_no] != NULL))
+	if ((packet_no < packets.list_count) && (packets[packet_no] != NULL))
 	{
 		BYTE *packet_data = new BYTE[packets[packet_no]->packet_data_length];
 
@@ -381,6 +473,163 @@ BYTE *RealMedia_Reader::GetPacketData(UINT16 packet_no)
 	}
 
 	return NULL;
+};
+
+UINT32 RealMedia_Reader::GetLongestTrackLength()
+{
+	UINT32 longest_length = 0;
+	for (int t = 0; t < media_properties_block_count; t++)
+	{
+		if (media_properties_block[t]->duration > longest_length)
+			longest_length = media_properties_block[t]->duration;
+	}
+	return longest_length;
+};
+
+/*******************************************
+ *    Begin RealMedia_Packet_List class    *
+ *******************************************/
+RealMedia_Packet_List::RealMedia_Packet_List() {
+	//OutputDebugString("Matroska Attachment List Created\n");
+	this->first_item = NULL;
+	list_count = 0;
+};
+
+RealMedia_Packet_List::~RealMedia_Packet_List() {
+	//OutputDebugString("Matroska Attachment List Deleted\n");
+	//I should free memory here
+	RealMedia_Packet *temp = NULL;
+
+	temp = first_item;
+	while (temp != NULL)
+	{		
+		if (first_item != NULL)
+		{
+			first_item = first_item->next_item;
+		}
+		delete temp;
+		temp = first_item;
+	}
+};
+
+//Add a Attachment item to the list
+int RealMedia_Packet_List::AddItem(RealMedia_Packet *new_item, bool bCheckIfExisting) {
+	//Check that some idiot didn't pass a NULL pointer
+	if (new_item == NULL)
+	{
+		//So some idiot tried to pass a NULL pointer :P
+		return 1;
+	}
+	if (bCheckIfExisting)
+	{
+		//Check if this item is already in the list
+		RealMedia_Packet *current = first_item;
+		while (current != NULL)
+		{
+			if (current == new_item)
+			{
+				//Item already in List !!!!!
+				return 1;
+			}
+			//Not found so far so lets keep going
+			current = current->next_item;
+		}
+	}
+	//It passed the checks so lets add it
+	new_item->next_item = first_item;
+	first_item = new_item;
+	return 0;
+};
+
+RealMedia_Packet *RealMedia_Packet_List::operator[] (int requested_index)
+{
+	RealMedia_Packet *current = first_item;
+	for (int item_count = (this->list_count); item_count > 0; item_count--)
+	{
+		if (requested_index == item_count)
+			return current;
+		//Keep searching
+		current = current->next_item;
+	}	
+	return NULL;	
+};
+
+/***************************************************
+ *   Begin RealMedia_Infomation_Field_List class   *
+ ***************************************************/
+RealMedia_Infomation_Field_List::RealMedia_Infomation_Field_List() {
+	this->first_item = NULL;
+};
+
+RealMedia_Infomation_Field_List::~RealMedia_Infomation_Field_List() {
+	//I should free memory here
+	RealMedia_Infomation_Field *temp = NULL;
+
+	temp = first_item;
+	while (temp != NULL)
+	{		
+		if (first_item != NULL)
+		{
+			first_item = first_item->next_item;
+		}
+		delete temp;
+		temp = first_item;
+	}
+};
+
+//Add a Attachment item to the list
+int RealMedia_Infomation_Field_List::AddItem(RealMedia_Infomation_Field *new_item, bool bCheckIfExisting) {
+	//Check that some idiot didn't pass a NULL pointer
+	if (new_item == NULL)
+	{
+		//So some idiot tried to pass a NULL pointer :P
+		return 1;
+	}
+	if (bCheckIfExisting)
+	{
+		//Check if this item is already in the list
+		RealMedia_Infomation_Field *current = first_item;
+		while (current != NULL)
+		{
+			if (current == new_item)
+			{
+				//Item already in List !!!!!
+				return 1;
+			}
+			//Not found so far so lets keep going
+			current = current->next_item;
+		}
+	}
+	//It passed the checks so lets add it
+	new_item->next_item = first_item;
+	first_item = new_item;
+	return 0;
+};
+
+//returns the number of fields in this list
+int RealMedia_Infomation_Field_List::GetListCount() {
+	RealMedia_Infomation_Field *current = first_item;
+	int item_count = 0;
+	while (current != NULL)
+	{
+		item_count++;
+		//Keep going
+		current = current->next_item;
+	}
+	return item_count;
+};
+
+RealMedia_Infomation_Field *RealMedia_Infomation_Field_List::operator[] (int requested_index)
+{
+	RealMedia_Infomation_Field *current = first_item;
+	for (int item_count = (this->GetListCount()); item_count > 0; item_count--)
+	{
+		if (requested_index == item_count)
+			return current;
+		//Keep searching
+		current = current->next_item;
+	}	
+	return NULL;	
 };
 
 void bswap(BYTE* s, int len)
