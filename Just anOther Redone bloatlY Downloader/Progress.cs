@@ -169,12 +169,12 @@ namespace WindowsApplication1
 			this.Tag = download_item;
 			theSpeed = new avgSpeed();
 			//Start the real downloading
-			theDownloadThread = new Thread(new ThreadStart(StartDownload));
+			theDownloadThread = new Thread(new ThreadStart(DownloadThread));
 			theDownloadThread.Name = "File Download";
 			theDownloadThread.Start();
 		}
 
-		public void StartDownload(){
+		public void DownloadThread(){
 			aDownloadItem download_item = (aDownloadItem)this.Tag;
 			labelURL.Text = download_item.RemoteURL;
 			labelFile.Text = download_item.LocalFilename;
@@ -275,6 +275,7 @@ namespace WindowsApplication1
 			this.labelSize.Text = "";
 			this.labelSpeed.Text = "";
 			this.labelURL.Text = "";
+			this.neatProgressBarProgress.Value = 0;
 		}
 	}
 }

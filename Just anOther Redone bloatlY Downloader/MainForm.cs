@@ -31,18 +31,31 @@ namespace WindowsApplication1 {
 		private System.Windows.Forms.MenuItem menuItemFilePaste;
 		private System.Windows.Forms.MenuItem menuItem2;
 		private System.Windows.Forms.ColumnHeader columnHeader5;
-		private System.Windows.Forms.Button buttonDownload;
-		
-		static public theDownloadList OpenDownloadList;
-		static public Progress file_download;
-		private Thread XMLParserThread;
-		private Thread theMonitorListUpdateThread;
-		private Thread theURLListMonitorThread;
+		private System.Windows.Forms.Button buttonDownload;		
 		private System.Windows.Forms.ColumnHeader columnHeader6;
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
 		private System.ComponentModel.Container components = null;
+
+		static public theDownloadList OpenDownloadList;
+		private Thread XMLParserThread;
+		private Thread theMonitorListUpdateThread;
+		private System.Windows.Forms.ColumnHeader columnHeader7;
+		private System.Windows.Forms.MenuItem contextMenuListDownload;
+		private System.Windows.Forms.MenuItem contextMenuListEdit;
+		private System.Windows.Forms.ContextMenu contextMenuList;
+		private Thread theURLListMonitorThread;
+
+		enum DownloadListColumns {
+			Filename,
+			Done,
+			Size,
+			Time_Left,
+			URL,
+			Comments,
+			UID
+		}
 
 		public MainForm() {
 			//
@@ -79,6 +92,8 @@ namespace WindowsApplication1 {
 			this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
 			this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
 			this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader7 = new System.Windows.Forms.ColumnHeader();
 			this.statusBarMain = new System.Windows.Forms.StatusBar();
 			this.statusBarPanelCount = new System.Windows.Forms.StatusBarPanel();
 			this.statusBarPanelTotalSize = new System.Windows.Forms.StatusBarPanel();
@@ -91,7 +106,9 @@ namespace WindowsApplication1 {
 			this.menuItemmenuItemFileExit = new System.Windows.Forms.MenuItem();
 			this.treeViewCategories = new System.Windows.Forms.TreeView();
 			this.buttonDownload = new System.Windows.Forms.Button();
-			this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
+			this.contextMenuListDownload = new System.Windows.Forms.MenuItem();
+			this.contextMenuListEdit = new System.Windows.Forms.MenuItem();
+			this.contextMenuList = new System.Windows.Forms.ContextMenu();
 			((System.ComponentModel.ISupportInitialize)(this.statusBarPanelCount)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.statusBarPanelTotalSize)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.statusBarPanelTotalTime)).BeginInit();
@@ -106,14 +123,17 @@ namespace WindowsApplication1 {
 																																													 this.columnHeader3,
 																																													 this.columnHeader4,
 																																													 this.columnHeader5,
-																																													 this.columnHeader6});
+																																													 this.columnHeader6,
+																																													 this.columnHeader7});
 			this.listViewDownloadList.Cursor = System.Windows.Forms.Cursors.Default;
 			this.listViewDownloadList.FullRowSelect = true;
 			this.listViewDownloadList.GridLines = true;
+			this.listViewDownloadList.LabelEdit = true;
 			this.listViewDownloadList.Location = new System.Drawing.Point(136, 48);
 			this.listViewDownloadList.Name = "listViewDownloadList";
 			this.listViewDownloadList.Size = new System.Drawing.Size(384, 208);
 			this.listViewDownloadList.TabIndex = 0;
+			this.listViewDownloadList.SelectedIndexChanged += new System.EventHandler(this.listViewDownloadList_SelectedIndexChanged);
 			// 
 			// columnHeader1
 			// 
@@ -134,6 +154,14 @@ namespace WindowsApplication1 {
 			// columnHeader5
 			// 
 			this.columnHeader5.Text = "URL";
+			// 
+			// columnHeader6
+			// 
+			this.columnHeader6.Text = "Comments";
+			// 
+			// columnHeader7
+			// 
+			this.columnHeader7.Text = "UID";
 			// 
 			// statusBarMain
 			// 
@@ -224,9 +252,23 @@ namespace WindowsApplication1 {
 			this.buttonDownload.Text = "Download";
 			this.buttonDownload.Click += new System.EventHandler(this.buttonDownload_Click);
 			// 
-			// columnHeader6
+			// contextMenuListDownload
 			// 
-			this.columnHeader6.Text = "UID";
+			this.contextMenuListDownload.Index = 0;
+			this.contextMenuListDownload.Text = "Download";
+			this.contextMenuListDownload.Click += new System.EventHandler(this.contextMenuListDownload_Click);
+			// 
+			// contextMenuListEdit
+			// 
+			this.contextMenuListEdit.Index = 1;
+			this.contextMenuListEdit.Text = "Edit";
+			this.contextMenuListEdit.Click += new System.EventHandler(this.contextMenuListEdit_Click);
+			// 
+			// contextMenuList
+			// 
+			this.contextMenuList.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+																																										this.contextMenuListDownload,
+																																										this.contextMenuListEdit});
 			// 
 			// MainForm
 			// 
@@ -349,7 +391,6 @@ namespace WindowsApplication1 {
 					}
 				}
 			}catch(Exception exp) {				
-				//if (exp.
 				MessageBox.Show("Error while loading XML Filelist " + exp.Message);
 			}
 			OpenDownloadList.changed = true;
@@ -392,88 +433,95 @@ namespace WindowsApplication1 {
 				data_save.WriteEndElement();
 				data_save.Close();
 			}catch(Exception exp) {
-				MessageBox.Show("Error while saving the XML Filelist :" + exp.Message);
+				MessageBox.Show("Error while saving the XML Filelist: " + exp.Message + "\n" + exp.StackTrace);
 			}
 		}
 
 		public void UpdateDownloadList() {
-			//listViewDownloadList.Items.Clear();			
-			for(int i = 0; i < OpenDownloadList.master_file_list.Count; i++) {
-				aDownloadItem current_item = (aDownloadItem)OpenDownloadList.master_file_list[i];
+			try {
+				for(int i = 0; i < OpenDownloadList.master_file_list.Count; i++) {
+					aDownloadItem current_item = (aDownloadItem)OpenDownloadList.master_file_list[i];
 								
-				ListViewItem all_files_item = new ListViewItem(new Random().Next().ToString());
-				//Fill out the sub-items with blanks
-				for (int b = 0; b < listViewDownloadList.Columns.Count; b++)
-					all_files_item.SubItems.Add("");
+					ListViewItem all_files_item = new ListViewItem(new Random().Next().ToString());
+					//Fill out the sub-items with blanks
+					for (int b = 0; b < listViewDownloadList.Columns.Count; b++)
+						all_files_item.SubItems.Add("");
 
-				//Search the list to find the columns
-				int filename_column = 0;
-				int percent_column = 0;
-				int totalsize_column = 0;
-				int timeleft_column = 0;
-				int remoteURL_column = 0;
-				int UID_column = 0;
-				for(int c = 0; c < listViewDownloadList.Columns.Count; c++) {
-					if (listViewDownloadList.Columns[c].Text == "Filename") {
-						filename_column = c;
-					} else if (listViewDownloadList.Columns[c].Text == "Done") {
-						percent_column = c;
-					} else if (listViewDownloadList.Columns[c].Text == "Size") {
-						totalsize_column = c;
-					} else if (listViewDownloadList.Columns[c].Text == "Time Left") {
-						timeleft_column = c;
-					} else if (listViewDownloadList.Columns[c].Text == "URL") {
-						remoteURL_column = c;
-					} else if (listViewDownloadList.Columns[c].Text == "UID") {
-						//yep, we found the UID column
-						UID_column = c;
+					//Search the list to find the columns
+					/*int filename_column = 0;
+					int percent_column = 0;
+					int totalsize_column = 0;
+					int timeleft_column = 0;
+					int remoteURL_column = 0;
+					int UID_column = 0;
+					for(int c = 0; c < listViewDownloadList.Columns.Count; c++) {
+						if (listViewDownloadList.Columns[c].Text == "Filename") {
+							filename_column = c;
+						} else if (listViewDownloadList.Columns[c].Text == "Done") {
+							percent_column = c;
+						} else if (listViewDownloadList.Columns[c].Text == "Size") {
+							totalsize_column = c;
+						} else if (listViewDownloadList.Columns[c].Text == "Time Left") {
+							timeleft_column = c;
+						} else if (listViewDownloadList.Columns[c].Text == "URL") {
+							remoteURL_column = c;
+						} else if (listViewDownloadList.Columns[c].Text == "UID") {
+							//yep, we found the UID column
+							UID_column = c;
+						}
+					}*/
+					//Now search the column rows for a matching UID
+					bool found_existing_item = false;
+					int item_row = 0;
+					for(item_row = 0; item_row < listViewDownloadList.Items.Count; item_row++) {
+						if (listViewDownloadList.Items[item_row].SubItems[6].Text == current_item.FileUID.ToString()) {
+							//We found it :)
+							found_existing_item = true;
+							break;
+						}					
 					}
+					//If we didn't find the item already in the list
+					if (!found_existing_item) {
+						//Add it
+						listViewDownloadList.Items.Add(all_files_item);
+						item_row = listViewDownloadList.Items.IndexOf(all_files_item);
+					}				
+					//Empty this to prevent usage
+					all_files_item = null;
+				
+					//Now we set all the values of the Item/Row
+					listViewDownloadList.Items[item_row].Text = current_item.LocalFilename;
+					//Add the Percent done
+					float percent_done;
+					percent_done = (float)(100 / (float)current_item.totalFileSize * (float)current_item.doneFileSize);
+					if (listViewDownloadList.Items[item_row].SubItems[1].Text != percent_done.ToString("#0.##'%'"))
+						listViewDownloadList.Items[item_row].SubItems[1].Text = percent_done.ToString("#0.##'%'");
+				
+					if (listViewDownloadList.Items[item_row].SubItems[2].Text != current_item.totalFileSize.ToString())
+						listViewDownloadList.Items[item_row].SubItems[2].Text = current_item.totalFileSize.ToString();
+				
+					if (listViewDownloadList.Items[item_row].SubItems[3].Text != "")
+						listViewDownloadList.Items[item_row].SubItems[3].Text = "";
+				
+					if (listViewDownloadList.Items[item_row].SubItems[4].Text != current_item.RemoteURL)
+						listViewDownloadList.Items[item_row].SubItems[4].Text = current_item.RemoteURL;
+				
+					if (listViewDownloadList.Items[item_row].SubItems[5].Text != current_item.comments) {
+						listViewDownloadList.Items[item_row].SubItems[5].Text = current_item.comments;
+					}
+
+					if (listViewDownloadList.Items[item_row].SubItems[6].Text != current_item.FileUID.ToString())
+						listViewDownloadList.Items[item_row].SubItems[6].Text = current_item.FileUID.ToString();
+				
+					listViewDownloadList.Items[item_row].Tag = (object)current_item.FileUID;
 				}
-				//Now search the column rows for a matching UID
-				bool found_existing_item = false;
-				int item_row = 0;
-				for(item_row = 0; item_row < listViewDownloadList.Items.Count; item_row++) {
-					if (listViewDownloadList.Items[item_row].SubItems[UID_column].Text == current_item.FileUID.ToString()) {
-						//We found it :)
-						found_existing_item = true;
-						break;
-					}					
-				}
-				//If we didn't find the item already in the list
-				if (!found_existing_item) {
-					//Add it
-					listViewDownloadList.Items.Add(all_files_item);
-					item_row = listViewDownloadList.Items.IndexOf(all_files_item);
-				}				
-				//Empty this to prevent usage
-				all_files_item = null;
-				
-				//Now we set all the values of the Item/Row
-				listViewDownloadList.Items[item_row].Text = current_item.LocalFilename;
-				//Add the Percent done
-				float percent_done;
-				percent_done = (float)(100 / (float)current_item.totalFileSize * (float)current_item.doneFileSize);
-				if (listViewDownloadList.Items[item_row].SubItems[percent_column].Text != percent_done.ToString("#0.##'%'"))
-					listViewDownloadList.Items[item_row].SubItems[percent_column].Text = percent_done.ToString("#0.##'%'");
-				
-				if (listViewDownloadList.Items[item_row].SubItems[totalsize_column].Text != current_item.totalFileSize.ToString())
-					listViewDownloadList.Items[item_row].SubItems[totalsize_column].Text = current_item.totalFileSize.ToString();
-				
-				if (listViewDownloadList.Items[item_row].SubItems[timeleft_column].Text != "")
-					listViewDownloadList.Items[item_row].SubItems[timeleft_column].Text = "";
-				
-				if (listViewDownloadList.Items[item_row].SubItems[remoteURL_column].Text != current_item.RemoteURL)
-					listViewDownloadList.Items[item_row].SubItems[remoteURL_column].Text = current_item.RemoteURL;
-				
-				if (listViewDownloadList.Items[item_row].SubItems[UID_column].Text != current_item.FileUID.ToString())
-					listViewDownloadList.Items[item_row].SubItems[UID_column].Text = current_item.FileUID.ToString();
-				
-				listViewDownloadList.Items[item_row].Tag = (object)current_item.FileUID;
+			} catch(Exception exp) {
+				MessageBox.Show("Error while updating the list: " + exp.Message + "\n" + exp.StackTrace);
 			}
 		}
 
 		public void MonitorListUpdateThread() {
-			while (true) {
+			while (Thread.CurrentThread.ThreadState == ThreadState.Background) {
 				if (OpenDownloadList.changed) {
 					UpdateDownloadList();
 					OpenDownloadList.changed = false;
@@ -517,7 +565,6 @@ namespace WindowsApplication1 {
 				file_list file_list = (file_list)new_file.Tag;
 				OpenDownloadList.AddURL(file_list.GetData());
 			}
-			UpdateDownloadList();
 		}
 
 		private void menuItemmenuItemFileExit_Click(object sender, System.EventArgs e)
@@ -527,13 +574,10 @@ namespace WindowsApplication1 {
 
 		private void menuItemFilePaste_Click(object sender, System.EventArgs e)
 		{
-			//IDataObject clipboard_data = Clipboard.GetDataObject();
-			//String clipboard_url = (String)clipboard_data.GetData(DataFormats.Text);
-			String[] url_list = {"http://192.168.0.1/images/xvid_vorbis_mkv.jpg", "http://192.168.0.1/images/xvid_interlaced.jpg"};
+			IDataObject clipboard_data = Clipboard.GetDataObject();
+			String clipboard_url = (String)clipboard_data.GetData(DataFormats.Text);
 			
-			for(int i = 0; i < 10; i++) {
-				OpenDownloadList.AddURL(url_list);
-			}
+			OpenDownloadList.AddURL(clipboard_url);
 		}
 
 		private void treeViewCategories_AfterSelect(object sender, System.Windows.Forms.TreeViewEventArgs e)
@@ -548,14 +592,31 @@ namespace WindowsApplication1 {
 		private void Form1_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 			SaveDownloadList();
+			Application.Exit();
 		}
 
 		private void buttonDownload_Click(object sender, System.EventArgs e) {
-			file_download = new Progress();						
+			Progress file_download = new Progress();						
 			file_download.Show();
 			int selected_master_index = OpenDownloadList.FindUID((Int32)listViewDownloadList.SelectedItems[0].Tag);
 			file_download.DownloadFile(OpenDownloadList.GetDownloadListItem(selected_master_index));
 		}
+
+		private void listViewDownloadList_SelectedIndexChanged(object sender, System.EventArgs e) {
+			UInt64 total_sizes = 0;
+			for (int i = 0; i < listViewDownloadList.SelectedItems.Count; i++) {
+				total_sizes += Convert.ToUInt32(listViewDownloadList.SelectedItems[i].SubItems[2].Text);
+			}
+			statusBarPanelTotalSize.Text = (total_sizes/1024).ToString() + "KB";
+		}
+
+		private void contextMenuListDownload_Click(object sender, System.EventArgs e) {
+		
+		}
+
+		private void contextMenuListEdit_Click(object sender, System.EventArgs e) {
+			//listViewDownloadList.SelectedItems[i].SubItems[2].Text;
+		}		
 	}
 }
 
@@ -598,11 +659,12 @@ public class aDownloadItem : Object
 		this.FileUID = new_UID;
 	}
 
-	public Int32 FileUID; //Used to keep files named the same apart
 	public String RemoteURL;
 	public String LocalFilename;
 	public long totalFileSize;
 	public long doneFileSize;
+	public Int32 FileUID; //Used to keep files named the same apart
+	public String comments;
 };
 
 public class theDownloadList
@@ -651,7 +713,7 @@ public class theDownloadList
 	}
 
 	public void URLListMonitor() {
-		while (true) {
+		while (Thread.CurrentThread.ThreadState == ThreadState.Background) {
 			if (waiting_url_list.Count > 0) {
 				String url_to_process = (String)waiting_url_list[0];
 				RealAddURL(url_to_process);
