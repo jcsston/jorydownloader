@@ -27,10 +27,13 @@ namespace WindowsApplication1
 		private System.Windows.Forms.Label labelSpeed;
 		private System.Windows.Forms.Label labelSize;
 
-		private int BUFFER_SIZE = 1024; //Is 1KB good?
+		private int BUFFER_SIZE = 1024;
 		private Thread theDownloadThread;
 		private bool statPause = false;
 		private bool statCancel = false;
+		private System.Windows.Forms.TrackBar trackBarVisible;
+		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.CheckBox checkBoxOnTop;
 		private avgSpeed theSpeed;
 
 		private class avgSpeed : object {
@@ -76,6 +79,7 @@ namespace WindowsApplication1
 		/// </summary>
 		private void InitializeComponent()
 		{
+			System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(Progress));
 			this.buttonPause = new System.Windows.Forms.Button();
 			this.buttonCancel = new System.Windows.Forms.Button();
 			this.labelFile = new System.Windows.Forms.Label();
@@ -83,6 +87,10 @@ namespace WindowsApplication1
 			this.labelURL = new System.Windows.Forms.Label();
 			this.labelSpeed = new System.Windows.Forms.Label();
 			this.labelSize = new System.Windows.Forms.Label();
+			this.trackBarVisible = new System.Windows.Forms.TrackBar();
+			this.label1 = new System.Windows.Forms.Label();
+			this.checkBoxOnTop = new System.Windows.Forms.CheckBox();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarVisible)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// buttonPause
@@ -117,6 +125,7 @@ namespace WindowsApplication1
 			this.neatProgressBarProgress.Name = "neatProgressBarProgress";
 			this.neatProgressBarProgress.Size = new System.Drawing.Size(378, 28);
 			this.neatProgressBarProgress.TabIndex = 5;
+			this.neatProgressBarProgress.Value = 0;
 			// 
 			// labelURL
 			// 
@@ -143,11 +152,44 @@ namespace WindowsApplication1
 			this.labelSize.TabIndex = 8;
 			this.labelSize.Text = "100KB of 960KB";
 			// 
+			// trackBarVisible
+			// 
+			this.trackBarVisible.Location = new System.Drawing.Point(72, 100);
+			this.trackBarVisible.Maximum = 100;
+			this.trackBarVisible.Minimum = 10;
+			this.trackBarVisible.Name = "trackBarVisible";
+			this.trackBarVisible.Size = new System.Drawing.Size(88, 34);
+			this.trackBarVisible.TabIndex = 9;
+			this.trackBarVisible.TickStyle = System.Windows.Forms.TickStyle.None;
+			this.trackBarVisible.Value = 100;
+			this.trackBarVisible.ValueChanged += new System.EventHandler(this.trackBarVisible_ValueChanged);
+			// 
+			// label1
+			// 
+			this.label1.Location = new System.Drawing.Point(0, 100);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(80, 23);
+			this.label1.TabIndex = 10;
+			this.label1.Text = "Transparency:";
+			this.label1.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			// 
+			// checkBoxOnTop
+			// 
+			this.checkBoxOnTop.Location = new System.Drawing.Point(168, 100);
+			this.checkBoxOnTop.Name = "checkBoxOnTop";
+			this.checkBoxOnTop.Size = new System.Drawing.Size(72, 24);
+			this.checkBoxOnTop.TabIndex = 11;
+			this.checkBoxOnTop.Text = "On Top";
+			this.checkBoxOnTop.CheckedChanged += new System.EventHandler(this.checkBoxOnTop_CheckedChanged);
+			// 
 			// Progress
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
 			this.ClientSize = new System.Drawing.Size(384, 125);
 			this.Controls.AddRange(new System.Windows.Forms.Control[] {
+																																	this.checkBoxOnTop,
+																																	this.label1,
+																																	this.trackBarVisible,
 																																	this.labelSize,
 																																	this.labelSpeed,
 																																	this.labelURL,
@@ -155,10 +197,15 @@ namespace WindowsApplication1
 																																	this.labelFile,
 																																	this.buttonCancel,
 																																	this.buttonPause});
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+			this.MaximizeBox = false;
 			this.Name = "Progress";
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Progress";
 			this.Load += new System.EventHandler(this.Progress_Load);
 			this.Closed += new System.EventHandler(this.Progress_Closed);
+			((System.ComponentModel.ISupportInitialize)(this.trackBarVisible)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -181,7 +228,7 @@ namespace WindowsApplication1
 
 			HttpWebRequest new_url = (HttpWebRequest)WebRequest.Create(download_item.RemoteURL);
 			new_url.AllowAutoRedirect = true;			
-			
+						
 			//Create the FileStream object			
 			FileStream FileWriter = new FileStream(download_item.LocalFilename, FileMode.OpenOrCreate);
 			FileWriter.Seek(0, SeekOrigin.End);
@@ -189,7 +236,7 @@ namespace WindowsApplication1
 			//Cut off the last 1K for resuming
 			download_item.doneFileSize = FileWriter.Length;
 			if ((download_item.doneFileSize > 1000) && (download_item.totalFileSize > 1000)) {
-				FileWriter.Seek(download_item.doneFileSize-1000, SeekOrigin.Begin);
+				FileWriter.Seek(download_item.doneFileSize - 1000, SeekOrigin.Begin);
 			}else {
 				FileWriter.Seek(download_item.doneFileSize, SeekOrigin.Begin);
 			}
@@ -199,7 +246,7 @@ namespace WindowsApplication1
 
 			HttpWebResponse url_response = (HttpWebResponse)new_url.GetResponse();
 			//Setup the progress bar
-			neatProgressBarProgress.Value = (int)((FileWriter.Position+1) / url_response.ContentLength);
+			neatProgressBarProgress.Value = (int)((FileWriter.Position+1) / download_item.totalFileSize);
 
 			Stream ResponseStream = url_response.GetResponseStream();
 			byte[] ByteBuffer = new byte[BUFFER_SIZE];
@@ -215,11 +262,11 @@ namespace WindowsApplication1
 				FileWriter.Write(ByteBuffer, 0, read_amount);
 				
 				//Update Progress Bar
-				if ((int)(100 / (float)url_response.ContentLength * (float)FileWriter.Position) != this.neatProgressBarProgress.Value) {
-					this.neatProgressBarProgress.Value = (int)(100 / (float)url_response.ContentLength * (float)FileWriter.Position);
+				if ((int)(100 / (float)download_item.totalFileSize * (float)FileWriter.Position) != this.neatProgressBarProgress.Value) {
+					this.neatProgressBarProgress.Value = (int)(100 / (float)download_item.totalFileSize * (float)FileWriter.Position);
 				}
 				//Update the Size Label
-				this.labelSize.Text = ((int)(FileWriter.Position/1024)).ToString() + "KB of " + ((int)(url_response.ContentLength/1024)).ToString() + "KB";
+				this.labelSize.Text = ((int)(FileWriter.Position/1024)).ToString() + "KB of " + ((int)(download_item.totalFileSize/1024)).ToString() + "KB";
 				
 				//Update the Download Item with the completed amount
 				Int32 DownloadFileUID = ((aDownloadItem)this.Tag).FileUID;
@@ -276,6 +323,15 @@ namespace WindowsApplication1
 			this.labelSpeed.Text = "";
 			this.labelURL.Text = "";
 			this.neatProgressBarProgress.Value = 0;
+			BUFFER_SIZE = (int)MainForm.OpenDownloadList.OpenDownloadOptions.download_buffer_size;
+		}
+
+		private void checkBoxOnTop_CheckedChanged(object sender, System.EventArgs e) {
+			this.TopMost = checkBoxOnTop.Checked;
+		}
+
+		private void trackBarVisible_ValueChanged(object sender, System.EventArgs e) {
+			this.Opacity = (float)trackBarVisible.Value / 100;
 		}
 	}
 }

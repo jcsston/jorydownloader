@@ -14,11 +14,6 @@ namespace WindowsApplication1 {
 	/// Summary description for Form1.
 	/// </summary>
 	public class MainForm : System.Windows.Forms.Form {
-		private System.Windows.Forms.ListView listViewDownloadList;
-		private System.Windows.Forms.ColumnHeader columnHeader1;
-		private System.Windows.Forms.ColumnHeader columnHeader2;
-		private System.Windows.Forms.ColumnHeader columnHeader3;
-		private System.Windows.Forms.ColumnHeader columnHeader4;
 		private System.Windows.Forms.StatusBar statusBarMain;
 		private System.Windows.Forms.StatusBarPanel statusBarPanelCount;
 		private System.Windows.Forms.StatusBarPanel statusBarPanelTotalSize;
@@ -30,21 +25,29 @@ namespace WindowsApplication1 {
 		private System.Windows.Forms.TreeView treeViewCategories;
 		private System.Windows.Forms.MenuItem menuItemFilePaste;
 		private System.Windows.Forms.MenuItem menuItem2;
-		private System.Windows.Forms.ColumnHeader columnHeader5;
-		private System.Windows.Forms.Button buttonDownload;		
-		private System.Windows.Forms.ColumnHeader columnHeader6;
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
+		private System.ComponentModel.IContainer components;
 
 		static public theDownloadList OpenDownloadList;
 		private Thread XMLParserThread;
 		private Thread theMonitorListUpdateThread;
-		private System.Windows.Forms.ColumnHeader columnHeader7;
 		private System.Windows.Forms.MenuItem contextMenuListDownload;
 		private System.Windows.Forms.MenuItem contextMenuListEdit;
 		private System.Windows.Forms.ContextMenu contextMenuList;
+		private System.Windows.Forms.NotifyIcon notifyIcon1;
+		private System.Windows.Forms.MenuItem menuItem1;
+		private System.Windows.Forms.MenuItem menuItemOptionsShow;
+		private System.Windows.Forms.Panel panel1;
+		private System.Windows.Forms.ListView listViewDownloadList;
+		private System.Windows.Forms.ColumnHeader columnHeader1;
+		private System.Windows.Forms.ColumnHeader columnHeader2;
+		private System.Windows.Forms.ColumnHeader columnHeader3;
+		private System.Windows.Forms.ColumnHeader columnHeader4;
+		private System.Windows.Forms.ColumnHeader columnHeader5;
+		private System.Windows.Forms.ColumnHeader columnHeader6;
+		private System.Windows.Forms.ColumnHeader columnHeader7;
+		private System.Windows.Forms.Splitter splitterMain;
+		private System.Windows.Forms.MenuItem menuItemFileLoadURLList;
+		private System.Windows.Forms.MenuItem menuItemLeech;
 		private Thread theURLListMonitorThread;
 
 		enum DownloadListColumns {
@@ -86,14 +89,11 @@ namespace WindowsApplication1 {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-			this.listViewDownloadList = new System.Windows.Forms.ListView();
-			this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
-			this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
-			this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
-			this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
-			this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
-			this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
-			this.columnHeader7 = new System.Windows.Forms.ColumnHeader();
+			this.components = new System.ComponentModel.Container();
+			System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(MainForm));
+			this.contextMenuList = new System.Windows.Forms.ContextMenu();
+			this.contextMenuListDownload = new System.Windows.Forms.MenuItem();
+			this.contextMenuListEdit = new System.Windows.Forms.MenuItem();
 			this.statusBarMain = new System.Windows.Forms.StatusBar();
 			this.statusBarPanelCount = new System.Windows.Forms.StatusBarPanel();
 			this.statusBarPanelTotalSize = new System.Windows.Forms.StatusBarPanel();
@@ -104,15 +104,164 @@ namespace WindowsApplication1 {
 			this.menuItemFilePaste = new System.Windows.Forms.MenuItem();
 			this.menuItem2 = new System.Windows.Forms.MenuItem();
 			this.menuItemmenuItemFileExit = new System.Windows.Forms.MenuItem();
+			this.menuItem1 = new System.Windows.Forms.MenuItem();
+			this.menuItemOptionsShow = new System.Windows.Forms.MenuItem();
 			this.treeViewCategories = new System.Windows.Forms.TreeView();
-			this.buttonDownload = new System.Windows.Forms.Button();
-			this.contextMenuListDownload = new System.Windows.Forms.MenuItem();
-			this.contextMenuListEdit = new System.Windows.Forms.MenuItem();
-			this.contextMenuList = new System.Windows.Forms.ContextMenu();
+			this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
+			this.splitterMain = new System.Windows.Forms.Splitter();
+			this.panel1 = new System.Windows.Forms.Panel();
+			this.listViewDownloadList = new System.Windows.Forms.ListView();
+			this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
+			this.columnHeader7 = new System.Windows.Forms.ColumnHeader();
+			this.menuItemFileLoadURLList = new System.Windows.Forms.MenuItem();
+			this.menuItemLeech = new System.Windows.Forms.MenuItem();
 			((System.ComponentModel.ISupportInitialize)(this.statusBarPanelCount)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.statusBarPanelTotalSize)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.statusBarPanelTotalTime)).BeginInit();
+			this.panel1.SuspendLayout();
 			this.SuspendLayout();
+			// 
+			// contextMenuList
+			// 
+			this.contextMenuList.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+																																										this.contextMenuListDownload,
+																																										this.contextMenuListEdit});
+			// 
+			// contextMenuListDownload
+			// 
+			this.contextMenuListDownload.Index = 0;
+			this.contextMenuListDownload.Text = "Download";
+			this.contextMenuListDownload.Click += new System.EventHandler(this.contextMenuListDownload_Click);
+			// 
+			// contextMenuListEdit
+			// 
+			this.contextMenuListEdit.Index = 1;
+			this.contextMenuListEdit.Text = "Edit";
+			this.contextMenuListEdit.Click += new System.EventHandler(this.contextMenuListEdit_Click);
+			// 
+			// statusBarMain
+			// 
+			this.statusBarMain.Location = new System.Drawing.Point(0, 323);
+			this.statusBarMain.Name = "statusBarMain";
+			this.statusBarMain.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
+																																										 this.statusBarPanelCount,
+																																										 this.statusBarPanelTotalSize,
+																																										 this.statusBarPanelTotalTime});
+			this.statusBarMain.ShowPanels = true;
+			this.statusBarMain.Size = new System.Drawing.Size(624, 22);
+			this.statusBarMain.TabIndex = 1;
+			// 
+			// statusBarPanelCount
+			// 
+			this.statusBarPanelCount.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
+			this.statusBarPanelCount.Width = 408;
+			// 
+			// statusBarPanelTotalSize
+			// 
+			this.statusBarPanelTotalSize.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
+			// 
+			// statusBarPanelTotalTime
+			// 
+			this.statusBarPanelTotalTime.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
+			// 
+			// mainMenu1
+			// 
+			this.mainMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+																																							this.menuItemFile,
+																																							this.menuItem1});
+			// 
+			// menuItemFile
+			// 
+			this.menuItemFile.Index = 0;
+			this.menuItemFile.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+																																								 this.menuItemFileAddFile,
+																																								 this.menuItemFilePaste,
+																																								 this.menuItemLeech,
+																																								 this.menuItemFileLoadURLList,
+																																								 this.menuItem2,
+																																								 this.menuItemmenuItemFileExit});
+			this.menuItemFile.Text = "&File";
+			this.menuItemFile.Click += new System.EventHandler(this.menuItemFile_Click);
+			// 
+			// menuItemFileAddFile
+			// 
+			this.menuItemFileAddFile.Index = 0;
+			this.menuItemFileAddFile.Text = "Add File";
+			this.menuItemFileAddFile.Click += new System.EventHandler(this.menuItemFileAddFile_Click);
+			// 
+			// menuItemFilePaste
+			// 
+			this.menuItemFilePaste.Index = 1;
+			this.menuItemFilePaste.Text = "Paste";
+			this.menuItemFilePaste.Click += new System.EventHandler(this.menuItemFilePaste_Click);
+			// 
+			// menuItem2
+			// 
+			this.menuItem2.Index = 4;
+			this.menuItem2.Text = "-";
+			// 
+			// menuItemmenuItemFileExit
+			// 
+			this.menuItemmenuItemFileExit.Index = 5;
+			this.menuItemmenuItemFileExit.Text = "E&xit";
+			this.menuItemmenuItemFileExit.Click += new System.EventHandler(this.menuItemmenuItemFileExit_Click);
+			// 
+			// menuItem1
+			// 
+			this.menuItem1.Index = 1;
+			this.menuItem1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+																																							this.menuItemOptionsShow});
+			this.menuItem1.Text = "&Options";
+			// 
+			// menuItemOptionsShow
+			// 
+			this.menuItemOptionsShow.Index = 0;
+			this.menuItemOptionsShow.Text = "&Show Options";
+			this.menuItemOptionsShow.Click += new System.EventHandler(this.menuItemOptionsShow_Click);
+			// 
+			// treeViewCategories
+			// 
+			this.treeViewCategories.Dock = System.Windows.Forms.DockStyle.Left;
+			this.treeViewCategories.ImageIndex = -1;
+			this.treeViewCategories.Name = "treeViewCategories";
+			this.treeViewCategories.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
+																																									 new System.Windows.Forms.TreeNode("All Categories"),
+																																									 new System.Windows.Forms.TreeNode("Download Queue")});
+			this.treeViewCategories.SelectedImageIndex = -1;
+			this.treeViewCategories.Size = new System.Drawing.Size(120, 323);
+			this.treeViewCategories.TabIndex = 2;
+			this.treeViewCategories.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeViewCategories_AfterSelect);
+			// 
+			// notifyIcon1
+			// 
+			this.notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
+			this.notifyIcon1.Text = "notifyIcon1";
+			this.notifyIcon1.Visible = true;
+			this.notifyIcon1.DoubleClick += new System.EventHandler(this.notifyIcon1_DoubleClick);
+			// 
+			// splitterMain
+			// 
+			this.splitterMain.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+			this.splitterMain.Location = new System.Drawing.Point(120, 0);
+			this.splitterMain.Name = "splitterMain";
+			this.splitterMain.Size = new System.Drawing.Size(3, 323);
+			this.splitterMain.TabIndex = 3;
+			this.splitterMain.TabStop = false;
+			// 
+			// panel1
+			// 
+			this.panel1.Controls.AddRange(new System.Windows.Forms.Control[] {
+																																				 this.listViewDownloadList});
+			this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.panel1.Location = new System.Drawing.Point(123, 0);
+			this.panel1.Name = "panel1";
+			this.panel1.Size = new System.Drawing.Size(501, 323);
+			this.panel1.TabIndex = 4;
 			// 
 			// listViewDownloadList
 			// 
@@ -125,15 +274,15 @@ namespace WindowsApplication1 {
 																																													 this.columnHeader5,
 																																													 this.columnHeader6,
 																																													 this.columnHeader7});
+			this.listViewDownloadList.ContextMenu = this.contextMenuList;
 			this.listViewDownloadList.Cursor = System.Windows.Forms.Cursors.Default;
+			this.listViewDownloadList.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.listViewDownloadList.FullRowSelect = true;
 			this.listViewDownloadList.GridLines = true;
-			this.listViewDownloadList.LabelEdit = true;
-			this.listViewDownloadList.Location = new System.Drawing.Point(136, 48);
 			this.listViewDownloadList.Name = "listViewDownloadList";
-			this.listViewDownloadList.Size = new System.Drawing.Size(384, 208);
-			this.listViewDownloadList.TabIndex = 0;
-			this.listViewDownloadList.SelectedIndexChanged += new System.EventHandler(this.listViewDownloadList_SelectedIndexChanged);
+			this.listViewDownloadList.Size = new System.Drawing.Size(501, 323);
+			this.listViewDownloadList.TabIndex = 1;
+			this.listViewDownloadList.View = System.Windows.Forms.View.Details;
 			// 
 			// columnHeader1
 			// 
@@ -163,131 +312,39 @@ namespace WindowsApplication1 {
 			// 
 			this.columnHeader7.Text = "UID";
 			// 
-			// statusBarMain
+			// menuItemFileLoadURLList
 			// 
-			this.statusBarMain.Location = new System.Drawing.Point(0, 259);
-			this.statusBarMain.Name = "statusBarMain";
-			this.statusBarMain.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
-																																										 this.statusBarPanelCount,
-																																										 this.statusBarPanelTotalSize,
-																																										 this.statusBarPanelTotalTime});
-			this.statusBarMain.ShowPanels = true;
-			this.statusBarMain.Size = new System.Drawing.Size(520, 22);
-			this.statusBarMain.TabIndex = 1;
+			this.menuItemFileLoadURLList.Index = 3;
+			this.menuItemFileLoadURLList.Text = "Load URL List";
+			this.menuItemFileLoadURLList.Click += new System.EventHandler(this.menuItemFileLoadURLList_Click);
 			// 
-			// statusBarPanelCount
+			// menuItemLeech
 			// 
-			this.statusBarPanelCount.AutoSize = System.Windows.Forms.StatusBarPanelAutoSize.Spring;
-			this.statusBarPanelCount.BorderStyle = System.Windows.Forms.StatusBarPanelBorderStyle.Raised;
-			this.statusBarPanelCount.Text = "statusBarPanelCount";
-			this.statusBarPanelCount.Width = 304;
-			// 
-			// statusBarPanelTotalSize
-			// 
-			this.statusBarPanelTotalSize.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
-			this.statusBarPanelTotalSize.Text = "statusBarPanelTotalSize";
-			// 
-			// statusBarPanelTotalTime
-			// 
-			this.statusBarPanelTotalTime.Alignment = System.Windows.Forms.HorizontalAlignment.Right;
-			this.statusBarPanelTotalTime.Text = "statusBarPanel1";
-			// 
-			// mainMenu1
-			// 
-			this.mainMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-																																							this.menuItemFile});
-			// 
-			// menuItemFile
-			// 
-			this.menuItemFile.Index = 0;
-			this.menuItemFile.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-																																								 this.menuItemFileAddFile,
-																																								 this.menuItemFilePaste,
-																																								 this.menuItem2,
-																																								 this.menuItemmenuItemFileExit});
-			this.menuItemFile.Text = "&File";
-			this.menuItemFile.Click += new System.EventHandler(this.menuItemFile_Click);
-			// 
-			// menuItemFileAddFile
-			// 
-			this.menuItemFileAddFile.Index = 0;
-			this.menuItemFileAddFile.Text = "Add File";
-			this.menuItemFileAddFile.Click += new System.EventHandler(this.menuItemFileAddFile_Click);
-			// 
-			// menuItemFilePaste
-			// 
-			this.menuItemFilePaste.Index = 1;
-			this.menuItemFilePaste.Text = "Paste";
-			this.menuItemFilePaste.Click += new System.EventHandler(this.menuItemFilePaste_Click);
-			// 
-			// menuItem2
-			// 
-			this.menuItem2.Index = 2;
-			this.menuItem2.Text = "-";
-			// 
-			// menuItemmenuItemFileExit
-			// 
-			this.menuItemmenuItemFileExit.Index = 3;
-			this.menuItemmenuItemFileExit.Text = "E&xit";
-			this.menuItemmenuItemFileExit.Click += new System.EventHandler(this.menuItemmenuItemFileExit_Click);
-			// 
-			// treeViewCategories
-			// 
-			this.treeViewCategories.ImageIndex = -1;
-			this.treeViewCategories.Location = new System.Drawing.Point(0, 48);
-			this.treeViewCategories.Name = "treeViewCategories";
-			this.treeViewCategories.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-																																									 new System.Windows.Forms.TreeNode("All Categories"),
-																																									 new System.Windows.Forms.TreeNode("Download Queue")});
-			this.treeViewCategories.SelectedImageIndex = -1;
-			this.treeViewCategories.Size = new System.Drawing.Size(128, 208);
-			this.treeViewCategories.TabIndex = 2;
-			this.treeViewCategories.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeViewCategories_AfterSelect);
-			// 
-			// buttonDownload
-			// 
-			this.buttonDownload.Location = new System.Drawing.Point(136, 16);
-			this.buttonDownload.Name = "buttonDownload";
-			this.buttonDownload.TabIndex = 3;
-			this.buttonDownload.Text = "Download";
-			this.buttonDownload.Click += new System.EventHandler(this.buttonDownload_Click);
-			// 
-			// contextMenuListDownload
-			// 
-			this.contextMenuListDownload.Index = 0;
-			this.contextMenuListDownload.Text = "Download";
-			this.contextMenuListDownload.Click += new System.EventHandler(this.contextMenuListDownload_Click);
-			// 
-			// contextMenuListEdit
-			// 
-			this.contextMenuListEdit.Index = 1;
-			this.contextMenuListEdit.Text = "Edit";
-			this.contextMenuListEdit.Click += new System.EventHandler(this.contextMenuListEdit_Click);
-			// 
-			// contextMenuList
-			// 
-			this.contextMenuList.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-																																										this.contextMenuListDownload,
-																																										this.contextMenuListEdit});
+			this.menuItemLeech.Index = 2;
+			this.menuItemLeech.Text = "Leech";
+			this.menuItemLeech.Click += new System.EventHandler(this.menuItemLeech_Click);
 			// 
 			// MainForm
 			// 
 			this.AllowDrop = true;
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-			this.ClientSize = new System.Drawing.Size(520, 281);
+			this.ClientSize = new System.Drawing.Size(624, 345);
 			this.Controls.AddRange(new System.Windows.Forms.Control[] {
-																																	this.buttonDownload,
+																																	this.panel1,
+																																	this.splitterMain,
 																																	this.treeViewCategories,
-																																	this.statusBarMain,
-																																	this.listViewDownloadList});
+																																	this.statusBarMain});
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Menu = this.mainMenu1;
 			this.Name = "MainForm";
 			this.Text = "Just anOther Redone bloatlY Downloader";
+			this.Resize += new System.EventHandler(this.MainForm_Resize);
 			this.Closing += new System.ComponentModel.CancelEventHandler(this.Form1_Closing);
 			this.Load += new System.EventHandler(this.Form1_Load);
 			((System.ComponentModel.ISupportInitialize)(this.statusBarPanelCount)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.statusBarPanelTotalSize)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.statusBarPanelTotalTime)).EndInit();
+			this.panel1.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -384,8 +441,30 @@ namespace WindowsApplication1 {
 										//We don't what to try and set widths for colums that don't exist
 										if (currentColumn > listViewDownloadList.Columns.Count)
 											break;
+									}								
+								}else if (element_level3.Name == "DownloadListQueueOptions") {
+									//Ok we found the Queue Options
+									for(int level4 = 0; level4 < nList3.Count; level4++) {
+										XmlElement element_level4 = (XmlElement)nList3.Item(level4);
+										nList4 = element_level4.ChildNodes;
+											
+										if (element_level4.Name == "QueueLimit") {
+											OpenDownloadList.OpenDownloadOptions.download_queue_limit = XmlConvert.ToUInt16(element_level4.InnerText);
+										}
 									}
-								}				
+								}else if (element_level3.Name == "DownloadListSpeedOptions") {																		
+									//:) We found the Speed Options
+									for(int level4 = 0; level4 < nList3.Count; level4++) {
+										XmlElement element_level4 = (XmlElement)nList3.Item(level4);
+										nList4 = element_level4.ChildNodes;
+											
+										if (element_level4.Name == "DownloadBufferSize") {
+											OpenDownloadList.OpenDownloadOptions.download_buffer_size = XmlConvert.ToUInt16(element_level4.InnerText);
+										}
+									}
+								}else {
+									//Unknown element
+								}
 							}																				
 						}
 					}
@@ -423,6 +502,12 @@ namespace WindowsApplication1 {
 				data_save.WriteEndElement();
 				//Save the current User settings
 				data_save.WriteStartElement("Options");
+				data_save.WriteStartElement("DownloadListQueueOptions");
+				data_save.WriteElementString("QueueLimit", OpenDownloadList.OpenDownloadOptions.download_queue_limit.ToString());
+				data_save.WriteEndElement();
+				data_save.WriteStartElement("DownloadListSpeedOptions");
+				data_save.WriteElementString("DownloadBufferSize", OpenDownloadList.OpenDownloadOptions.download_buffer_size.ToString());
+				data_save.WriteEndElement();
 				data_save.WriteStartElement("DownloadListColumn");
 				data_save.WriteAttributeString("Count", listViewDownloadList.Columns.Count.ToString());
 				for(int i = 0; i < listViewDownloadList.Columns.Count; i++) {
@@ -447,34 +532,11 @@ namespace WindowsApplication1 {
 					for (int b = 0; b < listViewDownloadList.Columns.Count; b++)
 						all_files_item.SubItems.Add("");
 
-					//Search the list to find the columns
-					/*int filename_column = 0;
-					int percent_column = 0;
-					int totalsize_column = 0;
-					int timeleft_column = 0;
-					int remoteURL_column = 0;
-					int UID_column = 0;
-					for(int c = 0; c < listViewDownloadList.Columns.Count; c++) {
-						if (listViewDownloadList.Columns[c].Text == "Filename") {
-							filename_column = c;
-						} else if (listViewDownloadList.Columns[c].Text == "Done") {
-							percent_column = c;
-						} else if (listViewDownloadList.Columns[c].Text == "Size") {
-							totalsize_column = c;
-						} else if (listViewDownloadList.Columns[c].Text == "Time Left") {
-							timeleft_column = c;
-						} else if (listViewDownloadList.Columns[c].Text == "URL") {
-							remoteURL_column = c;
-						} else if (listViewDownloadList.Columns[c].Text == "UID") {
-							//yep, we found the UID column
-							UID_column = c;
-						}
-					}*/
 					//Now search the column rows for a matching UID
 					bool found_existing_item = false;
 					int item_row = 0;
 					for(item_row = 0; item_row < listViewDownloadList.Items.Count; item_row++) {
-						if (listViewDownloadList.Items[item_row].SubItems[6].Text == current_item.FileUID.ToString()) {
+						if (listViewDownloadList.Items[item_row].SubItems[(int)DownloadListColumns.UID].Text == current_item.FileUID.ToString()) {
 							//We found it :)
 							found_existing_item = true;
 							break;
@@ -494,24 +556,24 @@ namespace WindowsApplication1 {
 					//Add the Percent done
 					float percent_done;
 					percent_done = (float)(100 / (float)current_item.totalFileSize * (float)current_item.doneFileSize);
-					if (listViewDownloadList.Items[item_row].SubItems[1].Text != percent_done.ToString("#0.##'%'"))
-						listViewDownloadList.Items[item_row].SubItems[1].Text = percent_done.ToString("#0.##'%'");
+					//if (listViewDownloadList.Items[item_row].SubItems[(int)DownloadListColumns.Done].Text != percent_done.ToString("#0.##'%'"))
+						listViewDownloadList.Items[item_row].SubItems[(int)DownloadListColumns.Done].Text = percent_done.ToString("#0.##'%'");
 				
-					if (listViewDownloadList.Items[item_row].SubItems[2].Text != current_item.totalFileSize.ToString())
-						listViewDownloadList.Items[item_row].SubItems[2].Text = current_item.totalFileSize.ToString();
+					//if (listViewDownloadList.Items[item_row].SubItems[(int)DownloadListColumns.Size].Text != current_item.totalFileSize.ToString())
+						listViewDownloadList.Items[item_row].SubItems[(int)DownloadListColumns.Size].Text = current_item.totalFileSize.ToString();
 				
-					if (listViewDownloadList.Items[item_row].SubItems[3].Text != "")
-						listViewDownloadList.Items[item_row].SubItems[3].Text = "";
+					//if (listViewDownloadList.Items[item_row].SubItems[(int)DownloadListColumns.Time_Left].Text != "")
+						listViewDownloadList.Items[item_row].SubItems[(int)DownloadListColumns.Time_Left].Text = "";
 				
-					if (listViewDownloadList.Items[item_row].SubItems[4].Text != current_item.RemoteURL)
-						listViewDownloadList.Items[item_row].SubItems[4].Text = current_item.RemoteURL;
+					//if (listViewDownloadList.Items[item_row].SubItems[(int)DownloadListColumns.URL].Text != current_item.RemoteURL)
+						listViewDownloadList.Items[item_row].SubItems[(int)DownloadListColumns.URL].Text = current_item.RemoteURL;
 				
-					if (listViewDownloadList.Items[item_row].SubItems[5].Text != current_item.comments) {
-						listViewDownloadList.Items[item_row].SubItems[5].Text = current_item.comments;
-					}
+					//if (listViewDownloadList.Items[item_row].SubItems[(int)DownloadListColumns.Comments].Text != current_item.comments)
+						listViewDownloadList.Items[item_row].SubItems[(int)DownloadListColumns.Comments].Text = current_item.comments;
+					
 
-					if (listViewDownloadList.Items[item_row].SubItems[6].Text != current_item.FileUID.ToString())
-						listViewDownloadList.Items[item_row].SubItems[6].Text = current_item.FileUID.ToString();
+					//if (listViewDownloadList.Items[item_row].SubItems[(int)DownloadListColumns.UID].Text != current_item.FileUID.ToString())
+						listViewDownloadList.Items[item_row].SubItems[(int)DownloadListColumns.UID].Text = current_item.FileUID.ToString();
 				
 					listViewDownloadList.Items[item_row].Tag = (object)current_item.FileUID;
 				}
@@ -527,6 +589,7 @@ namespace WindowsApplication1 {
 					OpenDownloadList.changed = false;
 				}
 				Thread.Sleep(500);
+				//Thread.SpinWait(
 			}
 		}
 		private void Form1_Load(object sender, System.EventArgs e)
@@ -569,6 +632,7 @@ namespace WindowsApplication1 {
 
 		private void menuItemmenuItemFileExit_Click(object sender, System.EventArgs e)
 		{
+			SaveDownloadList();
 			Application.Exit();
 		}
 
@@ -596,26 +660,81 @@ namespace WindowsApplication1 {
 		}
 
 		private void buttonDownload_Click(object sender, System.EventArgs e) {
-			Progress file_download = new Progress();						
-			file_download.Show();
-			int selected_master_index = OpenDownloadList.FindUID((Int32)listViewDownloadList.SelectedItems[0].Tag);
-			file_download.DownloadFile(OpenDownloadList.GetDownloadListItem(selected_master_index));
+			//Progress file_download = new Progress();						
+			//file_download.Show();
+			//int selected_master_index = OpenDownloadList.FindUID((Int32)listViewDownloadList.SelectedItems[0].Tag);
+			//file_download.DownloadFile(OpenDownloadList.GetDownloadListItem(selected_master_index));
 		}
 
 		private void listViewDownloadList_SelectedIndexChanged(object sender, System.EventArgs e) {
-			UInt64 total_sizes = 0;
-			for (int i = 0; i < listViewDownloadList.SelectedItems.Count; i++) {
-				total_sizes += Convert.ToUInt32(listViewDownloadList.SelectedItems[i].SubItems[2].Text);
+			try {
+				UInt64 total_sizes = 0;			
+				for (int i = 0; i < listViewDownloadList.SelectedItems.Count; i++) {
+					Int32 item_UID = 0;
+					item_UID = Convert.ToInt32(listViewDownloadList.SelectedItems[i].SubItems[(int)DownloadListColumns.UID].Text);
+					//Add the total file size
+					total_sizes += (UInt64)OpenDownloadList.GetDownloadListItemByUID(item_UID).totalFileSize;
+					//Subtract the amount downloaded
+					total_sizes -= (UInt64)OpenDownloadList.GetDownloadListItemByUID(item_UID).doneFileSize;
+				}
+				statusBarPanelTotalSize.Text = (total_sizes/1024).ToString() + "KB";
+				statusBarPanelCount.Text = listViewDownloadList.SelectedItems.Count.ToString() + " items selected";
+			} catch(Exception exp) {
+				MessageBox.Show("An error occured while calulating the amount left to download of the selected files\n" + exp.Message + "Stack" + exp.StackTrace);
 			}
-			statusBarPanelTotalSize.Text = (total_sizes/1024).ToString() + "KB";
 		}
 
 		private void contextMenuListDownload_Click(object sender, System.EventArgs e) {
-		
+			for (int i = 0; i < listViewDownloadList.SelectedItems.Count; i++) {
+				Progress file_download = new Progress();						
+				file_download.Show();
+				int selected_master_index = OpenDownloadList.FindUID((Int32)listViewDownloadList.SelectedItems[i].Tag);
+				file_download.DownloadFile(OpenDownloadList.GetDownloadListItem(selected_master_index));
+			}
 		}
 
 		private void contextMenuListEdit_Click(object sender, System.EventArgs e) {
 			//listViewDownloadList.SelectedItems[i].SubItems[2].Text;
+		}
+
+		private void notifyIcon1_DoubleClick(object sender, System.EventArgs e) {
+			
+		}
+
+		private void menuItemOptionsShow_Click(object sender, System.EventArgs e) {
+			formOptions options_dialog = new formOptions();
+			theOptions prev_options = OpenDownloadList.OpenDownloadOptions;
+			if (options_dialog.ShowDialog() == DialogResult.OK) {
+				//OK
+			}else {
+				//User must have pressed Cancel or something else
+				//Restore previous options
+				OpenDownloadList.OpenDownloadOptions = prev_options;
+			}
+		}
+
+		private void MainForm_Resize(object sender, System.EventArgs e) {			
+			//treeViewCategories.Height = this.Height - treeViewCategories.Top - statusBarMain.Height;
+			//listViewDownloadList.Height = this.Height - listViewDownloadList.Top - statusBarMain.Height;
+			//listViewDownloadList.Width = this.Width - listViewDownloadList.Left - listViewDownloadList.Top;
+		}
+
+		private void splitter1_SplitterMoved(object sender, System.Windows.Forms.SplitterEventArgs e) {
+		
+		}
+
+		private void menuItemFileLoadURLList_Click(object sender, System.EventArgs e) {
+			formLoadURLList loadurl_dialog = new formLoadURLList();
+			if (loadurl_dialog.ShowDialog(this) == DialogResult.OK) {
+				//OK
+			}else {
+				//User must have pressed Cancel or something else
+			}		
+		}
+
+		private void menuItemLeech_Click(object sender, System.EventArgs e) {
+			formLeech new_leecher = new formLeech();
+			new_leecher.ShowDialog(this);
 		}		
 	}
 }
@@ -648,6 +767,17 @@ public class file_list : Object
 	String[] data;
 };	
 
+public class theOptions : object {
+	public theOptions() {
+		//We get to set the default values here :D
+		this.download_buffer_size = 1024; //1KB
+		this.download_queue_limit = 1; //I don't need to stress my poor modem any more
+	}
+
+	public UInt32 download_buffer_size;
+	public UInt16 download_queue_limit;
+};
+
 public class aDownloadItem : Object
 {
 	public aDownloadItem()
@@ -673,6 +803,7 @@ public class theDownloadList
 	{
 		master_file_list = new ArrayList(0);
 		waiting_url_list = new ArrayList(0);
+		OpenDownloadOptions = new theOptions();
 	}
 
 	public void AddURL(String one_url)
@@ -769,4 +900,5 @@ public class theDownloadList
 	public bool changed = false;
 	public ArrayList waiting_url_list;
 	public ArrayList master_file_list;
+	public theOptions OpenDownloadOptions;
 };

@@ -106,6 +106,26 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "Leech.cs"
+                    SubType = "Form"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Leech.resx"
+                    DependentUpon = "Leech.cs"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "LoadURLList.cs"
+                    SubType = "Form"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "LoadURLList.resx"
+                    DependentUpon = "LoadURLList.cs"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
                     RelPath = "MainForm.cs"
                     SubType = "Form"
                     BuildAction = "Compile"
@@ -128,6 +148,16 @@
                 <File
                     RelPath = "OpenDownload.xml"
                     BuildAction = "Content"
+                />
+                <File
+                    RelPath = "Options.cs"
+                    SubType = "Form"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Options.resx"
+                    DependentUpon = "Options.cs"
+                    BuildAction = "EmbeddedResource"
                 />
                 <File
                     RelPath = "Progress.cs"
