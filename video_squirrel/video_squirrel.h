@@ -32,7 +32,7 @@
 #define _VIDEO_SQUIRREL_H_
 
 #define DEBUG(x) wxLogDebug(x)
-#define Video_Squirrel_Version "v0.1"
+#define Video_Squirrel_Version "v0.1.0"
 
 //wxWindows includes
 #include <wx/wx.h>
