@@ -174,6 +174,44 @@ Public Class WavWriter
         End If
     End Sub
 
+    Public Sub WriteSampleData(ByRef data As Single(), ByVal offset As Integer, ByVal count As Integer)
+        WriteSampleData(data, offset, count, -1)
+    End Sub
+
+    <DescriptionAttribute("Write sample data to the file.")> _
+    Public Sub WriteSampleData(ByRef data As Single(), ByVal offset As Integer, ByVal count As Integer, ByVal sampleCount As Integer)
+        If Not m_HeadersWritten Then
+            Throw New InvalidOperationException("Wav Headers have not been written yet")
+        End If
+        Dim i As Integer
+        For i = 0 To count
+            m_Writer.Write(data(offset + i))
+        Next i
+        m_DataBytesWritten += (count - offset) * (32 / 8)
+        If sampleCount > 0 Then
+            m_SamplesWritten += sampleCount
+        End If
+    End Sub
+
+    Public Sub WriteSampleData(ByRef data As Double(), ByVal offset As Integer, ByVal count As Integer)
+        WriteSampleData(data, offset, count, -1)
+    End Sub
+
+    <DescriptionAttribute("Write sample data to the file.")> _
+    Public Sub WriteSampleData(ByRef data As Double(), ByVal offset As Integer, ByVal count As Integer, ByVal sampleCount As Integer)
+        If Not m_HeadersWritten Then
+            Throw New InvalidOperationException("Wav Headers have not been written yet")
+        End If
+        Dim i As Integer
+        For i = 0 To count
+            m_Writer.Write(data(offset + i))
+        Next i
+        m_DataBytesWritten += (count - offset) * (64 / 8)
+        If sampleCount > 0 Then
+            m_SamplesWritten += sampleCount
+        End If
+    End Sub
+
     Private Sub UpdateHeaders()
         If Not m_HeadersWritten Then
             Throw New InvalidOperationException("Unable to update headers if they have not been written yet")
