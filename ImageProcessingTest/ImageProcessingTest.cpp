@@ -8,11 +8,41 @@
 
 int cycleCount = 500;
 
+bool SaveBMPFile(const char *filename, BYTE *pData, BITMAPINFOHEADER *bih)
+{	
+	BITMAPFILEHEADER header;
+	size_t write;
+	FILE *pFile;
+	
+	pFile = fopen(filename, "wb");
+	if (pFile == NULL)
+		return false;
+
+	// Write the file header
+	memset(&header, 0, sizeof(BITMAPFILEHEADER));
+	header.bfType = 0x4D42;
+	header.bfSize = bih->biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+	header.bfOffBits = 54;
+	write = fwrite(&header, sizeof(BITMAPFILEHEADER), 1, pFile);
+	if (write == 0)
+		return false;
+	
+	// Bitmap header
+	write = fwrite(bih, sizeof(BITMAPINFOHEADER), 1, pFile);
+	if (write == 0)
+		return false;
+
+	write = fwrite(pData, bih->biSizeImage, 1, pFile);
+
+	fclose(pFile);
+
+	return true;
+}
+
 bool LoadBMPFile(const char *filename, BYTE **ppData, BITMAPINFOHEADER *bih)
 {	
+	BITMAPFILEHEADER header;
 	size_t read;
-	char buffer[64];
-	DWORD dwSize;
 	int size;
 	FILE *pFile;
 	BYTE *pData;
@@ -23,21 +53,13 @@ bool LoadBMPFile(const char *filename, BYTE **ppData, BITMAPINFOHEADER *bih)
 	if (pFile == NULL)
 		return false;
 
-	// Read the BM
-	read = fread(buffer, 2, 1, pFile);
+	// Read the bmp header
+	read = fread(&header, sizeof(BITMAPFILEHEADER), 1, pFile);
 	if (read == 0)
 		return false;
 
-	// Total size of the bitmap
-	read = fread(&dwSize, sizeof(DWORD), 1, pFile);
-	if (read == 0)
-		return false;
-	size = (int)dwSize;
+	size = (int)header.bfSize;
 
-	// Not sure what these are
-	read = fread(buffer, sizeof(DWORD), 1, pFile);
-	read = fread(buffer, sizeof(DWORD), 1, pFile);
-	
 	// Bitmap header
 	read = fread(bih, sizeof(BITMAPINFOHEADER), 1, pFile);
 	if (read == 0)
@@ -50,11 +72,12 @@ bool LoadBMPFile(const char *filename, BYTE **ppData, BITMAPINFOHEADER *bih)
 		return false;
 	}
 	bih->biBitCount = 32;
+	bih->biSizeImage = bih->biHeight * bih->biWidth * 4;
 
 	// Bitmap data
-	size = size-sizeof(BITMAPINFOHEADER)-2-(sizeof(DWORD)*3);
+	size = size-sizeof(BITMAPINFOHEADER)-sizeof(BITMAPINFOHEADER);
 
-	pData = new BYTE[bih->biHeight * bih->biWidth * 4];
+	pData = new BYTE[bih->biSizeImage];
 	*ppData = pData;
 	
 	pos = ftell(pFile);
@@ -64,9 +87,11 @@ bool LoadBMPFile(const char *filename, BYTE **ppData, BITMAPINFOHEADER *bih)
 		read = fread(pData, 3, 1, pFile);
 		if (read == 0)
 			return false;
+		pData[3] = 0xFF;
 		pData += 4;
 	}
 
+#if 0
 	// Do each conversion
 	{
 		CProfile profile2("On-the-fly alpha set");
@@ -93,9 +118,10 @@ bool LoadBMPFile(const char *filename, BYTE **ppData, BITMAPINFOHEADER *bih)
 					return false;
 				pData += 4;
 			}
-			ImageProcessing_MMXAlphaSet(*ppData, bih->biWidth, bih->biHeight);
+			ImageProcessing_RGB32_AlphaSet_MMX(*ppData, bih->biWidth, bih->biHeight, 0xFF);
 		}
 	}
+#endif
 
 	fclose(pFile);
 
@@ -147,87 +173,97 @@ int main(int argc, char* argv[])
 	printf("\t Using Overlay Image: %s \n", bOverlayImageGood ? "Yes" : "No" );		
 	
 	printf("\n");
-	printf("Timing alpha setting routines... \n");
-
-	printf("ImageProcessing_CAlphaSet\n");
-	{
-		CProfile profile2("ImageProcessing_CAlphaSet");
-		for (i = 0; i < cycleCount; i++) {
-			ImageProcessing_CAlphaSet(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
-		}
-	}
-	printf("ImageProcessing_C8AlphaSet\n");
-	{
-		CProfile profile2("ImageProcessing_C8AlphaSet");
-		for (i = 0; i < cycleCount; i++) {
-			ImageProcessing_C8AlphaSet(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
-		}
-	}
-	printf("ImageProcessing_ASMAlphaSet\n");
-	{
-		CProfile profile2("ImageProcessing_ASMAlphaSet");
-		for (i = 0; i < cycleCount; i++) {
-			ImageProcessing_ASMAlphaSet(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
-		}
-	}		
-	printf("ImageProcessing_MMXAlphaSet\n");
-	{
-		CProfile profile2("ImageProcessing_MMXAlphaSet");
-		for (i = 0; i < cycleCount; i++) {
-			ImageProcessing_MMXAlphaSet(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
-		}
-	}
-	printf("ImageProcessing_MMX16AlphaSet\n");
-	{
-		CProfile profile2("ImageProcessing_MMX16AlphaSet");
-		for (i = 0; i < cycleCount; i++) {
-			ImageProcessing_MMX16AlphaSet(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
-		}
-	}
-/*
-	printf("\n");
 	printf("Timing flipping routines... \n");
 
-	printf("ImageProcessing_CFlip\n");
+
+	printf("ImageProcessing_RGB32_Flip_C\n");
 	{
-		CProfile profile2("ImageProcessing_CFlip");
+		CProfile profile2("ImageProcessing_RGB32_Flip_C");
 		for (i = 0; i < cycleCount; i++) {
-			ImageProcessing_CFlip(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
+			ImageProcessing_RGB32_Flip_C(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
 		}
 	}
-	printf("ImageProcessing_ASMFlip\n");
+	printf("ImageProcessing_RGB32_Flip_ASM\n");
 	{
-		CProfile profile2("ImageProcessing_ASMFlip");
+		CProfile profile2("ImageProcessing_RGB32_Flip_ASM");
 		for (i = 0; i < cycleCount; i++) {
-			ImageProcessing_ASMFlip(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
+			ImageProcessing_RGB32_Flip_ASM(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
 		}
 	}
 
+	printf("ImageProcessing_RGB32_Flip_MMX\n");
+	{
+		CProfile profile2("ImageProcessing_RGB32_Flip_MMX");
+		for (i = 0; i < cycleCount; i++) {
+			ImageProcessing_RGB32_Flip_MMX(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
+			//SaveBMPFile("test.bmp", pTargetImage, &bihTargetImage);
+		}
+	}
+
+	printf("\n");
+	printf("Timing alpha setting routines... \n");
+	
+	printf("ImageProcessing_RGB32_AlphaSet_C\n");
+	{
+		CProfile profile2("ImageProcessing_RGB32_AlphaSet_C");
+		for (i = 0; i < cycleCount; i++) {
+			ImageProcessing_RGB32_AlphaSet_C(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight, 0xFF);
+		}
+	}
+	printf("ImageProcessing_RGB32_AlphaSet8_C\n");
+	{
+		CProfile profile2("ImageProcessing_RGB32_AlphaSet8_C");
+		for (i = 0; i < cycleCount; i++) {
+			ImageProcessing_RGB32_AlphaSet8_C(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight, 0xFF);
+		}
+	}
+	printf("ImageProcessing_RGB32_AlphaSet_ASM\n");
+	{
+		CProfile profile2("ImageProcessing_RGB32_AlphaSet_ASM");
+		for (i = 0; i < cycleCount; i++) {
+			ImageProcessing_RGB32_AlphaSet_ASM(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight, 0xFF);
+		}
+	}		
+	printf("ImageProcessing_RGB32_AlphaSet_MMX\n");
+	{
+		CProfile profile2("ImageProcessing_RGB32_AlphaSet_MMX");
+		for (i = 0; i < cycleCount; i++) {
+			ImageProcessing_RGB32_AlphaSet_MMX(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight, 0xFF);
+		}
+	}
+	printf("ImageProcessing_RGB32_AlphaSet16_MMX\n");
+	{
+		CProfile profile2("ImageProcessing_RGB32_AlphaSet16_MMX");
+		for (i = 0; i < cycleCount; i++) {
+			ImageProcessing_RGB32_AlphaSet16_MMX(pTargetImage, bihTargetImage.biWidth, bihTargetImage.biHeight, 0xFF);
+		}
+	}
+	
 	printf("\n");
 	printf("Timing overlay routines... \n");
 	
-	printf("ImageProcessing_COverlay\n");
+	printf("ImageProcessing_RGB32_Overlay_C\n");
 	{
-		CProfile profile2("ImageProcessing_COverlay");
+		CProfile profile2("ImageProcessing_RGB32_Overlay_C");
 		for (i = 0; i < cycleCount; i++) {
-			ImageProcessing_COverlay(pTargetImage, pOverlayImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
+			ImageProcessing_RGB32_Overlay_C(pTargetImage, pOverlayImage, bihTargetImage.biWidth, bihTargetImage.biHeight, 0xFFFFFFFF);
 		}
 	}
-	printf("ImageProcessing_ASMOverlay\n");
+	printf("ImageProcessing_RGB32_Overlay_ASM\n");
 	{
-		CProfile profile2("ImageProcessing_ASMOverlay");
+		CProfile profile2("ImageProcessing_RGB32_Overlay_ASM");
 		for (i = 0; i < cycleCount; i++) {
-			ImageProcessing_ASMOverlay(pTargetImage, pOverlayImage, bihTargetImage.biWidth, bihTargetImage.biHeight);
+			ImageProcessing_RGB32_Overlay_ASM(pTargetImage, pOverlayImage, bihTargetImage.biWidth, bihTargetImage.biHeight, 0xFFFFFFFF);
 		}
 	}
-	printf("ImageProcessing_MMXOverlay\n");
+	printf("ImageProcessing_RGB32_Overlay_MMX\n");
 	{
-		CProfile profile2("ImageProcessing_MMXOverlay");
+		CProfile profile2("ImageProcessing_RGB32_Overlay_MMX");
 		for (i = 0; i < cycleCount; i++) {
-			ImageProcessing_MMXOverlay(pTargetImage, pOverlayImage, (int)bihTargetImage.biWidth, (int)abs(bihTargetImage.biHeight));
+			ImageProcessing_RGB32_Overlay_MMX(pTargetImage, pOverlayImage, (int)bihTargetImage.biWidth, bihTargetImage.biHeight, 0xFFFFFFFF);
 		}
 	}
-*/
+
 	printf("\n");
 	printf("Timing complete. \n");
 	printf("\n");

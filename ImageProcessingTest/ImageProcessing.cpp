@@ -3,8 +3,13 @@
 #include "ImageProcessing.h"
 
 /// Takes about 0.0023 seconds for a 352x240 frame, compiler set to max speed
-void ImageProcessing_CFlip(BYTE *image, int w, int h)
+void ImageProcessing_RGB32_Flip_C(BYTE *image, int w, int h)
 {
+	assert(image != NULL);
+	assert(w > 0 && h > 0);
+	// Mod-2 Height Required
+	assert(h % 2 == 0);
+
 	COLORREF *pTopImage = (COLORREF *)image;
 	COLORREF *pBottomImage = ((COLORREF *)image) + (w * (h - 1));
 	
@@ -30,8 +35,13 @@ static void inline memcpy_local(void *pDst, const void *pSrc, size_t count)
 	memcpy(pDst, pSrc, count);
 }
 
-void ImageProcessing_ASMFlip(BYTE *image, int w, int h)
+void ImageProcessing_RGB32_Flip_ASM(BYTE *image, int w, int h)
 {
+	assert(image != NULL);
+	assert(w > 0 && h > 0);
+	// Mod-2 Height Required
+	assert(h % 2 == 0);
+
 	void *row = malloc(w*4);
 	__asm
 	{
@@ -100,15 +110,89 @@ codeloop:
 	free(row);
 }
 
-/// Takes about 0.002 seconds on a 352x240 frame with compiler set to max speed
-void ImageProcessing_COverlay(BYTE *imageDest, BYTE *overlaySrc, int w, int h)
+void ImageProcessing_RGB32_Flip_MMX(BYTE *image, int w, int h)
 {
+	assert(image != NULL);
+	assert(w > 0 && h > 0);
+	// Mod-8 Width Required
+	assert(w % 8 == 0);
+	// Mod-2 Height Required
+	assert(h % 2 == 0);
+
+	__asm
+	{
+		mov     ecx, [w]    ; width
+		shl     ecx, 2      ; Multiply by 4		
+		mov			eax, ecx
+		mov			edx, ecx				
+		
+		mov			ebx, [h]		; height
+		dec			ebx					; we start at the first pixel of the last row
+		mul			ebx					; calc bottom addr offset
+		mov			esi, [image]	; put top addr to esi reg		
+		mov			edi, esi		; put bottom addr to edi reg
+		add			edi, eax		; offset bottom addr
+
+		mov     eax, [w]    ; width
+		mov			edx, eax
+		shl     edx, 3      ; Multiply by 8
+		shr     eax, 3      ; Divide by 8
+		mov			ebx, eax
+
+		mov			ecx, [h]		; put height to ecx reg
+		shr     ecx, 1      ; Reduce by 2
+
+		align		16
+codeloop:		
+		movq		mm0, [esi]
+		movq		mm1, [esi+8]
+		movq		mm2, [esi+16]
+		movq		mm3, [esi+24]
+		
+		movq		mm4, [edi]
+		movq		mm5, [edi+8]
+		movq		mm6, [edi+16]
+		movq		mm7, [edi+24]		
+
+		movq		[edi], mm0
+		movq		[edi+8], mm1
+		movq		[edi+16], mm2
+		movq		[edi+24], mm3
+
+		movq		[esi], mm4
+		movq		[esi+8], mm5
+		movq		[esi+16], mm6
+		movq		[esi+24], mm7
+
+		add			esi, (4*8)
+		add			edi, (4*8)
+		
+		dec			eax
+		cmp			eax, 0
+		jne			codeloop				; jump if we are not at the end of the row
+		
+		sub			edi, edx				; move the bottom pointer up 2 rows
+		mov			eax, ebx				; reset the row position
+
+		dec			ecx					; decrement count by 1
+		jnz			codeloop		; jump if we have not processed all rows
+		emms
+	}
+}
+
+/// Takes about 0.002 seconds on a 352x240 frame with compiler set to max speed
+void ImageProcessing_RGB32_Overlay_C(BYTE *imageDest, BYTE *overlaySrc, int w, int h, int transparentColor)
+{
+	assert(imageDest != NULL);
+	assert(overlaySrc != NULL);
+	assert(w > 0 && h > 0);
+
 	COLORREF *pTarget = (COLORREF *)imageDest;
 	COLORREF *pOverlay = (COLORREF *)overlaySrc;
 	int y, x;
 	for (y = 0; y < h; y++) {
 		for (x = 0; x < w; x++) {	
-			if (*pOverlay != 0xFFFFFFFF) {
+			if (*pOverlay != (COLORREF)transparentColor) {
 				*pTarget = *pOverlay;
 			}
 			pTarget++;
@@ -118,8 +202,12 @@ void ImageProcessing_COverlay(BYTE *imageDest, BYTE *overlaySrc, int w, int h)
 }
 
 /// About 1.2x the speed of COverlay with compiler set to max speed
-void ImageProcessing_ASMOverlay(BYTE *imageDest, BYTE *overlaySrc, int w, int h)
+void ImageProcessing_RGB32_Overlay_ASM(BYTE *imageDest, BYTE *overlaySrc, int w, int h, int transparentColor)
 {
+	assert(imageDest != NULL);
+	assert(overlaySrc != NULL);
+	assert(w > 0 && h > 0);
+
 	// we assume all data in the register is not used by others
 	__asm
 	{
@@ -134,7 +222,7 @@ void ImageProcessing_ASMOverlay(BYTE *imageDest, BYTE *overlaySrc, int w, int h)
 		align 16
 codeloop:
 		mov			eax, dword ptr [esi] 
-		cmp			eax, 0FFFFFFFFh 
+		cmp			eax, [transparentColor] 
 		je			nooverlay
 		mov			dword ptr [edi], eax 
 		/*		
@@ -183,12 +271,16 @@ nooverlay:
 /// Majorly b0rked
 /// Horridly slow 0.0592 seconds for a 352x240 frame
 /// 0.0347x of the COverlay version
-void ImageProcessing_MMXOverlay(BYTE *imageDest, BYTE *overlaySrc, int w, int h)
+void ImageProcessing_RGB32_Overlay_MMX(BYTE *imageDest, BYTE *overlaySrc, int w, int h, int transparentColor)
 {
+	assert(imageDest != NULL);
+	assert(overlaySrc != NULL);
+	assert(w > 0 && h > 0);
+	// Mod-2 width required
+	assert(w % 2 == 0);
+
 	int iCount = w * h;
-	static BYTE pTransparentColorData[8] = { 
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
-	};
+	int pTransparentColorData[2] = { transparentColor, transparentColor };
 
 	// we assume all data in the register is not used by others
 	__asm
@@ -212,7 +304,8 @@ codeloop:
 		; have null effect		
 		PADDUSB	  mm0, mm1			  ; Add
 		movq		[edi], mm0			; dump back the added 8 bytes of data to dest memory
-nooverlay:		
+
+; move to next two pixels
 		add			esi, 8				; add src pointer by 8 bytes
 		add			edi, 8				; add dest pointer by 8 bytes
 
@@ -223,38 +316,49 @@ nooverlay:
 	}
 }
 
-void ImageProcessing_CAlphaSet(BYTE *image, int w, int h)
+void ImageProcessing_RGB32_AlphaSet_C(BYTE *image, int w, int h, int alpha)
 {
+	assert(image != NULL);
+	assert(w > 0 && h > 0);
+
 	int y, x;
 	for (y = 0; y < h; y++) {
 		for (x = 0; x < w; x++) {	
-			image[3] = 0xFF;
+			image[3] = (BYTE)alpha;
 			image += 4;
 		}
 	}	
 }
 
 /// Processed 8 pixels at a time
-void ImageProcessing_C8AlphaSet(BYTE *image, int w, int h)
+void ImageProcessing_RGB32_AlphaSet8_C(BYTE *image, int w, int h, int alpha)
 {
+	assert(image != NULL);
+	assert(w > 0 && h > 0);
+	// Mod-8 Width Required
+	assert(w % 8 == 0);
+
 	int y, x;
 	for (y = 0; y < h; y++) {
 		for (x = 0; x < w/8; x++) {	
-			image[3+(4*0)] = 0xFF;
-			image[3+(4*1)] = 0xFF;
-			image[3+(4*2)] = 0xFF;
-			image[3+(4*3)] = 0xFF;
-			image[3+(4*4)] = 0xFF;
-			image[3+(4*5)] = 0xFF;
-			image[3+(4*6)] = 0xFF;
-			image[3+(4*7)] = 0xFF;
+			image[3+(4*0)] = (BYTE)alpha;
+			image[3+(4*1)] = (BYTE)alpha;
+			image[3+(4*2)] = (BYTE)alpha;
+			image[3+(4*3)] = (BYTE)alpha;
+			image[3+(4*4)] = (BYTE)alpha;
+			image[3+(4*5)] = (BYTE)alpha;
+			image[3+(4*6)] = (BYTE)alpha;
+			image[3+(4*7)] = (BYTE)alpha;
 			image += 4*8;
 		}
 	}	
 }
 
-void ImageProcessing_ASMAlphaSet(BYTE *image, int w, int h)
+void ImageProcessing_RGB32_AlphaSet_ASM(BYTE *image, int w, int h, int alpha)
 {
+	assert(image != NULL);
+	assert(w > 0 && h > 0);
+
 	// we assume all data in the register is not used by others
 	__asm
 	{
@@ -265,10 +369,12 @@ void ImageProcessing_ASMAlphaSet(BYTE *image, int w, int h)
 		imul		ecx					; eax = eax * ecx
 		mov			ecx, eax		; put count to ecx reg
 		
+		mov			edx, [alpha]
+		shl			edx, 24
 		align 16
 codeloop:
 		mov			eax, dword ptr [esi] 
-		and			eax, 0FF000000h 
+		and			eax, edx 
 		mov			dword ptr [esi], eax 
 
 		; get ready for next pass
@@ -281,8 +387,13 @@ codeloop:
 }
 
 // 8-mod width required
-void ImageProcessing_MMXAlphaSet(BYTE *image, int w, int h)
+void ImageProcessing_RGB32_AlphaSet_MMX(BYTE *image, int w, int h, int alpha)
 {
+	assert(image != NULL);
+	assert(w > 0 && h > 0);
+	// Mod-8 Width Required
+	assert(w % 8 == 0);
+
 	// we assume all data in the register is not used by others
 	__asm
 	{
@@ -292,9 +403,6 @@ void ImageProcessing_MMXAlphaSet(BYTE *image, int w, int h)
 		imul		ecx					; eax = eax * ecx
 		mov			ecx, eax		; put count to ecx reg
 		shr			ecx, 4				; divide count with 16 by shifting 4 bits to right
-		;shl			ecx, 2        ; multiple count with 4 by shifting 2 bits to the left
-		;shr			ecx, 3				; divide count with 8 by shifting 3 bits to right
-		;shr			ecx, 3				; divide count with 8 by shifting 3 bits to right
 		
 		; we do 8 pixels at a time
 		mov			esi, [image]			; put src addr to esi reg
@@ -306,13 +414,13 @@ void ImageProcessing_MMXAlphaSet(BYTE *image, int w, int h)
 		add			edi, 24
 		add			ebx, 32
 		
-		; The alpha channel value
-		mov			eax, 0FF000000h
+		; Load the alpha channel value
+		mov			eax, [alpha]
+		shl			eax, 24
 		movd		mm3, eax
 		movd		mm4, eax
 		psll		mm4, 32
 		por			mm4, mm3
-		;movq		mm4, 0FF000000FF000000h ; this doesn't assemble
 		
 		align 16 
 codeloop:
@@ -345,8 +453,13 @@ codeloop:
 }
 
 // 16-mod
-void ImageProcessing_MMX16AlphaSet(BYTE *image, int w, int h)
+void ImageProcessing_RGB32_AlphaSet16_MMX(BYTE *image, int w, int h, int alpha)
 {
+	assert(image != NULL);
+	assert(w > 0 && h > 0);
+	// Mod-16 Width Required
+	assert(w % 16 == 0);
+
 	// we assume all data in the register is not used by others
 	__asm
 	{
@@ -356,11 +469,8 @@ void ImageProcessing_MMX16AlphaSet(BYTE *image, int w, int h)
 		imul		ecx					; eax = eax * ecx
 		mov			ecx, eax		; put count to ecx reg
 		shr			ecx, 5				; divide count with 32 by shifting 4 bits to right
-		;shl			ecx, 2        ; multiple count with 4 by shifting 2 bits to the left
-		;shr			ecx, 3				; divide count with 8 by shifting 3 bits to right
-		;shr			ecx, 3				; divide count with 8 by shifting 3 bits to right
 		
-		; we do 8 pixels at a time
+		; we do 16 pixels per loop, or 8 pixels twice
 		mov			esi, [image]			; put src addr to esi reg
 		mov			edi, [image]			; put src addr to edi reg
 		mov			edx, [image]			; put src addr to edx reg
@@ -371,12 +481,12 @@ void ImageProcessing_MMX16AlphaSet(BYTE *image, int w, int h)
 		add			ebx, 32
 		
 		; The alpha channel value
-		mov			eax, 0FF000000h
+		mov			eax, [alpha]
+		shl			eax, 24
 		movd		mm3, eax
 		movd		mm4, eax
 		psll		mm4, 32
 		por			mm4, mm3
-		;movq		mm4, 0FF000000FF000000h ; this doesn't assemble
 		
 		align 16 
 codeloop:
