@@ -92,6 +92,8 @@ extern "C" {
 #include "MatroskaUtils.h"
 #endif
 
+#include "ZipArchive.h"
+
 wxString MakeXMLNiceString(const wxString &input);
 wxString Format_FileSize(int64 file_size);
 wxString Format_Duration(long length);
@@ -258,7 +260,7 @@ class AppFrame : public wxFrame
 		void AddFolderToDatabase(wxString &folder, wxString group_under = wxEmptyString);
 		void AddFileToDatabase(wxString &filename, wxString group_under = wxEmptyString);
 		int AddVideoItemToDatabase(VideoItem *new_item);
-		int AddVideoItemToDatabase(VideoItem &new_item);
+		//int AddVideoItemToDatabase(VideoItem &new_item);
 		long CreateUID();
 		void parseXMLFile(wxString filename);
 		bool SaveDatabase();
@@ -290,7 +292,7 @@ class AppFrame : public wxFrame
    	VideoSquirrelConfiguration *settings;
 				
 		bool m_DatabaseChanged;
-		std::vector<VideoItem> m_Database;
+		std::vector<VideoItem *> m_Database;
 	private:
 		// any class wishing to process wxWindows events must use this macro
 		DECLARE_EVENT_TABLE()
