@@ -93,7 +93,10 @@ Public Class WavReader
                     End If
                 Case FOURCC_DATA
                     m_DataChunkStart = m_Reader.BaseStream.Position
-                    m_DataChunkSize = size
+          m_DataChunkSize = size
+          ' Skip this chunk
+          m_Reader.BaseStream.Position += size
+
                 Case Else
                     ' Skip this chunk
                     m_Reader.BaseStream.Position += size

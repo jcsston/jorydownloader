@@ -184,7 +184,7 @@ Public Class WavWriter
             Throw New InvalidOperationException("Wav Headers have not been written yet")
         End If
         Dim i As Integer
-        For i = 0 To count
+        For i = 0 To (count - 1)
             m_Writer.Write(data(offset + i))
         Next i
         m_DataBytesWritten += (count - offset) * (32 / 8)
@@ -203,7 +203,7 @@ Public Class WavWriter
             Throw New InvalidOperationException("Wav Headers have not been written yet")
         End If
         Dim i As Integer
-        For i = 0 To count
+        For i = 0 To (count - 1)
             m_Writer.Write(data(offset + i))
         Next i
         m_DataBytesWritten += (count - offset) * (64 / 8)

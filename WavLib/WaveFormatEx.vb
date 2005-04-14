@@ -2,6 +2,7 @@
 Public Class WaveFormatEx
     Public Shared WAVE_FORMAT_PCM As Integer = &H1
     Public Shared WAVE_FORMAT_ADPCM As Integer = &H2
+    Public Shared WAVE_FORMAT_IEEE_FLOAT As Integer = &H3
     Public Shared WAVE_FORMAT_ALAW As Integer = &H6
     Public Shared WAVE_FORMAT_MULAW As Integer = &H7
     Public Shared WAVE_FORMAT_OKI_ADPCM As Integer = &H10
