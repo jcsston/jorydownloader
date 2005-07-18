@@ -62,7 +62,7 @@ Public Class WavWriter
     Public Sub Open(ByVal filename As String, ByVal wfx As WaveFormatEx)
         Close()
         Dim file As IO.Stream
-        file = New IO.FileStream(filename, IO.FileMode.Create)
+    file = New IO.FileStream(filename, IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.None)
         m_Writer = New IO.BinaryWriter(file)
         m_Wfx = wfx
         WriteHeaders()

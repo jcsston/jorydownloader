@@ -23,119 +23,126 @@ Public Class WavReader
         End Get
     End Property
 
-    <DescriptionAttribute("Get the WaveFormatEx of the wav file.")> _
-    ReadOnly Property WaveFormatExHeader() As WaveFormatEx
-        Get
-            Return m_Wfx
-        End Get
-    End Property
+  <DescriptionAttribute("Get the raw byte length the wav file.")> _
+  ReadOnly Property FileLength() As Integer
+    Get
+      Return m_Reader.BaseStream.Length
+    End Get
+  End Property
 
-    Public Sub New()
-        Init()
-    End Sub
+  <DescriptionAttribute("Get the WaveFormatEx of the wav file.")> _
+  ReadOnly Property WaveFormatExHeader() As WaveFormatEx
+    Get
+      Return m_Wfx
+    End Get
+  End Property
 
-    Private Sub Init()
-        m_Reader = Nothing
-        m_Wfx = Nothing
-        m_DataChunkStart = 0
-        m_DataChunkSize = 0
-        m_FactChunkSampleCount = 0
-    End Sub
+  Public Sub New()
+    Init()
+  End Sub
 
-    <DescriptionAttribute("Close the .wav file.")> _
-    Public Sub Close()
-        If Not (m_Reader Is Nothing) Then
-            m_Reader.Close()
-            m_Reader = Nothing
-        End If
-        Init()
-    End Sub
+  Private Sub Init()
+    m_Reader = Nothing
+    m_Wfx = Nothing
+    m_DataChunkStart = 0
+    m_DataChunkSize = 0
+    m_FactChunkSampleCount = 0
+  End Sub
 
-    Public Sub Open(ByVal filename As String)
-        Close()
-        Dim file As IO.Stream
-        file = New IO.FileStream(filename, IO.FileMode.Open)
-        m_Reader = New IO.BinaryReader(file)
-        ParseHeaders()
-    End Sub
+  <DescriptionAttribute("Close the .wav file.")> _
+  Public Sub Close()
+    If Not (m_Reader Is Nothing) Then
+      m_Reader.Close()
+      m_Reader = Nothing
+    End If
+    Init()
+  End Sub
 
-    Private Sub ParseHeaders()
-        Dim header As Int32
-        Dim size As Int32
+  Public Sub Open(ByVal filename As String)
+    Close()
+    Dim file As IO.Stream
+    file = New IO.FileStream(filename, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
+    m_Reader = New IO.BinaryReader(file)
+    ParseHeaders()
+  End Sub
 
-        ' Start at the beginning of the file
-        m_Reader.BaseStream.Position = 0
+  Private Sub ParseHeaders()
+    Dim header As Int32
+    Dim size As Int32
 
-        ' Read the RIFF header
-        header = m_Reader.ReadInt32()
-        size = m_Reader.ReadInt32()
-        ' Check if we are reading a RIFF file at least
-        If Not header = FOURCC_RIFF Then
-            Throw New NotSupportedException("Invalid WAV File. No RIFF structure.")
-        End If
+    ' Start at the beginning of the file
+    m_Reader.BaseStream.Position = 0
 
-        header = m_Reader.ReadInt32()
-        If Not header = FOURCC_WAVE Then
-            Throw New NotSupportedException("Invalid WAV File. No WAVE structure.")
-        End If
+    ' Read the RIFF header
+    header = m_Reader.ReadInt32()
+    size = m_Reader.ReadInt32()
+    ' Check if we are reading a RIFF file at least
+    If Not header = FOURCC_RIFF Then
+      Throw New NotSupportedException("Invalid WAV File. No RIFF structure.")
+    End If
 
-        ' Find all the chunks we are interested in
-        While (m_Reader.BaseStream.Position < m_Reader.BaseStream.Length)
-            header = m_Reader.ReadInt32()
-            size = m_Reader.ReadInt32()
-            Select Case header
-                Case FOURCC_FMT
-                    m_Wfx = New WaveFormatEx
-                    m_Wfx.Read(m_Reader, size)
-                Case FOURCC_FACT
-                    If size >= 4 Then
-                        m_FactChunkSampleCount = m_Reader.ReadInt32()
-                    End If
-                Case FOURCC_DATA
-                    m_DataChunkStart = m_Reader.BaseStream.Position
+    header = m_Reader.ReadInt32()
+    If Not header = FOURCC_WAVE Then
+      Throw New NotSupportedException("Invalid WAV File. No WAVE structure.")
+    End If
+
+    ' Find all the chunks we are interested in
+    While (m_Reader.BaseStream.Position < m_Reader.BaseStream.Length)
+      header = m_Reader.ReadInt32()
+      size = m_Reader.ReadInt32()
+      Select Case header
+        Case FOURCC_FMT
+          m_Wfx = New WaveFormatEx
+          m_Wfx.Read(m_Reader, size)
+        Case FOURCC_FACT
+          If size >= 4 Then
+            m_FactChunkSampleCount = m_Reader.ReadInt32()
+          End If
+        Case FOURCC_DATA
+          m_DataChunkStart = m_Reader.BaseStream.Position
           m_DataChunkSize = size
           ' Skip this chunk
           m_Reader.BaseStream.Position += size
 
-                Case Else
-                    ' Skip this chunk
-                    m_Reader.BaseStream.Position += size
-            End Select
-        End While
-        ' Check that we got fmt and data chunks
-        If m_Wfx Is Nothing Then
-            Throw New NotSupportedException("Invalid WAV File. No fmt chunk found.")
-        End If
-        If m_DataChunkStart = 0 Then
-            Throw New NotSupportedException("Invalid WAV File. No data chunk found.")
-        End If
-        Seek(0)
-    End Sub
+        Case Else
+          ' Skip this chunk
+          m_Reader.BaseStream.Position += size
+      End Select
+    End While
+    ' Check that we got fmt and data chunks
+    If m_Wfx Is Nothing Then
+      Throw New NotSupportedException("Invalid WAV File. No fmt chunk found.")
+    End If
+    If m_DataChunkStart = 0 Then
+      Throw New NotSupportedException("Invalid WAV File. No data chunk found.")
+    End If
+    Seek(0)
+  End Sub
 
-    Public Sub Seek(ByVal pos As Integer)
-        If pos > m_DataChunkSize Then
-            Throw New ArgumentOutOfRangeException("Position is past EOS")
-        End If
-        m_Reader.BaseStream.Position = m_DataChunkStart + pos
-    End Sub
+  Public Sub Seek(ByVal pos As Integer)
+    If pos > m_DataChunkSize Then
+      Throw New ArgumentOutOfRangeException("Position is past EOS")
+    End If
+    m_Reader.BaseStream.Position = m_DataChunkStart + pos
+  End Sub
 
-    Private Sub CheckReaderState()
-        If m_DataChunkStart = 0 Then
-            Throw New InvalidOperationException("Invalid data chunk position.")
-        End If
-        If m_DataChunkSize = 0 Then
-            Throw New InvalidOperationException("Invalid data chunk size.")
-        End If
-        If m_Reader.BaseStream.Position < m_DataChunkStart Then
-            Throw New InvalidOperationException("File pointer is before data chunk")
-        End If
-        If m_Reader.BaseStream.Position > (m_DataChunkStart + m_DataChunkSize) Then
-            Throw New InvalidOperationException("File pointer is past data chunk")
-        End If
-    End Sub
+  Private Sub CheckReaderState()
+    If m_DataChunkStart = 0 Then
+      Throw New InvalidOperationException("Invalid data chunk position.")
+    End If
+    If m_DataChunkSize = 0 Then
+      Throw New InvalidOperationException("Invalid data chunk size.")
+    End If
+    If m_Reader.BaseStream.Position < m_DataChunkStart Then
+      Throw New InvalidOperationException("File pointer is before data chunk")
+    End If
+    If m_Reader.BaseStream.Position > (m_DataChunkStart + m_DataChunkSize) Then
+      Throw New InvalidOperationException("File pointer is past data chunk")
+    End If
+  End Sub
 
-    Public Function ReadSamples(ByRef buffer() As Byte, ByVal offset As Integer, ByVal count As Integer) As Integer
-        CheckReaderState()
-        Return m_Reader.Read(buffer, offset, count)
-    End Function
+  Public Function ReadSamples(ByRef buffer() As Byte, ByVal offset As Integer, ByVal count As Integer) As Integer
+    CheckReaderState()
+    Return m_Reader.Read(buffer, offset, count)
+  End Function
 End Class
