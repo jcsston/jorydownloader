@@ -17,9 +17,16 @@
 #include <SDL/SDL_image.h>
 #include <cmath>
 
-#define PI 3.14159265
-#define DEGRAD(x) ((x/180.0f)*PI)
+#define PI 3.14159265f
+
 #define ROUGH_ANGLE_COMPARE(x,y) (((int)(x*1000)) == ((int)(y*1000)))
+
+inline float deg2rad(float x){
+    if(x < 0)
+        x += 360;
+    
+    return ((x/180.0f)*PI);
+}
 
 Sprite::Sprite():surface(NULL),guides(),width(0),height(0),x(0),y(0),speed(0),directionAngle(0),isFlying(true){
 }
@@ -97,6 +104,31 @@ WalkingMotionGuide::WalkingMotionGuide():lastX((unsigned int)-1),lastY((unsigned
     
 }
 
+bool isValidPosition(Screen* screen, Sprite* sprite, int x, int y){
+    Tile* tile;
+    int tileSize = screen->GetTileSize();
+    int leftX = (x) / tileSize;
+    int topY = (y) / tileSize;
+    int rightX = (x+sprite->width-1) / tileSize;
+    int botY = (y+sprite->height-1) / tileSize;
+    
+    for(int i = 0; i < MAX_LAYERS; i++){
+        for(int j = leftX; j <= rightX; j++){
+            for(int k = topY; k <= botY; k++){
+                tile = screen->GetTile(j, k, i);
+                if(tile){            
+                    if(!tile->isWalkable){
+                        return false;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    return true;
+}
+
 void WalkingMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
     Tile* tile;
     bool can_walk = true;
@@ -111,43 +143,70 @@ void WalkingMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
     int rightX = (sprite->x+sprite->width-1) / tileSize;
     int botY = (sprite->y+sprite->height-1) / tileSize;
         
-    int j,k;
-    for(int i = 0; i < MAX_LAYERS; i++){
-        for(j = leftX; j <= rightX; j++){
-            for(k = topY; k <= botY; k++){
-                tile = screen->GetTile(j, k, i);
-                if(tile){            
-                    if(!tile->isWalkable){
-                        can_walk = false;
-                        break;
-                    }
-                }
-            }
-        }
-    }
+    can_walk = isValidPosition(screen, sprite, sprite->x, sprite->y);
     
     if(!can_walk){
         
-        if(lastX != sprite->x){
-            if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,DEGRAD(0))){
-                sprite->x = (rightX * tileSize) - sprite->width -1; 
-                
-            }else if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,DEGRAD(180))){
+        if(lastX != sprite->x && lastY == sprite->y){
+            if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,deg2rad(0))){
+                sprite->x = (rightX * tileSize) - sprite->width -1;                 
+            }else if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,deg2rad(180))){
                 sprite->x = (lastX / tileSize) * tileSize;                
             }else{
                 sprite->x = lastX;
             }
-        }
-        if(lastY != sprite->y){
-            if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,DEGRAD(90))){
+        }else if(lastY != sprite->y && lastX == sprite->x){
+            if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,deg2rad(90))){
                 sprite->y = (lastY / tileSize) * tileSize;        
-            }else if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,DEGRAD(270))){            
+            }else if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,deg2rad(270))){            
                 sprite->y = (botY * tileSize) - sprite->height -1;           
             }else{
                 sprite->y = lastY;
             }
-        }
+        }else if(lastY != sprite->y && lastX != sprite->x){
+            if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,deg2rad(45))){                    
+                if(isValidPosition(screen, sprite, (rightX * tileSize) - sprite->width -1, sprite->y))
+                    sprite->x = (rightX * tileSize) - sprite->width -1;
+                else if(isValidPosition(screen, sprite, sprite->x, (lastY / tileSize) * tileSize))
+                    sprite->y = (lastY / tileSize) * tileSize;    
+                else{
+                    sprite->x = lastX;
+                    sprite->y = lastY;
+                }
+            }else if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,deg2rad(315))){
+                if(isValidPosition(screen, sprite, (rightX * tileSize) - sprite->width -1, sprite->y))
+                    sprite->x = (rightX * tileSize) - sprite->width -1;
+                else if(isValidPosition(screen, sprite, sprite->x, (botY * tileSize) - sprite->height -1))
+                    sprite->y = (botY * tileSize) - sprite->height -1;
+                else{
+                    sprite->x = lastX;
+                    sprite->y = lastY;
+                }
+            }else if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,deg2rad(135))){
+                if(isValidPosition(screen, sprite, (lastX / tileSize) * tileSize, sprite->y))
+                    sprite->x = (lastX / tileSize) * tileSize;
+                else if(isValidPosition(screen, sprite, sprite->x, (lastY / tileSize) * tileSize))
+                    sprite->y = (lastY / tileSize) * tileSize;      
+                else{
+                    sprite->x = lastX;
+                    sprite->y = lastY;
+                }
+            }else if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,deg2rad(225))){
+                if(isValidPosition(screen, sprite, ((lastX / tileSize) * tileSize) , sprite->y))
+                    sprite->x = ((lastX / tileSize) * tileSize);
+                else if(isValidPosition(screen, sprite, sprite->x, (botY * tileSize) - sprite->height -1))
+                    sprite->y = (botY * tileSize) - sprite->height -1;
+                else{
+                    sprite->x = lastX;
+                    sprite->y = lastY;
+                }
+            }else{
+                sprite->x = lastX;
+                sprite->y = lastY;
+            }
+        }            
     }
+        
     lastX = sprite->x;
     lastY = sprite->y;
 }
@@ -164,11 +223,11 @@ void CharacterMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
 }
 
 void CharacterMotionGuide::AddVelocityComponent(int speed, int direction){
-    float XcompA = cos(DEGRAD(direction)) * speed;
+    float XcompA = cos(deg2rad(direction)) * speed;
     float YcompA;
     
     if(direction != 180)
-        YcompA = sin(DEGRAD(direction)) * speed;
+        YcompA = sin(deg2rad(direction)) * speed;
     else
         YcompA = 0;
         
@@ -182,19 +241,22 @@ void CharacterMotionGuide::AddVelocityComponent(int speed, int direction){
    if(resX != 0 && resY != 0){
         this->directionAngle = atan(resY/resX);
         if(directionAngle < 0 && resY > 0)
-            directionAngle += DEGRAD(180); 
+            directionAngle += deg2rad(180); 
         if(directionAngle > 0 && resY < 0)
-            directionAngle += DEGRAD(180);        
+            directionAngle += deg2rad(180);        
     }else if(resY == 0 && resX > 0)
-        this->directionAngle = DEGRAD(0);
+        this->directionAngle = deg2rad(0);
     else if(resY == 0 && resX < 0)
-        this->directionAngle = DEGRAD(180);
+        this->directionAngle = deg2rad(180);
     else if(resX == 0 && resY > 0)
-        this->directionAngle = DEGRAD(90);
+        this->directionAngle = deg2rad(90);
     else if(resX == 0 && resY < 0)
-        this->directionAngle = DEGRAD(270);
+        this->directionAngle = deg2rad(270);
     else
-        this->directionAngle = DEGRAD(0);    
+        this->directionAngle = deg2rad(0);    
+    
+    if(this->directionAngle < 0)
+        this->directionAngle += 2*PI;
     
 }
 
