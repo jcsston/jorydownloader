@@ -65,7 +65,7 @@ void Sprite::Update(Screen* screen){
 
 
 CircularMotionGuide::CircularMotionGuide(float angularVelocity, int radius, int centerX, int centerY, int intialAngle):angularVelocity(angularVelocity),radius(radius),centerX(centerX),centerY(centerY),initialAngle(initialAngle){
-    lastTime = -1;    
+    lastTime = (unsigned int) -1;    
 }
 
 void CircularMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
@@ -85,8 +85,8 @@ void CircularMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
         lastTime = now;
     }
     
-    int xCoord = (int) centerX + (radius * cos(currentAngle));
-    int yCoord = (int) centerY + (-1 * (radius * sin(currentAngle)));
+    int xCoord = (int) (centerX + (radius * cos(currentAngle)));
+    int yCoord = (int) (centerY + (-1 * (radius * sin(currentAngle))));
     
     sprite->x = xCoord;
     sprite->y = yCoord;    
