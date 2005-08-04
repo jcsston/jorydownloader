@@ -94,7 +94,7 @@ void Screen::Render(SDL_Surface* dest){
             }
     }
     
-    SDL_Delay(10);
+    SDL_Delay(33);
 }
 
 void Screen::AddSprite(Sprite* sprite){
