@@ -55,7 +55,7 @@ void Screen::Render(SDL_Surface* dest){
 	int tileID = 0;
     
     /* Blank Screen */
-    SDL_FillRect(dest, NULL, SDL_MapRGB(dest->format, 0, 0, 0));
+    //SDL_FillRect(dest, NULL, SDL_MapRGB(dest->format, 0, 0, 0));
     
     /* Render Map */
 	for(int i = 0; i < MAX_LAYERS; i++){
