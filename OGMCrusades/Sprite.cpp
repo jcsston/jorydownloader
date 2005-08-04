@@ -220,40 +220,7 @@ void CharacterMotionGuide::Stop(){
 }
 
 void CharacterMotionGuide::RemoveVelocityComponent(int speed, int direction){
-    float XcompA = cos(DEGRAD(direction)) * speed;
-    float YcompA;
-    
-    if(direction != 180)
-        YcompA = sin(DEGRAD(direction)) * speed;
-    else
-        YcompA = 0;
-        
-    float XcompB = cos(this->directionAngle) * this->speed;
-    float YcompB = sin(this->directionAngle) * this->speed;
-    
-    float resX = XcompB - XcompA;
-    float resY = YcompB - YcompA;
-    this->speed = sqrt((resX*resX) + (resY*resY));
-       
-    if(resX != 0 && resY != 0){
-        this->directionAngle = atan(resY/resX);
-        if(directionAngle < 0 && resY > 0)
-            directionAngle += DEGRAD(180);
-        if(directionAngle > 0 && resY < 0)
-            directionAngle += DEGRAD(180);
-    }else if(resY == 0 && resX > 0)
-        this->directionAngle = DEGRAD(0);
-    else if(resY == 0 && resX < 0)
-        this->directionAngle = DEGRAD(180);
-    else if(resX == 0 && resY > 0)
-        this->directionAngle = DEGRAD(90);
-    else if(resX == 0 && resY < 0)
-        this->directionAngle = DEGRAD(270);
-    else
-        this->directionAngle = DEGRAD(0);    
-    
+    AddVelocityComponent(speed, direction+180);
 }
-
-
 
 
