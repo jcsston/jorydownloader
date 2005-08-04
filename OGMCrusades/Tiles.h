@@ -47,7 +47,7 @@ class TileCache{
 		/* Gets a tile by ID */
 		Tile* GetTile(int tileID);
 		/* Loads a tile and returns the tile ID */
-		int LoadTile(std::string fileName);
+		int LoadTile(std::string fileName, bool isWalkable = true);
 		int AddTile(Tile* t);
 		/* Clears the cache */
 		void Clear();
@@ -63,7 +63,7 @@ class TilePallete{
 		/* Gets a tile by pallete ID.  Retrieves it from the cache. */
 		Tile* GetTile(int tileID);
 		/* Loads a Tile and returns it's pallete ID */
-		int LoadTile(std::string fileName);
+		int LoadTile(std::string fileName, bool isWalkable = true);        
 		int AddTile(Tile* t);
 };
 

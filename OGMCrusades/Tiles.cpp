@@ -60,12 +60,13 @@ Tile* TileCache::GetTile(int tileID){
 	return tiles.at(tileID);	
 }
 
-int TileCache::LoadTile(std::string fileName){
+int TileCache::LoadTile(std::string fileName, bool isWalkable){
 	Tile* newTile = new Tile();
 	if(newTile->LoadImage(fileName)){
 		printf("Failed to load tile %s\n", fileName.c_str());
 		return -1;
 	}
+    newTile->isWalkable = isWalkable;
 	tiles.push_back(newTile);
 	return tiles.size() - 1;
 }
@@ -101,8 +102,8 @@ Tile* TilePallete::GetTile(int tileID){
 	return cache->GetTile(cacheTileID);
 }
 
-int TilePallete::LoadTile(std::string fileName){
-	int cacheTileID = cache->LoadTile(fileName);
+int TilePallete::LoadTile(std::string fileName, bool isWalkable){
+	int cacheTileID = cache->LoadTile(fileName, isWalkable);
 	if(cacheTileID != -1){
 		tileIDs.push_back(cacheTileID);
 		return tileIDs.size();

@@ -23,11 +23,11 @@
 char tileMapTerrain[] = 
 { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 8, 8, 8, 10, 
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 7, 7, 7, 11, 
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 7, 7, 7, 11, 
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 7, 7, 7, 11, 
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 6, 6, 6, 12, 
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
@@ -40,11 +40,11 @@ char tileMapTerrain[] =
 char tileMapObjects[] = 
 { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
-2, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
-2, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
-2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
-2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
-2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
+2, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+2, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
 2, 0, 0, 0, 2, 2, 2, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
 2, 0, 0, 0, 2, 2, 2, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
@@ -101,10 +101,10 @@ int main(int argc, char* argv[]){
 		return 1;
 	}
 	
-	tilePallete.LoadTile("grass-plain.png");
-	int bushID = tilePallete.LoadTile("spyder482.bush2.png");
-    Tile* bushTile = tilePallete.GetTile(bushID);
-    bushTile->isWalkable = false;
+	tilePallete.LoadTile("grass-plain.png");    
+	tilePallete.LoadTile("spyder482.bush2.png", false);
+    //Tile* bushTile = tilePallete.GetTile(bushID);
+    //bushTile->isWalkable = false;
 	
 	//Animated Tile
 	AnimatedTile* animTile = new AnimatedTile();
@@ -118,6 +118,15 @@ int main(int argc, char* argv[]){
 	printf("done.\n");
 	
 	tilePallete.AddTile(animTile);
+    tilePallete.LoadTile("water-grass-left-side-32.png", false); 
+    tilePallete.LoadTile("water-grass-bottom-left-corner-32.png", false); 
+    tilePallete.LoadTile("water-grass-bottom-side-32.png", false);
+    tilePallete.LoadTile("water.png", false);
+    tilePallete.LoadTile("water-grass-top-side-32.png", false);
+    tilePallete.LoadTile("water-grass-top-left-corner-32.png", false);
+    tilePallete.LoadTile("water-grass-top-right-corner-32.png", false);
+    tilePallete.LoadTile("water-grass-right-side-32.png", false);
+    tilePallete.LoadTile("water-grass-bottom-right-corner-32.png", false);
 	
     Sprite* mySprite = new Sprite("character");
     mySprite->LoadImage("spyder482.bush2.png");
