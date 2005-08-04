@@ -54,13 +54,29 @@ char tileMapObjects[] =
 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 
+class TestCollisionHandler:public CollisionHandler{
+    private:
+        Screen* screen;
+        int count;
+    public:
+        TestCollisionHandler(Screen* screen):screen(screen),count(0){}
+        virtual void HandleCollision(Sprite* owner, Sprite* sprite){
+            if(sprite->name == "star" && count < 8){
+                if(tileMapObjects[220+16] == 0)
+                    tileMapObjects[220+16] = 2;
+                else
+                    tileMapObjects[220+16] = 0;
+            }
+        }        
+};
+
 
 Screen* myScreen;
 TileCache tileCache;
 TilePallete tilePallete(&tileCache);
 
 void DrawScene(SDL_Surface *screen){
-	
+	myScreen->Think();
 	myScreen->Render(screen);
 	SDL_Flip(screen);
 }
@@ -103,7 +119,7 @@ int main(int argc, char* argv[]){
 	
 	tilePallete.AddTile(animTile);
 	
-    Sprite* mySprite = new Sprite();
+    Sprite* mySprite = new Sprite("character");
     mySprite->LoadImage("spyder482.bush2.png");
     mySprite->x = 320;
     mySprite->y = 140;
@@ -112,12 +128,17 @@ int main(int argc, char* argv[]){
     CharacterMotionGuide* cmg = new CharacterMotionGuide();
     mySprite->AddMotionGuide(cmg);
     mySprite->AddMotionGuide(new WalkingMotionGuide());
+    mySprite->AddCollisionHandler(new TestCollisionHandler(myScreen));
     
+    Sprite* mySprite2 = new Sprite("star");
+    mySprite2->LoadImage("star.png");
+    mySprite2->AddMotionGuide(new CircularMotionGuide(0.2, 100, 320, 240, 90));
     myScreen = new Screen(640,480,32);
 	myScreen->SetTilePallete(&tilePallete);
 	myScreen->SetTileMap(0, tileMapTerrain);
 	myScreen->SetTileMap(1, tileMapObjects);
     myScreen->AddSprite(mySprite);
+    myScreen->AddSprite(mySprite2);
 	
 	done = 0;
 	

@@ -38,6 +38,7 @@ class Screen{
 		void SetTileMap(int layer, char* tileMap);
 		void SetTilePallete(TilePallete* tilePallete);
 		void Render(SDL_Surface* dest);
+        void Think();
         void AddSprite(Sprite* sprite);
         void RemoveSprite(Sprite* sprite);
         Tile* GetTileXY(int x, int y, int layer);

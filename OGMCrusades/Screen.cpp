@@ -33,9 +33,10 @@ Screen::Screen(int screenWidth, int screenHeight, int tileSize){
 Screen::~Screen(){
 	std::vector<Sprite*>::iterator iter;
     for(iter = sprites.begin(); iter != sprites.end(); iter++){
-        if(*iter)
+        if(*iter){
             delete *iter;
             *iter = NULL;
+        }
     }
 }
 
@@ -46,6 +47,22 @@ void Screen::SetTileMap(int layer, char* tileMap){
 
 void Screen::SetTilePallete(TilePallete* tilePallete){
 	this->tilePallete = tilePallete;
+}
+
+void Screen::Think(){
+    
+    //Sprite collision detection
+    std::vector<Sprite*>::iterator iter, iter2;
+    for(iter = sprites.begin(); iter != sprites.end(); iter++){
+        if(*iter){
+            for(iter2 = sprites.begin(); iter2 != sprites.end(); iter2++){
+               if(*iter2 && *iter2 != *iter){
+                    (*iter)->CheckCollision(*iter2);
+                }
+            }
+        }
+    }
+    
 }
 
 void Screen::Render(SDL_Surface* dest){
@@ -104,8 +121,15 @@ void Screen::AddSprite(Sprite* sprite){
     sprites.push_back(sprite);    
 }
 
+//USE THIS WITH EXTREME CAUTION
 void Screen::RemoveSprite(Sprite* sprite){
-    //FIXME
+    for(std::vector<Sprite*>::iterator iter = sprites.begin(); iter != sprites.end(); iter++){
+        if(*iter && *iter == sprite){
+            delete *iter;
+            sprites.erase(iter);
+            return;
+        }
+    }
 }
 
 Tile* Screen::GetTileXY(int x, int y, int layer){

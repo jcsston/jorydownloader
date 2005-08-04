@@ -30,7 +30,7 @@ inline float deg2rad(float x){
     return ((x/180.0f)*PI);
 }
 
-Sprite::Sprite():surface(NULL),guides(),width(0),height(0),x(0),y(0),speed(0),directionAngle(0),isFlying(true){
+Sprite::Sprite(std::string name):surface(NULL),guides(),width(0),height(0),x(0),y(0),speed(0),directionAngle(0),isFlying(true),name(name){
 }
 
 Sprite::~Sprite(){
@@ -38,13 +38,25 @@ Sprite::~Sprite(){
 		SDL_FreeSurface(surface);
 		surface = NULL;
 	}
+    
+    //Destroy motion guides
     std::vector<MotionGuide*>::iterator iter;
     for(iter = guides.begin(); iter != guides.end(); iter++){
         if(*iter)
             delete *iter;
             *iter = NULL;
-    }
+    }    
     guides.clear();
+    
+    //Destroy collision handlers
+    for(std::vector<CollisionHandler*>::iterator iter = collisionHandlers.begin(); iter != collisionHandlers.end(); iter++){
+        if(*iter){
+            delete *iter;
+            *iter = NULL;
+        }
+    }
+    collisionHandlers.clear();
+    
 }
 
 int Sprite::LoadImage(std::string fileName){
@@ -65,6 +77,11 @@ void Sprite::AddMotionGuide(MotionGuide* guide){
     guides.push_back(guide);
 }
 
+void Sprite::AddCollisionHandler(CollisionHandler* handler){
+    if(handler)
+    collisionHandlers.push_back(handler);
+}
+
 void Sprite::Update(Screen* screen){
     std::vector<MotionGuide*>::iterator iter;
     for(iter = guides.begin(); iter != guides.end(); iter++){
@@ -72,6 +89,31 @@ void Sprite::Update(Screen* screen){
     }        
 }
 
+
+void Sprite::CheckCollision(Sprite* sprite){
+    //Colliding sprite's rectangle
+    int leftX2 = (sprite->x);
+    int topY2 = (sprite->y);
+    int rightX2 = (sprite->x+sprite->width);
+    int botY2 = (sprite->y+sprite->height);
+    //Our rectangle
+    int leftX = (this->x);
+    int topY = (this->y);
+    int rightX = (this->x+this->width);
+    int botY = (this->y+this->height);
+    
+    if(!(  ((leftX)<(leftX2) && (rightX)<(leftX2))
+        || ((leftX)>(rightX2) && (rightX)>(rightX2)) 
+        || ((topY)<(topY2) && (botY)<(topY2)) 
+        || ((topY)>(botY2) && (botY)>(botY2))   
+    ))
+    
+    for(std::vector<CollisionHandler*>::iterator iter = collisionHandlers.begin(); iter != collisionHandlers.end(); iter++){
+        if(*iter){
+            (*iter)->HandleCollision(this, sprite);
+        }
+    }
+}
 
 CircularMotionGuide::CircularMotionGuide(float angularVelocity, int radius, int centerX, int centerY, int intialAngle):angularVelocity(angularVelocity),radius(radius),centerX(centerX),centerY(centerY),initialAngle(initialAngle){
     lastTime = (unsigned int) -1;    

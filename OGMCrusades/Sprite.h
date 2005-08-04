@@ -22,6 +22,7 @@
 #include <vector>
 
 class MotionGuide;
+class CollisionHandler;
 class Screen;
     
 class Sprite{  
@@ -29,24 +30,33 @@ class Sprite{
     SDL_Surface * surface;
   protected:    
     std::vector<MotionGuide*> guides;
+    std::vector<CollisionHandler*> collisionHandlers;
   public:
     Uint32 width, height, x, y;
     Uint32 speed;
-    float directionAngle;
+    float directionAngle;    
     bool isFlying; /* means this sprite is not bounded */
+    std::string name;
   
-    Sprite();
+    Sprite(std::string name);
     virtual ~Sprite();
     int LoadImage(std::string fileName);
     virtual SDL_Surface* GetSurface();
     virtual void AddMotionGuide(MotionGuide* guide);
+    virtual void AddCollisionHandler(CollisionHandler* guide);
     virtual void Update(Screen* screen);
-    
+    virtual void CheckCollision(Sprite* sprite);
+  
 };
 
 class MotionGuide{
   public:
     virtual void UpdateMotion(Sprite* sprite, Screen* screen) = 0;
+};
+
+class CollisionHandler{
+    public:
+        virtual void HandleCollision(Sprite* owner, Sprite* collidingSprite) = 0;
 };
 
 class CircularMotionGuide: public MotionGuide{
