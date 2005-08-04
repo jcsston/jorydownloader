@@ -21,7 +21,7 @@
 
 #define ROUGH_ANGLE_COMPARE(x,y) (((int)(x*1000)) == ((int)(y*1000)))
 
-inline float deg2rad(float x){
+inline float deg2rad(int x){
     if(x < 0)
         x += 360;
     
@@ -129,8 +129,7 @@ bool isValidPosition(Screen* screen, Sprite* sprite, int x, int y){
     return true;
 }
 
-void WalkingMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
-    Tile* tile;
+void WalkingMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){    
     bool can_walk = true;
     int tileSize = screen->GetTileSize();    
     if(lastX == (unsigned int)-1 && lastY == (unsigned int)-1){
@@ -138,8 +137,8 @@ void WalkingMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
         lastY = sprite->y;
     }
     
-    int leftX = (sprite->x) / tileSize;
-    int topY = (sprite->y) / tileSize;
+    //int leftX = (sprite->x) / tileSize;
+    //int topY = (sprite->y) / tileSize;
     int rightX = (sprite->x+sprite->width-1) / tileSize;
     int botY = (sprite->y+sprite->height-1) / tileSize;
         
@@ -159,7 +158,7 @@ void WalkingMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
             if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,deg2rad(90))){
                 sprite->y = (lastY / tileSize) * tileSize;        
             }else if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,deg2rad(270))){            
-                sprite->y = (botY * tileSize) - sprite->height -1;           
+                sprite->y = (botY * tileSize) - sprite->height;           
             }else{
                 sprite->y = lastY;
             }
@@ -176,8 +175,8 @@ void WalkingMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
             }else if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,deg2rad(315))){
                 if(isValidPosition(screen, sprite, (rightX * tileSize) - sprite->width -1, sprite->y))
                     sprite->x = (rightX * tileSize) - sprite->width -1;
-                else if(isValidPosition(screen, sprite, sprite->x, (botY * tileSize) - sprite->height -1))
-                    sprite->y = (botY * tileSize) - sprite->height -1;
+                else if(isValidPosition(screen, sprite, sprite->x, (botY * tileSize) - sprite->height))
+                    sprite->y = (botY * tileSize) - sprite->height;
                 else{
                     sprite->x = lastX;
                     sprite->y = lastY;
@@ -194,8 +193,8 @@ void WalkingMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
             }else if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,deg2rad(225))){
                 if(isValidPosition(screen, sprite, ((lastX / tileSize) * tileSize) , sprite->y))
                     sprite->x = ((lastX / tileSize) * tileSize);
-                else if(isValidPosition(screen, sprite, sprite->x, (botY * tileSize) - sprite->height -1))
-                    sprite->y = (botY * tileSize) - sprite->height -1;
+                else if(isValidPosition(screen, sprite, sprite->x, (botY * tileSize) - sprite->height))
+                    sprite->y = (botY * tileSize) - sprite->height;
                 else{
                     sprite->x = lastX;
                     sprite->y = lastY;
