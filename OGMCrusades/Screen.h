@@ -27,9 +27,9 @@ class Screen{
 		char* tileMaps[MAX_LAYERS];		
 		TilePallete* tilePallete;
         std::vector<Sprite*> sprites;
-        int screenWidth;
-		int screenHeight;
-		int tileSize;        
+        Uint32 screenWidth;
+		Uint32 screenHeight;
+		Uint32 tileSize;        
 	public:
 		Screen(int screenWidth, int screenHeight, int tileSize);
 		~Screen();
