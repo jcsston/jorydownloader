@@ -60,7 +60,7 @@ class CircularMotionGuide: public MotionGuide{
 
 class WalkingMotionGuide: public MotionGuide{
     private:
-        int lastX,lastY;
+        Uint32 lastX,lastY;
     public:
         WalkingMotionGuide();
         virtual void UpdateMotion(Sprite* sprite, Screen* screen);

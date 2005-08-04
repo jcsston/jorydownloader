@@ -57,7 +57,7 @@ Screen* myScreen;
 TileCache tileCache;
 TilePallete tilePallete(&tileCache);
 
-void DrawPixel(SDL_Surface *screen, int x, int y, Uint8 R, Uint8 G, Uint8 B){
+/*void DrawPixel(SDL_Surface *screen, int x, int y, Uint8 R, Uint8 G, Uint8 B){
 	Uint32 color = SDL_MapRGB(screen->format, R, G, B);
 	switch(screen->format->BytesPerPixel){
 		case 1:
@@ -97,24 +97,11 @@ void DrawPixel(SDL_Surface *screen, int x, int y, Uint8 R, Uint8 G, Uint8 B){
 			}
 			break;
 	}	
-}
+}*/
 
 
 void DrawScene(SDL_Surface *screen){
-	int x,y,c;
-	/*Slock(screen);
-	for(y = 0; y < 480; y++){
-		for(x = 0; x < 640; x++){
-			//c = (Uint8)(((double) x / 640 ) * 256); 
-			DrawPixel(screen, x,y,x/3,y/2,x/3);
-		}
-	}
 	
-	SDL_Rect rcDest = { 100, 100, 0, 0 };
-	SDL_Surface* image = tilePallete.GetTile(0)->GetSurface();
-	SDL_BlitSurface(image, NULL, screen, &rcDest);
-	
-	Sulock(screen);*/
 	myScreen->Render(screen);
 	SDL_Flip(screen);
 }
@@ -207,5 +194,6 @@ int main(int argc, char* argv[]){
 	
 	tileCache.Clear();
 	//SDL_Quit();
+    return 0;
 	
 }

@@ -71,7 +71,7 @@ CircularMotionGuide::CircularMotionGuide(float angularVelocity, int radius, int 
 void CircularMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
     Uint32 now = SDL_GetTicks();
     
-    if(lastTime == -1){
+    if(lastTime == (unsigned int)-1){
         lastTime = now;
         currentAngle = initialAngle;
     }else{
@@ -93,11 +93,11 @@ void CircularMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
     
 }
 
-WalkingMotionGuide::WalkingMotionGuide():lastX(-1),lastY(-1){
+WalkingMotionGuide::WalkingMotionGuide():lastX((unsigned int)-1),lastY((unsigned int)-1){
     
 }
 
-bool IsTileWalkable(Screen* screen, int x, int y){
+/*bool IsTileWalkable(Screen* screen, int x, int y){
     Tile* tile;
     for(int i = 0; i < MAX_LAYERS; i++){
         if(tile = screen->GetTile(x, y, i)){
@@ -106,21 +106,16 @@ bool IsTileWalkable(Screen* screen, int x, int y){
         }
     }
     return true;
-}
+}*/
 
 void WalkingMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
     Tile* tile;
     bool can_walk = true;
     int tileSize = screen->GetTileSize();    
-    if(lastX == -1 && lastY == -1){
+    if(lastX == (unsigned int)-1 && lastY == (unsigned int)-1){
         lastX = sprite->x;
         lastY = sprite->y;
     }
-    
-    int xMod = sprite->x % tileSize;
-    int yMod = sprite->y % tileSize;
-    int hMod = sprite->height % tileSize;
-    int wMod = sprite->width % tileSize;
     
     int leftX = (sprite->x) / tileSize;
     int topY = (sprite->y) / tileSize;

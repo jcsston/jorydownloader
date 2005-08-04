@@ -52,7 +52,7 @@ TileCache::~TileCache(){
 }
 
 Tile* TileCache::GetTile(int tileID){
-	if(tileID > tiles.size())
+	if((unsigned int)tileID > tiles.size())
         return NULL;
     
 	return tiles.at(tileID);	
@@ -92,7 +92,7 @@ TilePallete::~TilePallete(){
 }
 
 Tile* TilePallete::GetTile(int tileID){
-	if(tileID > tileIDs.size() || tileID <= 0)
+	if((unsigned int)tileID > tileIDs.size() || tileID <= 0)
         return NULL;
     
 	int cacheTileID = tileIDs.at(tileID-1);
@@ -105,6 +105,7 @@ int TilePallete::LoadTile(std::string fileName){
 		tileIDs.push_back(cacheTileID);
 		return tileIDs.size();
 	}
+    return -1;
 }
 
 int TilePallete::AddTile(Tile* t){
@@ -113,6 +114,7 @@ int TilePallete::AddTile(Tile* t){
 		tileIDs.push_back(cacheTileID);
 		return tileIDs.size();
 	}
+    return -1;
 }
 
 AnimatedTile::AnimatedTile(bool walkable):surfaces(NULL),numSurfaces(0),tileSize(0),tickTime(0),nextTime(0),currentSurface(0),isWalkable(walkable){
