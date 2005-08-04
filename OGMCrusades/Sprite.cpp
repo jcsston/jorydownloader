@@ -126,8 +126,7 @@ void WalkingMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
     int topY = (sprite->y) / tileSize;
     int rightX = (sprite->x+sprite->width-1) / tileSize;
     int botY = (sprite->y+sprite->height-1) / tileSize;
-    
-    //bool ** canWalk = new bool[rightX+1-leftX][botY+1-topY];
+        
     int j,k;
     for(int i = 0; i < MAX_LAYERS; i++){
         for(j = leftX; j <= rightX; j++){
@@ -141,70 +140,30 @@ void WalkingMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
                 }
             }
         }
-    }    
-    
-    /*for(int i = 0; i < MAX_LAYERS; i++){
-        for(int j = 0; j < sprite->width+wMod; j+=tileSize){
-            for(int k = 0; k < sprite->height+hMod; k+=tileSize){
-                tile = screen->GetTile(sprite->x+j, sprite->y+k, i);
-                if(tile){            
-                    if(!tile->isWalkable){
-                        can_walk = false;
-                        break;
-                    }
-                }
-            }
-        }
-    }*/
-    
-    
+    }
     
     if(!can_walk){
         
-        //sprite->x = lastX;
-        //sprite->y = lastY;        
         if(lastX != sprite->x){
             if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,DEGRAD(0))){
                 sprite->x = (rightX * tileSize) - sprite->width -1; 
-                printf("0 deg\n");      
+                
             }else if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,DEGRAD(180))){
-                sprite->x = (lastX / tileSize) * tileSize;
-                printf("180 deg\n");
+                sprite->x = (lastX / tileSize) * tileSize;                
             }else{
                 sprite->x = lastX;
             }
         }
         if(lastY != sprite->y){
             if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,DEGRAD(90))){
-                sprite->y = (lastY / tileSize) * tileSize;
-                printf("90 deg\n");
+                sprite->y = (lastY / tileSize) * tileSize;        
             }else if(ROUGH_ANGLE_COMPARE(sprite->directionAngle,DEGRAD(270))){            
-                sprite->y = (botY * tileSize) - sprite->height -1;    
-                printf("270 deg\n");
+                sprite->y = (botY * tileSize) - sprite->height -1;           
             }else{
                 sprite->y = lastY;
             }
         }
     }
-    /*can_walk = true;
-    
-    for(int i = 0; i < MAX_LAYERS; i++){
-        for(int j = 0; j <= sprite->width; j+=tileSize){
-            for(int k = 0; k <= sprite->height; k+=tileSize){
-                tile = screen->GetTile(sprite->x+j, sprite->y+k, i);
-                if(tile){            
-                    if(!tile->isWalkable){
-                        can_walk = false;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    if(!can_walk){
-        sprite->y = lastY;
-    } */   
-    
     lastX = sprite->x;
     lastY = sprite->y;
 }
@@ -228,13 +187,7 @@ void CharacterMotionGuide::AddVelocityComponent(int speed, int direction){
         YcompA = sin(DEGRAD(direction)) * speed;
     else
         YcompA = 0;
-    
-    //if(direction > 180)
-    //   YcompA *= -1;
-    //if(direction <= 270 && direction > 90)
-    //    XcompA *= -1;
-    
-    
+        
     float XcompB = cos(this->directionAngle) * this->speed;
     float YcompB = sin(this->directionAngle) * this->speed;
     
@@ -259,8 +212,6 @@ void CharacterMotionGuide::AddVelocityComponent(int speed, int direction){
     else
         this->directionAngle = DEGRAD(0);    
     
-    //if(resX < 0)
-    //    this->directionAngle += DEGRAD(360);    
 }
 
 void CharacterMotionGuide::Stop(){
@@ -276,13 +227,7 @@ void CharacterMotionGuide::RemoveVelocityComponent(int speed, int direction){
         YcompA = sin(DEGRAD(direction)) * speed;
     else
         YcompA = 0;
-    
-    //if(direction > 180)
-    //    YcompA *= -1;
-    //if(direction <= 270 && direction > 90)
-    //    XcompA *= -1;
-    
-    
+        
     float XcompB = cos(this->directionAngle) * this->speed;
     float YcompB = sin(this->directionAngle) * this->speed;
     
@@ -307,8 +252,6 @@ void CharacterMotionGuide::RemoveVelocityComponent(int speed, int direction){
     else
         this->directionAngle = DEGRAD(0);    
     
-    //if(resX < 0)
-    //    this->directionAngle += DEGRAD(360);     
 }
 
 
