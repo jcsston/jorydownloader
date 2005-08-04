@@ -19,6 +19,10 @@
 #include <string>
 #include <vector>
 
+#ifdef _MSC_VER
+#define snprintf  _snprintf
+#endif
+
 class Tile{
 	private:
 		SDL_Surface* surface;
