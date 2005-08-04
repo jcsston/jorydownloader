@@ -97,17 +97,6 @@ WalkingMotionGuide::WalkingMotionGuide():lastX((unsigned int)-1),lastY((unsigned
     
 }
 
-/*bool IsTileWalkable(Screen* screen, int x, int y){
-    Tile* tile;
-    for(int i = 0; i < MAX_LAYERS; i++){
-        if(tile = screen->GetTile(x, y, i)){
-            if(tile->isWalkable != true)
-                return false;
-        }
-    }
-    return true;
-}*/
-
 void WalkingMotionGuide::UpdateMotion(Sprite* sprite, Screen* screen){
     Tile* tile;
     bool can_walk = true;
