@@ -17,8 +17,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL/SDL.h>
+#include <SDL/SDL_mixer.h>
 #include "common.h"
 #include "Screen.h"
+#include "BgMusic.h"
+#include "StdIOSerializableStream.h"
 
 char tileMapTerrain[] = 
 { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
@@ -87,7 +90,7 @@ int main(int argc, char* argv[]){
 	SDL_Event event;
 	
 		
-	if(SDL_Init(SDL_INIT_VIDEO) < 0){
+	if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) < 0){
 		printf("Unable to init SDL: %s\n", SDL_GetError());
 		return 1;
 	}
@@ -98,15 +101,25 @@ int main(int argc, char* argv[]){
 	
 	if(screen == NULL){
 		printf("Unable obtain screen surface: %s\n", SDL_GetError());
-		return 1;
+		return 2;
 	}
-	
+
+  // Init the audio engine
+  if(Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 1024)==-1) {
+    printf("Unable to open audio mixer: %s\n", Mix_GetError());
+    return 3;
+  }
+  
+  // Start the music playback
+  BgMusic music;
+  music.Load("works.xm");
+  music.Play();
+
 	tilePallete.LoadTile("grass-plain.png");    
 	tilePallete.LoadTile("spyder482.bush2.png", false);
     //Tile* bushTile = tilePallete.GetTile(bushID);
     //bushTile->isWalkable = false;
 	
-	//Animated Tile
 	AnimatedTile* animTile = new AnimatedTile();
 	printf("Loading...");
 	if(animTile->LoadImageSequence("bush%02d.png", 2)){
@@ -182,7 +195,9 @@ int main(int argc, char* argv[]){
 	}
 	
 	tileCache.Clear();
+
+  Mix_CloseAudio();
 	//SDL_Quit();
-    return 0;
+  return 0;
 	
 }
