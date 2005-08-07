@@ -17,7 +17,7 @@
 #ifndef _SERIALIZABLESTREAM_H_
 #define _SERIALIZABLESTREAM_H_
 
-#include <inttypes.h>
+#include <SDL/SDL_types.h>
 #include <string>
 
 class SerializableStream
@@ -26,17 +26,17 @@ public:
   SerializableStream();
   virtual ~SerializableStream();
 
-  virtual uint64_t Read64() = 0;
-  virtual uint32_t Read32() = 0;
-  virtual uint16_t Read16() = 0;
-  virtual uint8_t Read8() = 0;
+  virtual Uint64 Read64() = 0;
+  virtual Uint32 Read32() = 0;
+  virtual Uint16 Read16() = 0;
+  virtual Uint8 Read8() = 0;
   virtual double ReadDouble() = 0;
   virtual std::string ReadString() = 0;
 
-  virtual void Write64(uint64_t i) = 0;
-  virtual void Write32(uint32_t i) = 0;
-  virtual void Write16(uint16_t i) = 0;
-  virtual void Write8(uint8_t i) = 0;
+  virtual void Write64(Uint64 i) = 0;
+  virtual void Write32(Uint32 i) = 0;
+  virtual void Write16(Uint16 i) = 0;
+  virtual void Write8(Uint8 i) = 0;
   virtual void WriteDouble(double d) = 0;
   virtual void WriteString(const std::string& string) = 0;
 };

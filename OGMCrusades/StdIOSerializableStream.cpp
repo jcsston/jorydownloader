@@ -34,30 +34,30 @@ StdIOSerializableStream::~StdIOSerializableStream()
   }
 }
 
-uint64_t StdIOSerializableStream::Read64()
+Uint64 StdIOSerializableStream::Read64()
 {
-  uint64_t i = 0;
+  Uint64 i = 0;
   fread(&i, sizeof(i), 1, m_File);
   return i;
 }
 
-uint32_t StdIOSerializableStream::Read32()
+Uint32 StdIOSerializableStream::Read32()
 {
-  uint32_t i = 0;
+  Uint32 i = 0;
   fread(&i, sizeof(i), 1, m_File);
   return i;
 }
 
-uint16_t StdIOSerializableStream::Read16()
+Uint16 StdIOSerializableStream::Read16()
 {
-  uint16_t i = 0;
+  Uint16 i = 0;
   fread(&i, sizeof(i), 1, m_File);
   return i;
 }
 
-uint8_t StdIOSerializableStream::Read8()
+Uint8 StdIOSerializableStream::Read8()
 {
-  uint8_t i = 0;
+  Uint8 i = 0;
   fread(&i, sizeof(i), 1, m_File);
   return i;
 }
@@ -71,29 +71,29 @@ double StdIOSerializableStream::ReadDouble()
 
 std::string StdIOSerializableStream::ReadString()
 {
-  uint32_t strLen = Read32();
+  Uint32 strLen = Read32();
   std::string s;
   s.resize(strLen);
   fread((void *)s.c_str(), strLen, 1, m_File);
   return s;
 }
 
-void StdIOSerializableStream::Write64(uint64_t i)
+void StdIOSerializableStream::Write64(Uint64 i)
 {
   fwrite(&i, sizeof(i), 1, m_File);  
 }
 
-void StdIOSerializableStream::Write32(uint32_t i)
+void StdIOSerializableStream::Write32(Uint32 i)
 {
   fwrite(&i, sizeof(i), 1, m_File);
 }
 
-void StdIOSerializableStream::Write16(uint16_t i)
+void StdIOSerializableStream::Write16(Uint16 i)
 {
   fwrite(&i, sizeof(i), 1, m_File);
 }
 
-void StdIOSerializableStream::Write8(uint8_t i)
+void StdIOSerializableStream::Write8(Uint8 i)
 {
   fwrite(&i, sizeof(i), 1, m_File);
 }

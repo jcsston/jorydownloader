@@ -27,17 +27,17 @@ public:
   StdIOSerializableStream(const std::string &filename, bool bWritable);
   ~StdIOSerializableStream();
 
-  uint64_t Read64();
-  uint32_t Read32();
-  uint16_t Read16();
-  uint8_t Read8();
+  Uint64 Read64();
+  Uint32 Read32();
+  Uint16 Read16();
+  Uint8 Read8();
   double ReadDouble();
   std::string ReadString();
 
-  void Write64(uint64_t i);
-  void Write32(uint32_t i);
-  void Write16(uint16_t i);
-  void Write8(uint8_t i);
+  void Write64(Uint64 i);
+  void Write32(Uint32 i);
+  void Write16(Uint16 i);
+  void Write8(Uint8 i);
   void WriteDouble(double d);
   void WriteString(const std::string& string);
 
