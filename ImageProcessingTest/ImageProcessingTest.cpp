@@ -6,7 +6,81 @@
 #include "Profiler.h"
 #include "ImageProcessing.h"
 
-int cycleCount = 500;
+int cycleCount = 1;
+
+class A {
+public:
+  A() { data = 1; };
+  virtual ~A() { data++; };
+  virtual void Test(int *i) = 0;
+  int data;
+};
+
+class B : public A {
+public:
+  B() { data = 2; };
+  virtual ~B() { data--; };
+  virtual void Test(int *i) {
+    (*i)++;
+  }
+};
+
+void FuncPointer_Test(void *pObj, int *i) {
+  (*i)++;
+}
+
+typedef void (*fnpTest_def)(void*, int *);
+
+struct FuncPointerStructTest {
+  fnpTest_def fnpTest;
+  int data;
+};
+
+void Struct_FuncPointer_vs_VirtualFunc_Test()
+{
+  A *virtualTest = new B();
+  FuncPointerStructTest *structTest = new FuncPointerStructTest;
+  structTest->fnpTest = FuncPointer_Test;
+    
+  int i;
+  int i2;
+	{
+		CProfile profile2("Direct Call");
+		for (i = 0; i < 2000000; i++) {
+      FuncPointer_Test(structTest, &i2);
+		}
+	}
+	{
+		CProfile profile2("FuncPointerStructTest");
+		for (i = 0; i < 2000000; i++) {
+      structTest->fnpTest(structTest, &i2);
+		}
+	}
+
+	{
+		CProfile profile2("VirtualFuncPointerTest");
+		for (i = 0; i < 2000000; i++) {
+      virtualTest->Test(&i2);
+		}
+	}
+    
+	{
+		CProfile profile2("FuncPointerStructTest Alloc");
+		for (i = 0; i < 2000000; i++) {
+      FuncPointerStructTest *structTest = (FuncPointerStructTest *)malloc(sizeof(FuncPointerStructTest));
+      structTest->fnpTest = FuncPointer_Test;
+      structTest->data = 1;
+      free(structTest);
+		}
+	}
+	{
+		CProfile profile2("VirtualFuncPointerTest Alloc");
+		for (i = 0; i < 2000000; i++) {
+      A *virtualTest = new B();
+      delete virtualTest;
+		}
+	}
+}
 
 bool SaveBMPFile(const char *filename, BYTE *pData, BITMAPINFOHEADER *bih)
 {	
@@ -140,6 +214,8 @@ int main(int argc, char* argv[])
 	memset(&bihTargetImage, 0, sizeof(BITMAPINFOHEADER));
 	memset(&bihOverlayImage, 0, sizeof(BITMAPINFOHEADER));
 
+  //Struct_FuncPointer_vs_VirtualFunc_Test();
+
 	printf("ImageProcessingTest - compile date " __DATE__ " - " __TIME__ " \n");		
 	printf("  Loads source_image.bmp and overlay_image.bmp \n");
 	printf("  files and times processing functions on them \n");	
@@ -171,11 +247,11 @@ int main(int argc, char* argv[])
 	printf("\t Timing Cycles : %i \n", cycleCount);	
 	printf("\t Image Size: %i x %i \n", bihTargetImage.biWidth, bihTargetImage.biHeight);		
 	printf("\t Using Overlay Image: %s \n", bOverlayImageGood ? "Yes" : "No" );		
-	
+
+/*
 	printf("\n");
 	printf("Timing flipping routines... \n");
 
-/*
 	printf("ImageProcessing_RGB32_Flip_C\n");
 	{
 		CProfile profile2("ImageProcessing_RGB32_Flip_C");
@@ -239,6 +315,48 @@ int main(int argc, char* argv[])
 		}
 	}
 	*/
+
+  printf("\n");
+	printf("Timing resizing routines... \n");
+
+  BYTE *tempBuffer = new BYTE[512*512*5];
+  BYTE *tempBuffer2 = new BYTE[720*480*5];
+
+  bihOverlayImage.biWidth = 512;
+  bihOverlayImage.biHeight = 512;
+
+	printf("BicubicResamplePlane to 512x512\n");
+	{
+		CProfile profile2("BicubicResamplePlane 512x512");
+		for (i = 0; i < cycleCount; i++) {
+			BicubicResamplePlane(pTargetImage, bihTargetImage.biWidth*4, bihTargetImage.biWidth, bihTargetImage.biHeight, tempBuffer, 4*512, 512, 512);
+      SaveBMPFile("BicubicResamplePlane.bmp", tempBuffer, &bihOverlayImage);
+		}
+	}
+
+	printf("ImageProcessing_RGB32_Resize_Bicubic_C to 512x512\n");
+	{
+		CProfile profile2("ImageProcessing_RGB32_Resize_Bicubic_C 512x512");
+		for (i = 0; i < cycleCount; i++) {
+			ImageProcessing_RGB32_Resize_Bicubic_C(pTargetImage, tempBuffer, bihTargetImage.biWidth, bihTargetImage.biHeight, 512, 512);
+      SaveBMPFile("ImageProcessing_RGB32_Resize_Bicubic_C.bmp", tempBuffer, &bihOverlayImage);
+		}
+	}
+
+  /*
+	printf("ImageProcessing_RGB32_Resize_Bicubic_C 512x512 to 720x480\n");
+	{
+		CProfile profile2("ImageProcessing_RGB32_Resize_Bicubic_C 512x512 to 720x480");
+		for (i = 0; i < cycleCount; i++) {
+			ImageProcessing_RGB32_Resize_Bicubic_C(tempBuffer, tempBuffer2, 512, 512, 720, 480);
+		}
+	}
+  */
+
+  delete tempBuffer;
+  delete tempBuffer2;
+
+  /*
 	printf("\n");
 	printf("Timing overlay routines... \n");
 	
@@ -264,7 +382,7 @@ int main(int argc, char* argv[])
 			//SaveBMPFile("test.bmp", pTargetImage, &bihTargetImage);
 		}
 	}
-
+*/
 	printf("\n");
 	printf("Timing complete. \n");
 	printf("\n");

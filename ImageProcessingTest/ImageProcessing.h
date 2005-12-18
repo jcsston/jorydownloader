@@ -6,6 +6,7 @@
 #define _IMAGE_PROCESSING_H_
 
 #include <assert.h>
+#include <math.h>
 
 /// Takes about 0.0023 seconds for a 352x240 frame, compiler set to max speed
 void ImageProcessing_RGB32_Flip_C(BYTE *image, int w, int h);
@@ -38,5 +39,9 @@ void ImageProcessing_RGB32_AlphaSet_ASM(BYTE *image, int w, int h, int alpha);
 void ImageProcessing_RGB32_AlphaSet_MMX(BYTE *image, int w, int h, int alpha);
 /// 16-mod width required
 void ImageProcessing_RGB32_AlphaSet16_MMX(BYTE *image, int w, int h, int alpha);
+
+void ImageProcessing_RGB32_Resize_Bicubic_C(BYTE *src, BYTE *dest, int srcWidth, int srcHeight, int destWidth, int destHeight);
+
+void BicubicResamplePlane(BYTE* inPlane, int inStride, int inWidth, int inHeight, BYTE* outPlane, int outStride, int outWidth, int outHeight);
 
 #endif // _IMAGE_PROCESSING_H_

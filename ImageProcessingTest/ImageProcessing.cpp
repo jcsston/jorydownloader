@@ -43,6 +43,7 @@ void ImageProcessing_RGB32_Flip_ASM(BYTE *image, int w, int h)
 	assert(h % 2 == 0);
 
 	void *row = malloc(w*4);
+#ifdef SUPPORT_ASM
 	__asm
 	{
 		mov     ecx, [w]    ; width
@@ -106,7 +107,7 @@ codeloop:
 		dec			ecx					; decrement count by 1
 		jnz			codeloop		; jump to codeloop if not Zero		
 	}
-
+#endif
 	free(row);
 }
 
@@ -119,6 +120,7 @@ void ImageProcessing_RGB32_Flip_MMX(BYTE *image, int w, int h)
 	// Mod-2 Height Required
 	assert(h % 2 == 0);
 
+#ifdef SUPPORT_ASM
 	__asm
 	{
 		mov     ecx, [w]    ; width
@@ -178,6 +180,7 @@ codeloop:
 		jnz			codeloop		; jump if we have not processed all rows
 		emms
 	}
+#endif
 }
 
 /// Takes about 0.002 seconds on a 352x240 frame with compiler set to max speed
@@ -208,6 +211,7 @@ void ImageProcessing_RGB32_Overlay_ASM(BYTE *imageDest, BYTE *overlaySrc, int w,
 	assert(overlaySrc != NULL);
 	assert(w > 0 && h > 0);
 
+#ifdef SUPPORT_ASM
 	// we assume all data in the register is not used by others
 	__asm
 	{
@@ -266,6 +270,7 @@ nooverlay:
 		dec			ecx					; decrement count by 1
 		jnz			codeloop			; jump to codeloop if not Zero		
 	}
+#endif
 }
 
 void ImageProcessing_RGB32_Overlay_MMX(BYTE *imageDest, BYTE *overlaySrc, int w, int h, int transparentColor)
@@ -277,6 +282,7 @@ void ImageProcessing_RGB32_Overlay_MMX(BYTE *imageDest, BYTE *overlaySrc, int w,
 	assert(w % 8 == 0);
 
 	DWORD transparentColors[2] = { (DWORD)transparentColor, (DWORD)transparentColor };
+#ifdef SUPPORT_ASM
 	// we assume all data in the register is not used by others
 	__asm
 	{
@@ -340,6 +346,7 @@ codeloop:
 		jnz			codeloop			; jump to codeloop if not Zero
 		emms							; Restore FPU state to normal
 	}
+#endif
 }
 
 void ImageProcessing_RGB32_AlphaSet_C(BYTE *image, int w, int h, int alpha)
@@ -385,6 +392,7 @@ void ImageProcessing_RGB32_AlphaSet_ASM(BYTE *image, int w, int h, int alpha)
 	assert(image != NULL);
 	assert(w > 0 && h > 0);
 
+#ifdef SUPPORT_ASM
 	// we assume all data in the register is not used by others
 	__asm
 	{
@@ -410,6 +418,7 @@ codeloop:
 		dec			ecx					; decrement count by 1
 		jnz			codeloop			; jump to codeloop if not Zero		
 	}
+#endif
 }
 
 // 8-mod width required
@@ -420,6 +429,7 @@ void ImageProcessing_RGB32_AlphaSet_MMX(BYTE *image, int w, int h, int alpha)
 	// Mod-8 Width Required
 	assert(w % 8 == 0);
 
+#ifdef SUPPORT_ASM
 	// we assume all data in the register is not used by others
 	__asm
 	{
@@ -476,6 +486,7 @@ codeloop:
 		jnz			codeloop			; jump to codeloop if not Zero
 		emms							; Restore FPU state to normal
 	}
+#endif
 }
 
 // 16-mod
@@ -486,6 +497,7 @@ void ImageProcessing_RGB32_AlphaSet16_MMX(BYTE *image, int w, int h, int alpha)
 	// Mod-16 Width Required
 	assert(w % 16 == 0);
 
+#ifdef SUPPORT_ASM
 	// we assume all data in the register is not used by others
 	__asm
 	{
@@ -564,4 +576,122 @@ codeloop:
 		jnz			codeloop			; jump to codeloop if not Zero
 		emms							; Restore FPU state to normal
 	}
+#endif
+}
+
+static float b3spline(float x)
+{
+	float a, b, c, d;
+
+	if((x + 2.0f) <= 0.0f) a = 0.0f; else a = (float)pow((x + 2.0f), 3.0f);
+	if((x + 1.0f) <= 0.0f) b = 0.0f; else b = (float)pow((x + 1.0f), 3.0f);
+	if(x <= 0) c = 0.0f; else c = (float)pow(x, 3.0f);  
+	if((x - 1.0f) <= 0.0f) d = 0.0f; else d = (float)pow((x - 1.0f), 3.0f);
+
+	return (0.16666666666666666667f * (a - (4.0f * b) + (6.0f * c) - (4.0f * d)));
+}
+
+void ImageProcessing_RGB32_Resize_Bicubic_C(BYTE *src, BYTE *dest, int srcWidth, int srcHeight, int destWidth, int destHeight)
+{
+  const int srcBitDepth = 32;
+  const int destBitDepth = 32;
+
+	assert(src != NULL);	
+	assert(srcWidth > 0);
+	assert(srcHeight != 0);
+	assert(srcBitDepth > 0);
+	
+	assert(dest != NULL);
+	assert(destWidth > 0);
+	assert(destHeight != 0);
+	assert(destBitDepth > 0);
+
+	// bicubic interpolation by Blake L. Carlson <blake-carlson(at)uiowa(dot)edu
+	// public domain
+	float xScale, yScale;
+	xScale = (float)srcWidth  / (float)destWidth;
+	yScale = (float)srcHeight / (float)destHeight;
+
+	int srcByteDepth = (srcBitDepth / 8);
+	int destByteDepth = (destBitDepth / 8);
+
+	long srcPos;
+	long destPos;
+	float f_x, f_y, a, b, rr, gg, bb, r1, r2;
+	int i_x, i_y, xx, yy;
+	for (long y = 0; y < destWidth; y++){
+		f_y = (float) y * yScale;
+		i_y = (int) floor(f_y);
+		a   = f_y - (float)floor(f_y);		
+		for (long x = 0; x < destWidth; x++){
+			f_x = (float) x * xScale;
+			i_x = (int) floor(f_x);
+			b   = f_x - (float)floor(f_x);
+
+			rr = gg = bb = 0.0F;
+			for (int m = -1; m < 3; m++) {
+				r1 = b3spline((float) m - a);
+				for (int n = -1; n < 3; n++) {
+					r2 = b3spline(-1.0F*((float)n - b)); 
+					xx = i_x+n+2;
+					yy = i_y+m+2;
+					if (xx < 0)
+						xx = 0;
+					if (yy < 0)
+						yy = 0;
+					if (xx >= srcWidth)
+						xx = srcWidth-1;
+					if (yy >= srcHeight)
+						yy = srcHeight-1;
+					
+					srcPos = (yy * srcWidth + xx) * srcByteDepth;
+
+					rr += src[srcPos] * r1 * r2;
+					gg += src[srcPos+1] * r1 * r2;
+					bb += src[srcPos+2] * r1 * r2;
+				}
+			}
+			//target->SetPixel(x, y, RGB(rr, gg, bb));			
+			destPos = (y * destWidth + x) * destByteDepth;
+			dest[destPos]   = (BYTE)rr;
+			dest[destPos+1] = (BYTE)gg;
+			dest[destPos+2] = (BYTE)bb;
+		}
+	}
+}
+
+//#define RESIZE_COORD(x,y,stride) ((y*stride)+(x*4))
+#define RESIZE_COORD(x,y,stride) ((y*stride)+x)
+#define SCALER_RESTRICT(x,base) ((x<base) ? 0 : x)
+
+static double bicubicScalingFunction(double x){
+  return (pow(SCALER_RESTRICT(x+2,0),3) \
+    - (4 * pow(SCALER_RESTRICT(x+1,0), 3)) \
+    + (6 * pow(SCALER_RESTRICT(x,0),3)) \
+    - (4 * pow(SCALER_RESTRICT(x-1,0),3))) / 6.0;
+}
+
+void BicubicResamplePlane(BYTE* inPlane, int inStride, int inWidth, int inHeight, BYTE* outPlane, int outStride, int outWidth, int outHeight)
+{
+
+  for( int j = 0; j < outHeight; j++ ){
+    for( int i = 0; i < outWidth; i++ ){
+      double pixel = 0.0;
+      double dx = i * ((double)inWidth/outWidth);   
+      int x = (int) dx; //Pixel x-coord in original image
+      dx -= x;   //Fractional part of the pixel which approximates the location of our value
+
+      double dy = j * ((double)inHeight/outHeight);
+      int y = (int) dy; //Pixel pixel y-coord in original image
+      dy -= y;   //Fractional part of the pixel which approximates the location of our value
+      for( int m = -1; m <= 2; m++ ){
+        for(int n = -1; n <= 2; n++){
+          pixel += inPlane[RESIZE_COORD(SCALER_RESTRICT(x+m,0),SCALER_RESTRICT(y+n,0),inStride)] \
+            * bicubicScalingFunction(m - dx) * bicubicScalingFunction(dy - n);
+        }
+      }
+
+      outPlane[RESIZE_COORD(i,j, outStride)] = pixel;
+    }
+  }
 }
