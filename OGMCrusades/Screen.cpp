@@ -72,8 +72,9 @@ void Screen::Render(SDL_Surface* dest){
 	char* tileMap;
 	SDL_Rect rcDest = { 0,0,0,0 };
 	int tileID = 0;
-    
-    /* Blank Screen */
+  SDL_Rect rcSource = { 0,0,0,0 };
+
+  /* Blank Screen */
     //SDL_FillRect(dest, NULL, SDL_MapRGB(dest->format, 0, 0, 0));
     
     /* Render Map */
@@ -112,7 +113,11 @@ void Screen::Render(SDL_Surface* dest){
                 Sulock(dest);
             }
     }
-    
+
+    SDL_GetClipRect(dest, &rcSource);
+    // Check that the video surface is large enough
+    assert(rcSource.h == (screenHeight+Screen::SCOREBOARD_HEIGHT));
+
     SDL_Delay(33);
 }
 

@@ -21,6 +21,7 @@
 #include <SDL/SDL.h>
 #include "Sprite.h"
 #include <vector>
+#include <assert.h>
 
 #define MAX_LAYERS 5
 
@@ -44,6 +45,10 @@ class Screen{
         Tile* GetTileXY(int x, int y, int layer);
         Tile* GetTile(int x, int y, int layer);
         int GetTileSize();
+        enum {
+          SCOREBOARD_HEIGHT = 80
+        };
+
 };
 
 #endif

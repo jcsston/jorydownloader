@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;&quot;.\..\SDL-1.2.8\include&quot;;&quot;.\..\SDL_image-1.2.4&quot;"
+				AdditionalIncludeDirectories=".\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -69,7 +69,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=".\;&quot;.\..\SDL-1.2.8\include&quot;;&quot;.\..\SDL_image-1.2.4&quot;"
+				AdditionalIncludeDirectories=".\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -121,7 +121,7 @@
 				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="TRUE"
-				AdditionalIncludeDirectories=".\;&quot;.\..\SDL-1.2.8\include&quot;;&quot;.\..\SDL_image-1.2.4&quot;;&quot;.\..\SDL_mixer-1.2.6&quot;"
+				AdditionalIncludeDirectories=".\;&quot;.\..\SDL-1.2.8\include&quot;;&quot;.\..\SDL_image-1.2.4&quot;;&quot;.\..\SDL_mixer-1.2.6&quot;;&quot;.\..\SDL_image-1.2.4\zlib&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;DECLSPEC="
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -176,8 +176,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;&quot;.\..\SDL-1.2.8\include&quot;;&quot;.\..\SDL_image-1.2.4&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				AdditionalIncludeDirectories=".\;&quot;.\..\SDL-1.2.8\include&quot;;&quot;.\..\SDL_image-1.2.4&quot;;&quot;.\..\SDL_image-1.2.4\zlib&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;USE_RWOPS"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -234,6 +234,12 @@
 				RelativePath=".\common.cpp">
 			</File>
 			<File
+				RelativePath=".\csvparser.cpp">
+			</File>
+			<File
+				RelativePath=".\GameDataManger.cpp">
+			</File>
+			<File
 				RelativePath=".\Screen.cpp">
 			</File>
 			<File
@@ -252,6 +258,9 @@
 				RelativePath=".\StdIOSerializableStream.cpp">
 			</File>
 			<File
+				RelativePath=".\TileMap.cpp">
+			</File>
+			<File
 				RelativePath=".\Tiles.cpp">
 			</File>
 		</Filter>
@@ -264,6 +273,12 @@
 			</File>
 			<File
 				RelativePath=".\common.h">
+			</File>
+			<File
+				RelativePath=".\csvparser.h">
+			</File>
+			<File
+				RelativePath=".\GameDataManger.h">
 			</File>
 			<File
 				RelativePath=".\Screen.h">
@@ -279,6 +294,9 @@
 			</File>
 			<File
 				RelativePath=".\StdIOSerializableStream.h">
+			</File>
+			<File
+				RelativePath=".\TileMap.h">
 			</File>
 			<File
 				RelativePath=".\Tiles.h">

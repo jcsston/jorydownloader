@@ -1,55 +1,12 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OGMCrusades", "OGMCrusades.vcproj", "{6C2CA1BF-B15E-4C11-8966-186B0C0191F5}"
 	ProjectSection(ProjectDependencies) = postProject
-		{18B4C02C-3B9C-4A0B-AFD6-587AF4BE8FD2} = {18B4C02C-3B9C-4A0B-AFD6-587AF4BE8FD2}
-		{94EC006B-8783-4E7A-A233-F59B6C7CDED1} = {94EC006B-8783-4E7A-A233-F59B6C7CDED1}
-		{70742FD7-5E1C-4992-882E-B9FF7CF4ED32} = {70742FD7-5E1C-4992-882E-B9FF7CF4ED32}
-		{16EBC8F9-BBD6-4FC4-94EB-EC2F94512F04} = {16EBC8F9-BBD6-4FC4-94EB-EC2F94512F04}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL", "..\SDL-1.2.8\VisualC7\SDL\SDL.vcproj", "{16EBC8F9-BBD6-4FC4-94EB-EC2F94512F04}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDLmain", "..\SDL-1.2.8\VisualC7\SDLmain\SDLmain.vcproj", "{94EC006B-8783-4E7A-A233-F59B6C7CDED1}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL_image", "..\SDL_image-1.2.4\VisualC\SDL_image.vcproj", "{70742FD7-5E1C-4992-882E-B9FF7CF4ED32}"
-	ProjectSection(ProjectDependencies) = postProject
-		{697BDE6D-38F5-4A20-800C-335B0FF2F939} = {697BDE6D-38F5-4A20-800C-335B0FF2F939}
-		{501E35BA-1540-40BD-966C-A30FA6E7C2C7} = {501E35BA-1540-40BD-966C-A30FA6E7C2C7}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "png", "..\SDL_image-1.2.4\png\png.vcproj", "{501E35BA-1540-40BD-966C-A30FA6E7C2C7}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "..\SDL_image-1.2.4\zlib\zlib.vcproj", "{697BDE6D-38F5-4A20-800C-335B0FF2F939}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL_mixer", "..\SDL_mixer-1.2.6\VisualC\SDL_mixer.vcproj", "{18B4C02C-3B9C-4A0B-AFD6-587AF4BE8FD2}"
-	ProjectSection(ProjectDependencies) = postProject
-		{6C7F6111-9772-43D5-906F-AB354C93776A} = {6C7F6111-9772-43D5-906F-AB354C93776A}
-		{F47C9292-0CC1-4441-A656-991CA21F7E2B} = {F47C9292-0CC1-4441-A656-991CA21F7E2B}
-		{3AE34EB5-E19C-402A-8024-072969960323} = {3AE34EB5-E19C-402A-8024-072969960323}
-		{16EBC8F9-BBD6-4FC4-94EB-EC2F94512F04} = {16EBC8F9-BBD6-4FC4-94EB-EC2F94512F04}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mikmod", "..\SDL_mixer-1.2.6\VisualC\mikmod\mikmod.vcproj", "{F47C9292-0CC1-4441-A656-991CA21F7E2B}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "timidity", "..\SDL_mixer-1.2.6\VisualC\timidity\timidity.vcproj", "{3AE34EB5-E19C-402A-8024-072969960323}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "native_midi", "..\SDL_mixer-1.2.6\VisualC\native_midi\native_midi.vcproj", "{6C7F6111-9772-43D5-906F-AB354C93776A}"
-	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
 Global
+	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
+		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
+	EndGlobalSection
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
 		Debug_Static = Debug_Static
@@ -65,60 +22,6 @@ Global
 		{6C2CA1BF-B15E-4C11-8966-186B0C0191F5}.Release.Build.0 = Release|Win32
 		{6C2CA1BF-B15E-4C11-8966-186B0C0191F5}.Release_Static.ActiveCfg = Release_Static|Win32
 		{6C2CA1BF-B15E-4C11-8966-186B0C0191F5}.Release_Static.Build.0 = Release_Static|Win32
-		{16EBC8F9-BBD6-4FC4-94EB-EC2F94512F04}.Debug.ActiveCfg = Debug|Win32
-		{16EBC8F9-BBD6-4FC4-94EB-EC2F94512F04}.Debug_Static.ActiveCfg = Debug|Win32
-		{16EBC8F9-BBD6-4FC4-94EB-EC2F94512F04}.Debug_Static.Build.0 = Debug|Win32
-		{16EBC8F9-BBD6-4FC4-94EB-EC2F94512F04}.Release.ActiveCfg = Release|Win32
-		{16EBC8F9-BBD6-4FC4-94EB-EC2F94512F04}.Release_Static.ActiveCfg = Release|Win32
-		{16EBC8F9-BBD6-4FC4-94EB-EC2F94512F04}.Release_Static.Build.0 = Release|Win32
-		{94EC006B-8783-4E7A-A233-F59B6C7CDED1}.Debug.ActiveCfg = Debug|Win32
-		{94EC006B-8783-4E7A-A233-F59B6C7CDED1}.Debug_Static.ActiveCfg = Debug|Win32
-		{94EC006B-8783-4E7A-A233-F59B6C7CDED1}.Debug_Static.Build.0 = Debug|Win32
-		{94EC006B-8783-4E7A-A233-F59B6C7CDED1}.Release.ActiveCfg = Release|Win32
-		{94EC006B-8783-4E7A-A233-F59B6C7CDED1}.Release_Static.ActiveCfg = Release|Win32
-		{94EC006B-8783-4E7A-A233-F59B6C7CDED1}.Release_Static.Build.0 = Release|Win32
-		{70742FD7-5E1C-4992-882E-B9FF7CF4ED32}.Debug.ActiveCfg = Debug|Win32
-		{70742FD7-5E1C-4992-882E-B9FF7CF4ED32}.Debug_Static.ActiveCfg = Debug|Win32
-		{70742FD7-5E1C-4992-882E-B9FF7CF4ED32}.Debug_Static.Build.0 = Debug|Win32
-		{70742FD7-5E1C-4992-882E-B9FF7CF4ED32}.Release.ActiveCfg = Release|Win32
-		{70742FD7-5E1C-4992-882E-B9FF7CF4ED32}.Release_Static.ActiveCfg = Release|Win32
-		{70742FD7-5E1C-4992-882E-B9FF7CF4ED32}.Release_Static.Build.0 = Release|Win32
-		{501E35BA-1540-40BD-966C-A30FA6E7C2C7}.Debug.ActiveCfg = Debug|Win32
-		{501E35BA-1540-40BD-966C-A30FA6E7C2C7}.Debug_Static.ActiveCfg = Debug|Win32
-		{501E35BA-1540-40BD-966C-A30FA6E7C2C7}.Debug_Static.Build.0 = Debug|Win32
-		{501E35BA-1540-40BD-966C-A30FA6E7C2C7}.Release.ActiveCfg = Release|Win32
-		{501E35BA-1540-40BD-966C-A30FA6E7C2C7}.Release_Static.ActiveCfg = Release|Win32
-		{501E35BA-1540-40BD-966C-A30FA6E7C2C7}.Release_Static.Build.0 = Release|Win32
-		{697BDE6D-38F5-4A20-800C-335B0FF2F939}.Debug.ActiveCfg = Debug|Win32
-		{697BDE6D-38F5-4A20-800C-335B0FF2F939}.Debug_Static.ActiveCfg = Debug|Win32
-		{697BDE6D-38F5-4A20-800C-335B0FF2F939}.Debug_Static.Build.0 = Debug|Win32
-		{697BDE6D-38F5-4A20-800C-335B0FF2F939}.Release.ActiveCfg = Release|Win32
-		{697BDE6D-38F5-4A20-800C-335B0FF2F939}.Release_Static.ActiveCfg = Release|Win32
-		{697BDE6D-38F5-4A20-800C-335B0FF2F939}.Release_Static.Build.0 = Release|Win32
-		{18B4C02C-3B9C-4A0B-AFD6-587AF4BE8FD2}.Debug.ActiveCfg = Debug|Win32
-		{18B4C02C-3B9C-4A0B-AFD6-587AF4BE8FD2}.Debug_Static.ActiveCfg = Debug|Win32
-		{18B4C02C-3B9C-4A0B-AFD6-587AF4BE8FD2}.Debug_Static.Build.0 = Debug|Win32
-		{18B4C02C-3B9C-4A0B-AFD6-587AF4BE8FD2}.Release.ActiveCfg = Release|Win32
-		{18B4C02C-3B9C-4A0B-AFD6-587AF4BE8FD2}.Release_Static.ActiveCfg = Release|Win32
-		{18B4C02C-3B9C-4A0B-AFD6-587AF4BE8FD2}.Release_Static.Build.0 = Release|Win32
-		{F47C9292-0CC1-4441-A656-991CA21F7E2B}.Debug.ActiveCfg = Debug|Win32
-		{F47C9292-0CC1-4441-A656-991CA21F7E2B}.Debug_Static.ActiveCfg = Debug|Win32
-		{F47C9292-0CC1-4441-A656-991CA21F7E2B}.Debug_Static.Build.0 = Debug|Win32
-		{F47C9292-0CC1-4441-A656-991CA21F7E2B}.Release.ActiveCfg = Release|Win32
-		{F47C9292-0CC1-4441-A656-991CA21F7E2B}.Release_Static.ActiveCfg = Release|Win32
-		{F47C9292-0CC1-4441-A656-991CA21F7E2B}.Release_Static.Build.0 = Release|Win32
-		{3AE34EB5-E19C-402A-8024-072969960323}.Debug.ActiveCfg = Debug|Win32
-		{3AE34EB5-E19C-402A-8024-072969960323}.Debug_Static.ActiveCfg = Debug|Win32
-		{3AE34EB5-E19C-402A-8024-072969960323}.Debug_Static.Build.0 = Debug|Win32
-		{3AE34EB5-E19C-402A-8024-072969960323}.Release.ActiveCfg = Release|Win32
-		{3AE34EB5-E19C-402A-8024-072969960323}.Release_Static.ActiveCfg = Release|Win32
-		{3AE34EB5-E19C-402A-8024-072969960323}.Release_Static.Build.0 = Release|Win32
-		{6C7F6111-9772-43D5-906F-AB354C93776A}.Debug.ActiveCfg = Debug|Win32
-		{6C7F6111-9772-43D5-906F-AB354C93776A}.Debug_Static.ActiveCfg = Debug|Win32
-		{6C7F6111-9772-43D5-906F-AB354C93776A}.Debug_Static.Build.0 = Debug|Win32
-		{6C7F6111-9772-43D5-906F-AB354C93776A}.Release.ActiveCfg = Release|Win32
-		{6C7F6111-9772-43D5-906F-AB354C93776A}.Release_Static.ActiveCfg = Release|Win32
-		{6C7F6111-9772-43D5-906F-AB354C93776A}.Release_Static.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

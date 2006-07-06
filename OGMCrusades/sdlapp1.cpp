@@ -20,17 +20,13 @@
 #include <SDL/SDL_mixer.h>
 #include "common.h"
 #include "Screen.h"
+#include "TileMap.h"
 #include "BgMusic.h"
 #include "StdIOSerializableStream.h"
 
+/*
 char tileMapTerrain[] = 
-{ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 8, 8, 8, 10, 
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 7, 7, 7, 11, 
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 7, 7, 7, 11, 
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 7, 7, 7, 11, 
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 6, 6, 6, 12, 
+{ 
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
@@ -38,16 +34,25 @@ char tileMapTerrain[] =
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 
+};
 
 char tileMapObjects[] = 
-{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+{
+2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
-2, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-2, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+2, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
+2, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
+2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
+2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
+2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
 2, 0, 0, 0, 0, 0, 3, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
 2, 0, 0, 0, 2, 2, 2, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
 2, 0, 0, 0, 2, 2, 2, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
@@ -55,20 +60,23 @@ char tileMapObjects[] =
 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 
-2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 
+};
+*/
 
 class TestCollisionHandler:public CollisionHandler{
     private:
         Screen* screen;
+        TileMap *map;
         int count;
     public:
-        TestCollisionHandler(Screen* screen):screen(screen),count(0){}
+        TestCollisionHandler(Screen* screen, TileMap *map):screen(screen),map(map),count(0){}
         virtual void HandleCollision(Sprite* owner, Sprite* sprite){
             if(sprite->name == "star" && count < 8){
-                if(tileMapObjects[220+16] == 0)
-                    tileMapObjects[220+16] = 2;
+                if(map->GetObjects()[220+16] == 0)
+                    map->GetObjects()[220+16] = 2;
                 else
-                    tileMapObjects[220+16] = 0;
+                    map->GetObjects()[220+16] = 0;
             }
         }        
 };
@@ -89,15 +97,20 @@ int main(int argc, char* argv[]){
 	int done;
 	SDL_Event event;
 	
-		
-	if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) < 0){
+  Uint32 initFlags = SDL_INIT_VIDEO;
+  initFlags |= SDL_INIT_AUDIO;
+#ifdef _DEBUG
+  initFlags |= SDL_INIT_NOPARACHUTE;
+#endif
+
+	if(SDL_Init(initFlags) < 0){
 		printf("Unable to init SDL: %s\n", SDL_GetError());
 		return 1;
 	}
 	
 	atexit(SDL_Quit);
 	
-	screen = SDL_SetVideoMode(640, 480, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
+  screen = SDL_SetVideoMode(640, 480+Screen::SCOREBOARD_HEIGHT, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
 	
 	if(screen == NULL){
 		printf("Unable obtain screen surface: %s\n", SDL_GetError());
@@ -110,15 +123,18 @@ int main(int argc, char* argv[]){
     return 3;
   }
   
+  TileMap map;
+  map.Load("level01.txt");
+
   // Start the music playback
   BgMusic music;
   music.Load("works.xm");
   music.Play();
 
 	tilePallete.LoadTile("grass-plain.png");    
-	tilePallete.LoadTile("spyder482.bush2.png", false);
-    //Tile* bushTile = tilePallete.GetTile(bushID);
-    //bushTile->isWalkable = false;
+	int bushID = tilePallete.LoadTile("spyder482.bush2.png", false);
+    Tile* bushTile = tilePallete.GetTile(bushID);
+    bushTile->isWalkable = false;
 	
 	AnimatedTile* animTile = new AnimatedTile();
 	printf("Loading...");
@@ -131,6 +147,7 @@ int main(int argc, char* argv[]){
 	printf("done.\n");
 	
 	tilePallete.AddTile(animTile);
+  /*
     tilePallete.LoadTile("water-grass-left-side-32.png", false); 
     tilePallete.LoadTile("water-grass-bottom-left-corner-32.png", false); 
     tilePallete.LoadTile("water-grass-bottom-side-32.png", false);
@@ -140,7 +157,7 @@ int main(int argc, char* argv[]){
     tilePallete.LoadTile("water-grass-top-right-corner-32.png", false);
     tilePallete.LoadTile("water-grass-right-side-32.png", false);
     tilePallete.LoadTile("water-grass-bottom-right-corner-32.png", false);
-	
+	*/
     Sprite* mySprite = new Sprite("character");
     mySprite->LoadImage("spyder482.bush2.png");
     mySprite->x = 320;
@@ -150,15 +167,15 @@ int main(int argc, char* argv[]){
     CharacterMotionGuide* cmg = new CharacterMotionGuide();
     mySprite->AddMotionGuide(cmg);
     mySprite->AddMotionGuide(new WalkingMotionGuide());
-    mySprite->AddCollisionHandler(new TestCollisionHandler(myScreen));
+    mySprite->AddCollisionHandler(new TestCollisionHandler(myScreen, &map));
     
     Sprite* mySprite2 = new Sprite("star");
     mySprite2->LoadImage("star.png");
-    mySprite2->AddMotionGuide(new CircularMotionGuide(0.2, 100, 320, 240, 90));
+    mySprite2->AddMotionGuide(new CircularMotionGuide((float)0.2, 100, 320, 240, 90));
     myScreen = new Screen(640,480,32);
 	myScreen->SetTilePallete(&tilePallete);
-	myScreen->SetTileMap(0, tileMapTerrain);
-	myScreen->SetTileMap(1, tileMapObjects);
+	myScreen->SetTileMap(0, map.GetTerrain());
+	myScreen->SetTileMap(1, map.GetObjects());
     myScreen->AddSprite(mySprite);
     myScreen->AddSprite(mySprite2);
 	
